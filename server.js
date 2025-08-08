@@ -61,19 +61,42 @@ app.use((req, res, next) => {
         threatType = "brute force attempt";
 
     const timestamp = new Date().toISOString();
-    const logLine = `${timestamp},${ip},${method},${threatType},auto\n`;
 
     try {
-        fs.appendFileSync(logPath, logLine);
-        console.log(`📥 [AUTO] ${ip} ${method} ${pathReq} => ${threatType}`);
-        // رفع إلى GitHub فورًا
+        // قراءة الملف
+        let fileData = fs.readFileSync(logPath, 'utf8').trim().split('\n');
+        const headers = fileData[0];
+        let logs = fileData.slice(1).map(line => line.split(','));
+
+        let found = false;
+        logs = logs.map(record => {
+            if (record[1] === ip && record[2] === method && record[3] === threatType) {
+                let attempts = parseInt(record[5] || '1', 10);
+                record[5] = attempts + 1;
+                found = true;
+            }
+            return record;
+        });
+
+        if (!found) {
+            logs.push([timestamp, ip, method, threatType, 'auto', 1]);
+        }
+
+        const csvData = [headers, ...logs.map(r => r.join(','))].join('\n');
+        fs.writeFileSync(logPath, csvData, 'utf8');
+
+        console.log(`📥 [AUTO] ${ip} ${method} ${pathReq} => ${threatType} ${found ? '(attempt incremented)' : '(new)'}`);
+
+        // ✅ إرسال التحديث مباشرة إلى GitHub بعد الكتابة
         pushToGitHub();
+
     } catch (err) {
         console.error("❌ Error writing to threats.csv:", err);
     }
 
     next();
 });
+
 
 
 // ✅ API لتسجيل التهديد يدويًا
