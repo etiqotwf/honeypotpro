@@ -33,8 +33,7 @@ fs.writeFileSync(logPath, 'Timestamp,IP,Method,ThreatType,Action,Attempts\n');
 }
 
 // ✅ Middleware لتسجيل أي دخول تلقائيًا
-// ✅ Middleware لتسجيل وتحليل أي دخول تلقائيًا
-app.use((req, res, next) => {
+app.use(async (req, res, next) => {
     const ip =
         req.headers['x-forwarded-for']?.split(',')[0]?.trim() ||
         req.socket.remoteAddress?.replace('::ffff:', '') ||
@@ -45,7 +44,6 @@ app.use((req, res, next) => {
     const bodyData = Object.keys(req.body || {}).length ? JSON.stringify(req.body) : '';
     const lowerData = (pathReq + bodyData).toLowerCase();
 
-    // 🔍 كشف الهجمات المحتملة
     let threatType = "normal visit";
     if (lowerData.includes("malware") || lowerData.includes(".exe") || lowerData.includes("virus"))
         threatType = "malware detected";
@@ -61,37 +59,17 @@ app.use((req, res, next) => {
         threatType = "brute force attempt";
 
     const timestamp = new Date().toISOString();
+    const logLine = `${timestamp},${ip},${method},${threatType},auto\n`;
 
     try {
-        // قراءة الملف
-        let fileData = fs.readFileSync(logPath, 'utf8').trim().split('\n');
-        const headers = fileData[0];
-        let logs = fileData.slice(1).map(line => line.split(','));
+        fs.appendFileSync(logPath, logLine);
+        console.log(`📥 [AUTO] ${ip} ${method} ${pathReq} => ${threatType}`);
 
-        let found = false;
-        logs = logs.map(record => {
-            if (record[1] === ip && record[2] === method && record[3] === threatType) {
-                let attempts = parseInt(record[5] || '1', 10);
-                record[5] = attempts + 1;
-                found = true;
-            }
-            return record;
-        });
-
-        if (!found) {
-            logs.push([timestamp, ip, method, threatType, 'auto', 1]);
-        }
-
-        const csvData = [headers, ...logs.map(r => r.join(','))].join('\n');
-        fs.writeFileSync(logPath, csvData, 'utf8');
-
-        console.log(`📥 [AUTO] ${ip} ${method} ${pathReq} => ${threatType} ${found ? '(attempt incremented)' : '(new)'}`);
-
-        // ✅ إرسال التحديث مباشرة إلى GitHub بعد الكتابة
-        pushToGitHub();
+        // نفترض أن pushToGitHub دالة async ترجع Promise
+        await pushToGitHub();
 
     } catch (err) {
-        console.error("❌ Error writing to threats.csv:", err);
+        console.error("❌ Error writing to threats.csv or pushing to GitHub:", err);
     }
 
     next();
