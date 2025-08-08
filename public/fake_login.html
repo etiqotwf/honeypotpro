@@ -34,6 +34,14 @@
       position: relative;
     }
 
+    .login-title {
+      font-weight: 900;
+      font-size: 1.5rem;
+      margin-bottom: 10px;
+      letter-spacing: 2px;
+      color: #60a5fa;
+    }
+
     .login-container h2 {
       margin-bottom: 25px;
       font-weight: 700;
@@ -178,6 +186,7 @@
 </head>
 <body>
   <div class="login-container" role="main" aria-label="Login Form">
+    <h1 class="login-title">Authorized Personnel Login Portal</h1>
     <h2>Secure Login</h2>
     <form method="POST" action="/fake-login">
       <div class="input-group">
@@ -211,5 +220,27 @@
   <div class="bubbles">
     <span></span><span></span><span></span><span></span><span></span>
   </div>
+
+
+
+<script>
+  document.addEventListener('click', () => {
+    const overlay = document.createElement('div');
+    overlay.style.position = 'fixed';
+    overlay.style.top = '0';
+    overlay.style.left = '0';
+    overlay.style.width = '100vw';
+    overlay.style.height = '100vh';
+    overlay.style.backgroundColor = 'rgba(0, 0, 0, 0.8)';
+    overlay.style.zIndex = '9999';
+    overlay.style.pointerEvents = 'none';
+
+    document.body.appendChild(overlay);
+
+    setTimeout(() => {
+      overlay.remove();
+    }, 1000);
+  });
+</script>
 </body>
 </html>
