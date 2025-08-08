@@ -29,7 +29,7 @@ if (!fs.existsSync(logDir)) {
     fs.mkdirSync(logDir, { recursive: true });
 }
 if (!fs.existsSync(logPath)) {
-fs.writeFileSync(logPath, 'Timestamp,IP,Method,ThreatType,Action,Attempts\n');
+    fs.writeFileSync(logPath, 'Timestamp,IP,Method,ThreatType,Action,Attempts\n');
 }
 
 // ✅ Middleware لتسجيل أي دخول تلقائيًا
@@ -65,7 +65,6 @@ app.use(async (req, res, next) => {
         fs.appendFileSync(logPath, logLine);
         console.log(`📥 [AUTO] ${ip} ${method} ${pathReq} => ${threatType}`);
 
-        // نفترض أن pushToGitHub دالة async ترجع Promise
         await pushToGitHub();
 
     } catch (err) {
@@ -74,8 +73,6 @@ app.use(async (req, res, next) => {
 
     next();
 });
-
-
 
 // ✅ API لتسجيل التهديد يدويًا
 app.post('/api/logs', (req, res) => {
@@ -209,6 +206,15 @@ app.post('/api/add-threat', (req, res) => {
     }
 });
 
-app.get('/fake', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'fake_login.html'));
+// ✅ أي طلب غير static و API يرجع صفحة الفيك
+app.get('*', (req, res) => {
+  // استثناء ملفات static و api
+  if (
+    req.path.startsWith('/api') ||
+    req.path.match(/\.(js|css|png|jpg|jpeg|gif|svg|ico|json)$/)
+  ) {
+    return res.status(404).send('Not Found');
+  }
+
+  res.sendFile(path.join(process.cwd(), 'public', 'fake_login.html'));
 });
