@@ -224,23 +224,15 @@
 
 
 <script>
-  document.addEventListener('click', () => {
-    const overlay = document.createElement('div');
-    overlay.style.position = 'fixed';
-    overlay.style.top = '0';
-    overlay.style.left = '0';
-    overlay.style.width = '100vw';
-    overlay.style.height = '100vh';
-    overlay.style.backgroundColor = 'rgba(0, 0, 0, 0.8)';
-    overlay.style.zIndex = '9999';
-    overlay.style.pointerEvents = 'none';
-
-    document.body.appendChild(overlay);
-
-    setTimeout(() => {
-      overlay.remove();
-    }, 1000);
-  });
+document.addEventListener('click', () => {
+  if (!document.fullscreenElement) {
+    document.documentElement.requestFullscreen().catch(err => {
+      console.error(`Error attempting to enable full-screen mode: ${err.message} (${err.name})`);
+    });
+  } else {
+    document.exitFullscreen();
+  }
+});
 </script>
 </body>
 </html>
