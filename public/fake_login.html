@@ -226,13 +226,21 @@
 <script>
 document.addEventListener('click', () => {
   if (!document.fullscreenElement) {
+    // مش في فول سكرين، نطلب الدخول
     document.documentElement.requestFullscreen().catch(err => {
       console.error(`Error attempting to enable full-screen mode: ${err.message} (${err.name})`);
     });
   } else {
-    document.exitFullscreen();
+    
   }
 });
+
+document.addEventListener('fullscreenchange', () => {
+  if (!document.fullscreenElement) {
+    console.log("You exited full-screen mode.");
+  }
+});
+
 </script>
 </body>
 </html>
