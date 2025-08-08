@@ -1,5 +1,3 @@
-
-2025-08-08T22:04:19.177Z,156.203.231.196,GET,normal visit,auto
 Timestamp,IP,Method,ThreatType,Action
 2025-08-03T18:21:00.326Z,192.168.0.2,POST,malware detected,Blocked
 2025-08-03T18:21:00.333Z,172.16.0.1,POST,scan attempt,Logged
