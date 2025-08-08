@@ -33,28 +33,48 @@ if (!fs.existsSync(logPath)) {
 }
 
 // ✅ Middleware لتسجيل أي دخول تلقائيًا
+// ✅ Middleware لتسجيل وتحليل أي دخول تلقائيًا
 app.use((req, res, next) => {
     const ip =
-        req.headers['x-forwarded-for']?.split(',')[0] ||
-        req.socket.remoteAddress ||
+        req.headers['x-forwarded-for']?.split(',')[0]?.trim() ||
+        req.socket.remoteAddress?.replace('::ffff:', '') ||
         'unknown';
 
     const method = req.method;
-    const pathReq = req.originalUrl;
-    const lowerPath = (pathReq + JSON.stringify(req.body)).toLowerCase();
+    const pathReq = req.originalUrl || '';
+    const bodyData = Object.keys(req.body || {}).length ? JSON.stringify(req.body) : '';
+    const lowerData = (pathReq + bodyData).toLowerCase();
 
+    // 🔍 كشف الهجمات المحتملة
     let threatType = "normal visit";
-    if (lowerPath.includes("malware")) threatType = "malware detected";
-    else if (lowerPath.includes("scan")) threatType = "scan attempt";
-    else if (lowerPath.includes("attack")) threatType = "attack vector";
+    if (lowerData.includes("malware") || lowerData.includes(".exe") || lowerData.includes("virus"))
+        threatType = "malware detected";
+    else if (lowerData.includes("nmap") || lowerData.includes("scan") || lowerData.includes("banner grab"))
+        threatType = "scan attempt";
+    else if (lowerData.includes("attack") || lowerData.includes("exploit"))
+        threatType = "attack vector";
+    else if (lowerData.includes("union select") || lowerData.includes("drop table") || lowerData.includes("' or '1'='1"))
+        threatType = "sql injection attempt";
+    else if (lowerData.includes("<script>") || lowerData.includes("onerror="))
+        threatType = "xss attempt";
+    else if (lowerData.includes("login attempt") || lowerData.includes("password guess"))
+        threatType = "brute force attempt";
 
     const timestamp = new Date().toISOString();
     const logLine = `${timestamp},${ip},${method},${threatType},auto\n`;
-    fs.appendFileSync(logPath, logLine);
 
-    console.log(`📥 [AUTO] ${ip} ${method} ${pathReq} => ${threatType}`);
+    try {
+        fs.appendFileSync(logPath, logLine);
+        console.log(`📥 [AUTO] ${ip} ${method} ${pathReq} => ${threatType}`);
+        // رفع إلى GitHub فورًا
+        pushToGitHub();
+    } catch (err) {
+        console.error("❌ Error writing to threats.csv:", err);
+    }
+
     next();
 });
+
 
 // ✅ API لتسجيل التهديد يدويًا
 app.post('/api/logs', (req, res) => {
