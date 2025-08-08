@@ -339,9 +339,10 @@ function actionIcon(action) {
     case 'allowed':
     case 'logged':
     case 'log':
-      return '<span style="color:#1e90ff;">🛡️🔒</span> SECURE';  // درع مع قفل وكتابة SECURE بدل صح
+    case 'auto':  // <-- أضفت هذه الحالة
+      return '<span style="color:#1e90ff;">🛡️🔒</span> SECURE';
     case 'normal visit':
-      return '<span style="color:#1e90ff;">🛡️🔒</span> NORMAL VISIT';  // درع مع قفل
+      return '<span style="color:#1e90ff;">🛡️🔒</span> NORMAL VISIT';
     case 'ignore':
     case 'ignored':
       return '<span style="color:gray;">ℹ️</span> IGNORED';
@@ -349,6 +350,7 @@ function actionIcon(action) {
       return '<span style="color:gray;">ℹ️</span> INFO';
   }
 }
+
 
 
  const MODEL_URL = './model.json';
@@ -500,14 +502,15 @@ function prependLogToTable(log) {
   const tbody = document.getElementById('logTableBody');
   const newRow = document.createElement('tr');
 
-  console.log('Threat Type:', log.threatType); // للتحقق
+  // نستخدم action فقط، وإذا لم تكن موجودة نعرض رسالة افتراضية
+  const action = log.action ? log.action.toLowerCase() : 'normal visit';
 
   newRow.innerHTML = `
     <td>${log.timestamp}</td>
     <td>${log.ip}</td>
     <td>${log.method}</td>
-<td style="font-weight:bold;">${log.threatType}</td>
-<td style="font-weight:bold;">${actionIcon(log.action || log.threatType)}</td>
+    <td style="font-weight:bold;">${log.threatType}</td>
+    <td style="font-weight:bold;">${actionIcon(action)}</td>
   `;
   tbody.prepend(newRow);
 }
