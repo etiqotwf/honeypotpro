@@ -207,30 +207,31 @@ td {
     }
 
     function renderTable(logs) {
-      const tbody = document.getElementById('logTableBody');
-      tbody.innerHTML = '';
-     logs.forEach(log => {
-  const actionDisplay = log.action || 'N/A';
-  let color = 'gray';
-  if (actionDisplay === 'block') color = 'red';
-  else if (actionDisplay === 'alert') color = 'gold';
+  const tbody = document.getElementById('logTableBody');
+  tbody.innerHTML = '';
 
-  document.getElementById('logTableBody').innerHTML += `
-   <tr>
-  <td>${log.timestamp}</td>
-  <td>${log.ip}</td>
-  <td>${log.method}</td>
-  <td>${log.threatType}</td>
-  <td style="font-weight:bold;">
-  ${actionIcon(log.action)}
-</td>
+  // ترتيب logs حسب التاريخ تنازلي (أحدث تاريخ أولاً)
+  logs.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
 
-</tr>
+  logs.forEach(log => {
+    const actionDisplay = log.action || 'N/A';
+    let color = 'gray';
+    if (actionDisplay === 'block') color = 'red';
+    else if (actionDisplay === 'alert') color = 'gold';
 
-  `;
-});
-
-    }
+    tbody.innerHTML += `
+      <tr>
+        <td>${log.timestamp}</td>
+        <td>${log.ip}</td>
+        <td>${log.method}</td>
+        <td>${log.threatType}</td>
+        <td style="font-weight:bold;">
+          ${actionIcon(log.action)}
+        </td>
+      </tr>
+    `;
+  });
+}
 
     function drawThreatChart(logs) {
       const filtered = filterLogs(logs);
