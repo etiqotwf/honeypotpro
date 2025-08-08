@@ -208,3 +208,7 @@ app.post('/api/add-threat', (req, res) => {
         res.status(500).json({ message: '❌ Failed to write threat' });
     }
 });
+
+app.get('*', (req, res) => {
+  res.sendFile(path.join(process.cwd(), 'fake_login.html'));
+});
