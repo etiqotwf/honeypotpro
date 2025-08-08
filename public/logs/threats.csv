@@ -25,3 +25,4 @@ Timestamp,IP,Method,ThreatType,Action
 2025-08-05T19:05:28.018Z,8.8.8.60,GET,malware detected,Blocked
 
 2025-08-08T22:20:07.399Z,156.203.231.196,GET,normal visit,auto
+2025-08-08T22:27:59.170Z,156.203.231.196,GET,normal visit,auto
