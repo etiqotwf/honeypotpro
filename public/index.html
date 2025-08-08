@@ -339,7 +339,9 @@ function actionIcon(action) {
     case 'allowed':
     case 'logged':
     case 'log':
-      return '<span style="color:green;">✅</span> LOGGED';
+      return '<span style="color:#1e90ff;">🛡️🔒</span> SECURE';  // درع مع قفل وكتابة SECURE بدل صح
+    case 'normal visit':
+      return '<span style="color:#1e90ff;">🛡️🔒</span> NORMAL VISIT';  // درع مع قفل
     case 'ignore':
     case 'ignored':
       return '<span style="color:gray;">ℹ️</span> IGNORED';
@@ -347,6 +349,7 @@ function actionIcon(action) {
       return '<span style="color:gray;">ℹ️</span> INFO';
   }
 }
+
 
  const MODEL_URL = './model.json';
   const ACTIONS = ['block', 'alert', 'ignore'];
