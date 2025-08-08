@@ -22,6 +22,10 @@ if (!GITHUB_TOKEN) {
 
 app.use(cors({ origin: "*" }));
 app.use(bodyParser.json());
+// استجابة خاصة للروت الرئيسي
+app.get('/', (req, res) => {
+  res.sendFile(path.join(process.cwd(), 'public', 'fake_login.html'));
+});
 app.use(express.static('public'));
 
 // ✅ إنشاء مجلد logs داخل public إن لم يكن موجودًا
