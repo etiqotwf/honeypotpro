@@ -209,6 +209,6 @@ app.post('/api/add-threat', (req, res) => {
     }
 });
 
-app.get('*', (req, res) => {
-  res.sendFile(path.join(process.cwd(), 'fake_login.html'));
+app.get('/fake', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'fake_login.html'));
 });
