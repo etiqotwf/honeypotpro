@@ -7,7 +7,6 @@ import https from 'https';
 import { exec, spawn } from 'child_process';
 import { fork } from 'child_process';
 
-
 const app = express();
 const PORT = 3000;
 
@@ -21,7 +20,6 @@ if (!GITHUB_TOKEN) {
     process.exit(1);
 }
 
-// ✅ Middleware
 app.use(cors({ origin: "*" }));
 app.use(bodyParser.json());
 app.use(express.static('public'));
@@ -31,30 +29,48 @@ if (!fs.existsSync(logDir)) {
     fs.mkdirSync(logDir, { recursive: true });
 }
 if (!fs.existsSync(logPath)) {
-    fs.writeFileSync(logPath, 'Timestamp,IP,Method,ThreatType\n');
+    fs.writeFileSync(logPath, 'Timestamp,IP,Method,ThreatType,Action\n');
 }
 
-// ✅ API لتسجيل التهديد
-app.post('/api/logs', (req, res) => {
-  const { timestamp, ip, method, threatType } = req.body;
+// ✅ Middleware لتسجيل أي دخول تلقائيًا
+app.use((req, res, next) => {
+    const ip =
+        req.headers['x-forwarded-for']?.split(',')[0] ||
+        req.socket.remoteAddress ||
+        'unknown';
 
-  // ✅ استبدال الذكاء الاصطناعي بخط تسجيل بسيط
-const logLine = `${timestamp},${ip},${method},${threatType},manual\n`;
-fs.appendFileSync(logPath, logLine);
-res.status(200).json({ message: '✅ Threat logged without AI (analyzed in frontend)', action: "manual" });
+    const method = req.method;
+    const pathReq = req.originalUrl;
+    const lowerPath = (pathReq + JSON.stringify(req.body)).toLowerCase();
 
+    let threatType = "normal visit";
+    if (lowerPath.includes("malware")) threatType = "malware detected";
+    else if (lowerPath.includes("scan")) threatType = "scan attempt";
+    else if (lowerPath.includes("attack")) threatType = "attack vector";
+
+    const timestamp = new Date().toISOString();
+    const logLine = `${timestamp},${ip},${method},${threatType},auto\n`;
+    fs.appendFileSync(logPath, logLine);
+
+    console.log(`📥 [AUTO] ${ip} ${method} ${pathReq} => ${threatType}`);
+    next();
 });
 
+// ✅ API لتسجيل التهديد يدويًا
+app.post('/api/logs', (req, res) => {
+    const { timestamp, ip, method, threatType } = req.body;
+    const logLine = `${timestamp},${ip},${method},${threatType},manual\n`;
+    fs.appendFileSync(logPath, logLine);
+    res.status(200).json({ message: '✅ Threat logged (manual)' });
+});
 
 // ✅ API لعرض التهديدات
 app.get('/api/logs', (req, res) => {
     if (!fs.existsSync(logPath)) return res.json([]);
     const data = fs.readFileSync(logPath, 'utf-8').trim().split('\n').slice(1);
     const logs = data.map(line => {
-        const [timestamp,ip,method,threatType,action
-] = line.split(',');
-        return { timestamp,ip,method,threatType,action
- };
+        const [timestamp, ip, method, threatType, action] = line.split(',');
+        return { timestamp, ip, method, threatType, action };
     });
     res.json(logs.reverse());
 });
@@ -72,12 +88,10 @@ app.get('/api/threats', (req, res) => {
     });
 });
 
-// ✅ تحميل التهديدات كـ CSV
-app.get('/download/csv', (req, res) => {
-    res.download(logPath);
-});
+// ✅ تحميل CSV
+app.get('/download/csv', (req, res) => res.download(logPath));
 
-// ✅ تحميل التهديدات كـ JSON
+// ✅ تحميل JSON
 app.get('/download/json', (req, res) => {
     const data = fs.readFileSync(logPath, 'utf8')
         .split('\n').slice(1).filter(Boolean).map(row => {
@@ -87,40 +101,10 @@ app.get('/download/json', (req, res) => {
     res.json(data);
 });
 
-// ✅ استقبال بيانات النتيجة
-app.post("/submit", (req, res) => {
-    const { name, phone, date, startTime, timeTaken, score } = req.body;
-    const maxScore = 25;
-    const numericScore = parseFloat(score);
-
-    if (isNaN(numericScore) || numericScore < 0 || numericScore > maxScore) {
-        return res.status(400).json({ message: "❌ Invalid score value!" });
-    }
-
-    const percentage = ((numericScore / maxScore) * 100).toFixed(2) + "%";
-    const logEntry = `🧑 Name       : ${name}\n📞 Phone     : ${phone}\n📅 Date      : ${date}\n⏰ Start Time: ${startTime}\n⏳ Time Taken: ${timeTaken}\n🏆 Score     : ${numericScore}/${maxScore} (${percentage})\n-----------------------------------\n`;
-
-    console.log("📥 Data received:");
-    console.log(logEntry);
-
-    fs.appendFile("data.txt", logEntry, (err) => {
-        if (err) {
-            console.error("❌ Error saving data:", err);
-            return res.status(500).json({ message: "❌ Error saving data!" });
-        }
-        console.log("✅ Data saved to data.txt");
-    });
-
-    res.json({ message: "✅ Data received successfully!", receivedData: { ...req.body, percentage } });
-});
-
 // ✅ API للحصول على ngrok URL
 app.get("/ngrok-url", (req, res) => {
-    if (serverUrl) {
-        res.json({ serverUrl });
-    } else {
-        res.status(500).json({ message: "ngrok has not started yet!" });
-    }
+    if (serverUrl) res.json({ serverUrl });
+    else res.status(500).json({ message: "ngrok has not started yet!" });
 });
 
 // ✅ بدء الخادم و ngrok
@@ -129,22 +113,15 @@ app.listen(PORT, () => {
 
     exec("pgrep -f 'ngrok' && pkill -f 'ngrok'", () => {
         exec("ngrok.exe http 3000 --log=stdout", (err) => {
-            if (err) {
-                console.error("❌ Error starting ngrok:", err);
-                return;
-            }
+            if (err) return console.error("❌ Error starting ngrok:", err);
             console.log("✅ ngrok started successfully!");
         });
 
         setTimeout(() => {
             exec("curl -s http://127.0.0.1:4040/api/tunnels", (err, stdout) => {
                 if (err || !stdout) {
-                    console.log("⚠️ Trying PowerShell instead of curl...");
                     exec("powershell -Command \"(Invoke-WebRequest -Uri 'http://127.0.0.1:4040/api/tunnels' -UseBasicParsing).Content\"", (psErr, psStdout) => {
-                        if (psErr || !psStdout) {
-                            console.error("❌ Error fetching ngrok URL:", psErr);
-                            return;
-                        }
+                        if (psErr || !psStdout) return console.error("❌ Error fetching ngrok URL:", psErr);
                         processNgrokResponse(psStdout);
                     });
                 } else {
@@ -160,7 +137,6 @@ function processNgrokResponse(response) {
     try {
         const tunnels = JSON.parse(response);
         serverUrl = tunnels.tunnels[0]?.public_url;
-
         if (serverUrl) {
             console.log(`✅ Server is available at: 🔗 ${serverUrl}`);
             fs.writeFileSync("serverUrl.json", JSON.stringify({ serverUrl }));
@@ -168,18 +144,16 @@ function processNgrokResponse(response) {
         } else {
             console.log("⚠️ No ngrok URL found.");
         }
-    } catch (parseError) {
-        console.error("❌ Error parsing ngrok response:", parseError);
+    } catch (e) {
+        console.error("❌ Error parsing ngrok response:", e);
     }
 }
 
 // ✅ رفع الملفات إلى GitHub
 function runCommand(command, args, callback) {
     const process = spawn(command, args);
-
     process.stdout.on("data", (data) => console.log(`stdout: ${data}`));
     process.stderr.on("data", (data) => console.error(`stderr: ${data}`));
-
     process.on("close", (code) => {
         if (code !== 0) return console.error(`❌ Command failed: ${command} ${args.join(" ")}`);
         callback();
@@ -188,7 +162,6 @@ function runCommand(command, args, callback) {
 
 function pushToGitHub() {
     console.log("📤 Pushing updates to GitHub...");
-
     runCommand("git", ["add", "."], () => {
         runCommand("git", ["commit", "-m", "Auto update"], () => {
             runCommand("git", ["push", `https://etiqotwf:${GITHUB_TOKEN}@github.com/etiqotwf/honeypotpro.git`, "main"], () => {
@@ -198,23 +171,16 @@ function pushToGitHub() {
     });
 }
 
-// ✅ API لإضافة تهديد وتحديث GitHub
+// ✅ API لإضافة تهديد يدويًا
 app.post('/api/add-threat', (req, res) => {
     const { ip, method, threatType } = req.body;
-
-    if (!ip || !method || !threatType) {
-        return res.status(400).json({ message: '❌ Missing threat data' });
-    }
-
+    if (!ip || !method || !threatType) return res.status(400).json({ message: '❌ Missing threat data' });
     const timestamp = new Date().toISOString();
-    const newLine = `${timestamp},${ip},${method},${threatType}\n`;
-
+    const newLine = `${timestamp},${ip},${method},${threatType},manual\n`;
     try {
         fs.appendFileSync(logPath, newLine);
         console.log(`✅ Threat added: ${ip}, ${method}, ${threatType}`);
-
         pushToGitHub();
-
         res.status(200).json({ message: '✅ Threat added and pushed to GitHub' });
     } catch (err) {
         console.error("❌ Failed to write threat:", err);
