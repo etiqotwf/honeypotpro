@@ -37,8 +37,6 @@ if (!fs.existsSync(logPath)) {
     fs.writeFileSync(logPath, 'Timestamp,IP,Method,ThreatType,Action,Attempts\n');
 }
 
-// ✅ Middleware لتسجيل أي دخول تلقائيًا
-import chalk from 'chalk';
 
 // ✅ Middleware لتسجيل أي دخول تلقائيًا
 app.use(async (req, res, next) => {
@@ -85,7 +83,7 @@ app.use(async (req, res, next) => {
             coloredLog = chalk.hex("#FFA500")(`📄 LOGGED: ${timestamp}, ${ip}, ${method}, ${threatType}, auto`);
             break;
         default:
-            coloredLog = chalk.green(`📄 LOGGED: ${timestamp}, ${ip}, ${method}, ${threatType}, auto`);
+            coloredLog = chalk.hex("#FFD700")(`📄 LOGGED: ${timestamp}, ${ip}, ${method}, ${threatType}, auto`); // 🟡 أصفر ذهبي
     }
 
     try {
