@@ -7,6 +7,7 @@ import https from 'https';
 import { exec, spawn } from 'child_process';
 import { fork } from 'child_process';
 
+
 const app = express();
 const PORT = 3000;
 
@@ -37,6 +38,9 @@ if (!fs.existsSync(logPath)) {
 }
 
 // ✅ Middleware لتسجيل أي دخول تلقائيًا
+import chalk from 'chalk';
+
+// ✅ Middleware لتسجيل أي دخول تلقائيًا
 app.use(async (req, res, next) => {
     const ip =
         req.headers['x-forwarded-for']?.split(',')[0]?.trim() ||
@@ -65,12 +69,30 @@ app.use(async (req, res, next) => {
     const timestamp = new Date().toISOString();
     const logLine = `${timestamp},${ip},${method},${threatType},auto\n`;
 
+    // 🎨 اختيار اللون حسب نوع التهديد
+    let coloredLog;
+    switch (threatType) {
+        case "malware detected":
+        case "attack vector":
+        case "sql injection attempt":
+            coloredLog = chalk.red(`📄 LOGGED: ${timestamp}, ${ip}, ${method}, ${threatType}, auto`);
+            break;
+        case "scan attempt":
+        case "xss attempt":
+            coloredLog = chalk.yellow(`📄 LOGGED: ${timestamp}, ${ip}, ${method}, ${threatType}, auto`);
+            break;
+        case "brute force attempt":
+            coloredLog = chalk.hex("#FFA500")(`📄 LOGGED: ${timestamp}, ${ip}, ${method}, ${threatType}, auto`);
+            break;
+        default:
+            coloredLog = chalk.green(`📄 LOGGED: ${timestamp}, ${ip}, ${method}, ${threatType}, auto`);
+    }
+
     try {
         fs.appendFileSync(logPath, logLine);
-        console.log(`📥 [AUTO] ${ip} ${method} ${pathReq} => ${threatType}`);
+        console.log(coloredLog);
 
         await pushToGitHub();
-
     } catch (err) {
         console.error("❌ Error writing to threats.csv or pushing to GitHub:", err);
     }
