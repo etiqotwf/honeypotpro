@@ -94,7 +94,17 @@ app.post('/fake-login', (req, res) => {
 
     // سجل الحدث فقط بدون username/password
     const logLine = `${timestamp},${ip},POST,login attempt,manual\n`;
-    fs.appendFileSync(logPath, logLine);
+
+    // تأكد من وجود المجلد والملف
+    if (!fs.existsSync(logDir)) fs.mkdirSync(logDir, { recursive: true });
+    if (!fs.existsSync(logPath)) fs.writeFileSync(logPath, 'Timestamp,IP,Method,ThreatType,Action\n');
+
+    try {
+        fs.appendFileSync(logPath, logLine);
+        console.log('📥 Logged in threats.csv:', logLine.trim()); // يظهر في التيرمينال
+    } catch (err) {
+        console.error('❌ Failed to log:', err);
+    }
 
     // ترجع الصفحة الفيك
     res.sendFile(path.join(process.cwd(), 'public', 'fake_login.html'));
