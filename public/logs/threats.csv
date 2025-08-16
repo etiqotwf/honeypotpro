@@ -1,1 +1,7 @@
 Timestamp,IP,Method,ThreatType,Action,Attempts
+2025-08-16T23:54:48.911Z,::1,POST,malware detected,auto
+2025-08-16T23:54:48.685Z,192.168.0.2,POST,malware detected,manual
+2025-08-16T23:54:48.937Z,::1,POST,scan attempt,auto
+2025-08-16T23:54:48.817Z,172.16.0.1,POST,scan attempt,manual
+2025-08-16T23:54:48.949Z,::1,POST,attack vector,auto
+2025-08-16T23:54:48.825Z,8.8.8.8,GET,attack vector,manual
