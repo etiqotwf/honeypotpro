@@ -84,6 +84,25 @@ app.post('/api/logs', (req, res) => {
 
 
 
+app.post('/fake-login', (req, res) => {
+    const { username, password } = req.body;
+    if (!username || !password) {
+        return res.status(400).send('Missing credentials');
+    }
+
+    const timestamp = new Date().toISOString();
+    const ip = req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.socket.remoteAddress?.replace('::ffff:', '');
+    const logLine = `${timestamp},${ip},POST,login attempt,username:${username},password:${password}\n`;
+
+    fs.appendFileSync(logPath, logLine);
+    console.log(`📥 [LOGIN] ${ip} => ${username} / ${password}`);
+
+    res.send('<h2>Login failed: Invalid credentials</h2>');
+});
+
+
+
+
 // ✅ API لعرض التهديدات
 app.get('/api/logs', (req, res) => {
     if (!fs.existsSync(logPath)) return res.json([]);
