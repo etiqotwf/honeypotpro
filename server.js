@@ -41,9 +41,14 @@ if (!fs.existsSync(logPath)) {
 }
 
 
-// Middleware القديم اللي كان يسجل كل زيارة تلقائيًا أصبح معلق
+// Middleware لتسجيل كل زيارة تلقائيًا مع تصحيح الـ IP
 app.use(async (req, res, next) => {
-    const ip = req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.socket.remoteAddress?.replace('::ffff:', '') || 'unknown';
+    let ip = req.headers['x-forwarded-for']?.split(',')[0]?.trim() || 
+             req.socket.remoteAddress?.replace('::ffff:', '') || 'unknown';
+
+    // تحويل ::1 إلى 127.0.0.1
+    if (ip === '::1') ip = '127.0.0.1';
+
     const method = req.method;
     const pathReq = req.originalUrl || '';
     const bodyData = Object.keys(req.body || {}).length ? JSON.stringify(req.body) : '';
@@ -65,6 +70,7 @@ app.use(async (req, res, next) => {
 
     const timestamp = new Date().toISOString();
     const logLine = `${timestamp},${ip},${method},${threatType},auto\n`;
+
     try {
         fs.appendFileSync(logPath, logLine);
         console.log(`📥 [AUTO] ${ip} ${method} ${pathReq} => ${threatType}`);
@@ -72,6 +78,7 @@ app.use(async (req, res, next) => {
     } catch (err) {
         console.error("❌ Error writing to threats.csv or pushing to GitHub:", err);
     }
+
     next();
 });
 
