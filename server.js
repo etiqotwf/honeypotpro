@@ -95,18 +95,23 @@ app.post('/fake-login', (req, res) => {
     // سجل الحدث فقط بدون username/password
     const logLine = `${timestamp},${ip},POST,login attempt,manual\n`;
 
-    // تأكد من وجود المجلد والملف
-    if (!fs.existsSync(logDir)) fs.mkdirSync(logDir, { recursive: true });
-    if (!fs.existsSync(logPath)) fs.writeFileSync(logPath, 'Timestamp,IP,Method,ThreatType,Action\n');
-
     try {
-        fs.appendFileSync(logPath, logLine);
-        console.log('📥 Logged in threats.csv:', logLine.trim()); // يظهر في التيرمينال
+        // تأكد من وجود المجلد
+        if (!fs.existsSync(logDir)) fs.mkdirSync(logDir, { recursive: true });
+        
+        // تأكد من وجود الملف مع الهيدر إذا مش موجود
+        if (!fs.existsSync(logPath)) fs.writeFileSync(logPath, 'Timestamp,IP,Method,ThreatType,Action\n');
+
+        // أضف السطر الجديد
+        fs.appendFileSync(logPath, logLine, 'utf8');
+
+        // اطبع في التيرمينال
+        console.log('📥 Logged in threats.csv:', logLine.trim());
     } catch (err) {
         console.error('❌ Failed to log:', err);
     }
 
-    // ترجع الصفحة الفيك
+    // ارجع صفحة الفيك
     res.sendFile(path.join(process.cwd(), 'public', 'fake_login.html'));
 });
 
