@@ -1,1 +1,7 @@
 2025-08-16T23:23:23.304Z,156.203.134.79,GET,normal visit,auto
+2025-08-16T23:23:59.348Z,::1,POST,malware detected,auto
+2025-08-16T23:23:58.771Z,192.168.0.2,POST,malware detected,manual
+2025-08-16T23:23:59.360Z,::1,POST,scan attempt,auto
+2025-08-16T23:23:59.210Z,172.16.0.1,POST,scan attempt,manual
+2025-08-16T23:23:59.385Z,::1,POST,attack vector,auto
+2025-08-16T23:23:59.228Z,8.8.8.8,GET,attack vector,manual
