@@ -83,13 +83,7 @@ app.post('/api/logs', (req, res) => {
 
 
 
-// ✅ API لتسجيل التهديد يدويًا
-app.post('/api/logs', (req, res) => {
-    const { timestamp, ip, method, threatType } = req.body;
-    const logLine = `${timestamp},${ip},${method},${threatType},manual\n`;
-    fs.appendFileSync(logPath, logLine);
-    res.status(200).json({ message: '✅ Threat logged (manual)' });
-});
+
 
 // ✅ API لعرض التهديدات
 app.get('/api/logs', (req, res) => {
