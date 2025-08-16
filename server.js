@@ -81,20 +81,22 @@ app.use(async (req, res, next) => {
 // ✅ API لتسجيل التهديد يدويًا
 app.post('/api/logs', (req, res) => {
     const { timestamp, ip, method, threatType } = req.body;
-    const logLine = `${timestamp},${ip},${method},${threatType},manual\n`;
-    fs.appendFileSync(logPath, logLine);
-    res.status(200).json({ message: '✅ Threat logged (manual)' });
-});
 
-// ✅ API لعرض التهديدات
-app.get('/api/logs', (req, res) => {
-    if (!fs.existsSync(logPath)) return res.json([]);
-    const data = fs.readFileSync(logPath, 'utf-8').trim().split('\n').slice(1);
-    const logs = data.map(line => {
-        const [timestamp, ip, method, threatType, action] = line.split(',');
-        return { timestamp, ip, method, threatType, action };
-    });
-    res.json(logs.reverse());
+    if (!ip || !method || !threatType) {
+        return res.status(400).json({ message: '❌ Missing threat data' });
+    }
+
+    const logLine = `${timestamp},${ip},${method},${threatType},manual\n`;
+    try {
+        fs.appendFileSync(logPath, logLine);
+        console.log(`📥 [HONEYPOT] ${ip} ${method} => ${threatType}`);
+        // اختياري: تقدر تعلق السطر اللي بيعمل pushToGitHub() لو مش عايز يرفع تلقائي
+        // pushToGitHub();
+        res.status(200).json({ message: '✅ Threat logged (manual)' });
+    } catch (err) {
+        console.error("❌ Failed to write threat:", err);
+        res.status(500).json({ message: '❌ Failed to write threat' });
+    }
 });
 
 // ✅ API لعرض ملف CSV من GitHub
