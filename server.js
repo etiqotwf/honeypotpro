@@ -87,34 +87,6 @@ app.post('/api/logs', (req, res) => {
 
 
 
-app.post('/fake-login', (req, res) => {
-    const ip = req.headers['x-forwarded-for']?.split(',')[0]?.trim() || 
-               req.socket.remoteAddress?.replace('::ffff:', '') || 'unknown';
-    const timestamp = new Date().toISOString();
-
-    // سجل الحدث فقط بدون username/password
-    const logLine = `${timestamp},${ip},POST,login attempt,manual\n`;
-
-    try {
-        // تأكد من وجود المجلد
-        if (!fs.existsSync(logDir)) fs.mkdirSync(logDir, { recursive: true });
-        
-        // تأكد من وجود الملف مع الهيدر إذا مش موجود
-        if (!fs.existsSync(logPath)) fs.writeFileSync(logPath, 'Timestamp,IP,Method,ThreatType,Action\n');
-
-        // أضف السطر الجديد
-        fs.appendFileSync(logPath, logLine, 'utf8');
-
-        // اطبع في التيرمينال
-        console.log('📥 Logged in threats.csv:', logLine.trim());
-    } catch (err) {
-        console.error('❌ Failed to log:', err);
-    }
-
-    // ارجع صفحة الفيك
-    res.sendFile(path.join(process.cwd(), 'public', 'fake_login.html'));
-});
-
 
 
 
