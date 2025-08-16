@@ -36,7 +36,7 @@ if (!fs.existsSync(logPath)) {
     fs.writeFileSync(logPath, 'Timestamp,IP,Method,ThreatType,Action,Attempts\n');
 }
 
-/* 
+
 // Middleware القديم اللي كان يسجل كل زيارة تلقائيًا أصبح معلق
 app.use(async (req, res, next) => {
     const ip = req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.socket.remoteAddress?.replace('::ffff:', '') || 'unknown';
@@ -70,7 +70,7 @@ app.use(async (req, res, next) => {
     }
     next();
 });
-*/
+
 
 // ✅ تسجيل التهديدات من الهونى بوت فقط
 app.post('/api/logs', (req, res) => {
@@ -79,25 +79,6 @@ app.post('/api/logs', (req, res) => {
     fs.appendFileSync(logPath, logLine);
     console.log(`📥 [BOT] ${ip} ${method} => ${threatType}`);
     res.status(200).json({ message: '✅ Threat logged (manual)' });
-});
-
-
-
-
-app.post('/fake-login', (req, res) => {
-    const { username, password } = req.body;
-    if (!username || !password) {
-        return res.status(400).send('Missing credentials');
-    }
-
-    const timestamp = new Date().toISOString();
-    const ip = req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.socket.remoteAddress?.replace('::ffff:', '');
-    const logLine = `${timestamp},${ip},POST,login attempt,username:${username},password:${password}\n`;
-
-    fs.appendFileSync(logPath, logLine);
-    console.log(`📥 [LOGIN] ${ip} => ${username} / ${password}`);
-
-    res.send('<h2>Login failed: Invalid credentials</h2>');
 });
 
 
