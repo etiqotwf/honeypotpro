@@ -87,21 +87,24 @@ app.post('/api/logs', (req, res) => {
 
 
 
-app.post('/fake-login', (req, res) => {
-    const { username, password } = req.body;
-    const ip = req.headers['x-forwarded-for']?.split(',')[0]?.trim() || 
-               req.socket.remoteAddress?.replace('::ffff:', '') || 'unknown';
-    const timestamp = new Date().toISOString();
-
-    const logLine = `${timestamp},${ip},POST,login attempt,manual,username=${username},password=${password}\n`;
-    fs.appendFileSync(logPath, logLine);
-
-    // لو عايز ترفع التغييرات لـ GitHub
-    pushToGitHub();
-
-    // ترجع الصفحة الفيك تاني
-    res.sendFile(path.join(process.cwd(), 'public', 'fake_login.html'));
+app.get('/api/logs', (req, res) => {
+    if (!fs.existsSync(logPath)) return res.json([]);
+    const data = fs.readFileSync(logPath, 'utf-8').trim().split('\n').slice(1);
+    const logs = data.map(line => {
+        const parts = line.split(',');
+        return {
+            timestamp: parts[0],
+            ip: parts[1],
+            method: parts[2],
+            threatType: parts[3],
+            action: parts[4],
+            username: parts.find(p => p.startsWith('username='))?.split('=')[1] || '',
+            password: parts.find(p => p.startsWith('password='))?.split('=')[1] || ''
+        };
+    });
+    res.json(logs.reverse());
 });
+
 
 
 
