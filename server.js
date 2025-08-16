@@ -40,7 +40,7 @@ if (!fs.existsSync(logPath)) {
     fs.writeFileSync(logPath, 'Timestamp,IP,Method,ThreatType,Action,Attempts\n');
 }
 
-/* 
+
 // Middleware القديم اللي كان يسجل كل زيارة تلقائيًا أصبح معلق
 app.use(async (req, res, next) => {
     const ip = req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.socket.remoteAddress?.replace('::ffff:', '') || 'unknown';
@@ -74,7 +74,7 @@ app.use(async (req, res, next) => {
     }
     next();
 });
-*/
+
 
 // ✅ تسجيل التهديدات من الهونى بوت فقط
 app.post('/api/logs', (req, res) => {
