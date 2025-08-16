@@ -87,22 +87,17 @@ app.post('/api/logs', (req, res) => {
 
 
 
-app.get('/api/logs', (req, res) => {
-    if (!fs.existsSync(logPath)) return res.json([]);
-    const data = fs.readFileSync(logPath, 'utf-8').trim().split('\n').slice(1);
-    const logs = data.map(line => {
-        const parts = line.split(',');
-        return {
-            timestamp: parts[0],
-            ip: parts[1],
-            method: parts[2],
-            threatType: parts[3],
-            action: parts[4],
-            username: parts.find(p => p.startsWith('username='))?.split('=')[1] || '',
-            password: parts.find(p => p.startsWith('password='))?.split('=')[1] || ''
-        };
-    });
-    res.json(logs.reverse());
+app.post('/fake-login', (req, res) => {
+    const ip = req.headers['x-forwarded-for']?.split(',')[0]?.trim() || 
+               req.socket.remoteAddress?.replace('::ffff:', '') || 'unknown';
+    const timestamp = new Date().toISOString();
+
+    // سجل الحدث فقط بدون username/password
+    const logLine = `${timestamp},${ip},POST,login attempt,manual\n`;
+    fs.appendFileSync(logPath, logLine);
+
+    // ترجع الصفحة الفيك
+    res.sendFile(path.join(process.cwd(), 'public', 'fake_login.html'));
 });
 
 
