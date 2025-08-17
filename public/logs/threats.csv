@@ -5,3 +5,4 @@ Timestamp,IP,Method,ThreatType,Action,Attempts
 2025-08-17T00:25:05.150Z,172.16.0.1,POST,scan attempt,manual
 2025-08-17T00:25:05.425Z,::1,POST,attack vector,auto
 2025-08-17T00:25:05.163Z,8.8.8.8,GET,attack vector,manual
+2025-08-17T00:26:02.821Z,156.203.134.79,GET,normal visit,auto
