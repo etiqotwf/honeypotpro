@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Secure Login</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap');
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      background: linear-gradient(135deg, #1f2937, #3b82f6);
+      font-family: 'Roboto', sans-serif;
+      color: #f9fafb;
+      margin: 0;
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    .login-container {
+      background: rgba(31, 41, 55, 0.85);
+      padding: 40px 30px;
+      border-radius: 15px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+      width: 350px;
+      max-width: 90vw;
+      text-align: center;
+      position: relative;
+    }
+
+    .login-title {
+      font-weight: 900;
+      font-size: 1.5rem;
+      margin-bottom: 10px;
+      letter-spacing: 2px;
+      color: #60a5fa;
+    }
+
+    .login-container h2 {
+      margin-bottom: 25px;
+      font-weight: 700;
+      font-size: 1.8rem;
+      letter-spacing: 1px;
+    }
+
+    .login-container form {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .input-group {
+      margin-bottom: 20px;
+      text-align: left;
+    }
+
+    .input-group label {
+      display: block;
+      margin-bottom: 6px;
+      font-size: 0.9rem;
+      color: #cbd5e1;
+      font-weight: 500;
+    }
+
+    .input-group input {
+      width: 100%;
+      padding: 12px 15px;
+      border-radius: 8px;
+      border: none;
+      font-size: 1rem;
+      transition: background-color 0.3s ease;
+      outline: none;
+      background-color: #374151;
+      color: #f9fafb;
+    }
+
+    .input-group input::placeholder {
+      color: #9ca3af;
+    }
+
+    .input-group input:focus {
+      background-color: #2563eb;
+      box-shadow: 0 0 6px #2563eb;
+      color: white;
+    }
+
+    button {
+      background-color: #3b82f6;
+      color: white;
+      border: none;
+      padding: 14px 0;
+      border-radius: 10px;
+      font-size: 1.1rem;
+      cursor: pointer;
+      font-weight: 600;
+      transition: background-color 0.3s ease;
+      margin-top: 10px;
+      box-shadow: 0 5px 12px rgba(59,130,246,0.6);
+    }
+
+    button:hover {
+      background-color: #2563eb;
+      box-shadow: 0 6px 16px rgba(37,99,235,0.8);
+    }
+
+    .footer-text {
+      margin-top: 20px;
+      font-size: 0.85rem;
+      color: #9ca3af;
+      user-select: none;
+    }
+
+    /* subtle animated background bubbles */
+    .bubbles {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      top: 0; left: 0;
+      overflow: hidden;
+      z-index: -1;
+    }
+
+    .bubbles span {
+      position: absolute;
+      bottom: -100px;
+      width: 20px;
+      height: 20px;
+      background: rgba(255,255,255,0.1);
+      border-radius: 50%;
+      animation: bubbleUp 15s linear infinite;
+      filter: blur(1px);
+    }
+
+    .bubbles span:nth-child(1) {
+      left: 10%;
+      animation-duration: 12s;
+      animation-delay: 0s;
+      width: 30px; height: 30px;
+    }
+
+    .bubbles span:nth-child(2) {
+      left: 20%;
+      animation-duration: 10s;
+      animation-delay: 3s;
+      width: 15px; height: 15px;
+    }
+
+    .bubbles span:nth-child(3) {
+      left: 40%;
+      animation-duration: 13s;
+      animation-delay: 5s;
+      width: 25px; height: 25px;
+    }
+
+    .bubbles span:nth-child(4) {
+      left: 60%;
+      animation-duration: 11s;
+      animation-delay: 2s;
+      width: 18px; height: 18px;
+    }
+
+    .bubbles span:nth-child(5) {
+      left: 80%;
+      animation-duration: 14s;
+      animation-delay: 7s;
+      width: 20px; height: 20px;
+    }
+
+    @keyframes bubbleUp {
+      0% {
+        transform: translateY(0);
+        opacity: 1;
+      }
+      100% {
+        transform: translateY(-110vh);
+        opacity: 0;
+      }
+    }
+
+  </style>
+</head>
+<body>
+  <div class="login-container" role="main" aria-label="Login Form">
+    <h1 class="login-title">Authorized Personnel Login Portal</h1>
+    <h2>Secure Login</h2>
+    <form method="POST" action="/fake-login">
+      <div class="input-group">
+        <label for="username">Username</label>
+        <input
+          type="text"
+          id="username"
+          name="username"
+          placeholder="Enter your username"
+          required
+          autocomplete="username"
+        />
+      </div>
+      <div class="input-group">
+        <label for="password">Password</label>
+        <input
+          type="password"
+          id="password"
+          name="password"
+          placeholder="Enter your password"
+          required
+          autocomplete="current-password"
+        />
+      </div>
+      <button type="submit">Log In</button>
+    </form>
+    <div class="footer-text">
+      © 2025 SecureCorp. All rights reserved.
+    </div>
+  </div>
+  <div class="bubbles">
+    <span></span><span></span><span></span><span></span><span></span>
+  </div>
+
+
+
+<script>
+document.addEventListener('click', () => {
+  if (!document.fullscreenElement) {
+    // مش في فول سكرين، نطلب الدخول
+    document.documentElement.requestFullscreen().catch(err => {
+      console.error(`Error attempting to enable full-screen mode: ${err.message} (${err.name})`);
+    });
+  } else {
+    
+  }
+});
+
+document.addEventListener('fullscreenchange', () => {
+  if (!document.fullscreenElement) {
+    console.log("You exited full-screen mode.");
+  }
+});
+
+</script>
+</body>
+</html>
