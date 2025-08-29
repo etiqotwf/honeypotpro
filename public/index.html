@@ -176,7 +176,7 @@ td {
     let chartRef = null;
 
     async function fetchCSVFromGitHub() {
-      const baseUrl = 'https://corsproxy.io/?https://raw.githubusercontent.com/etiqotwf/honeypotpro/main/public/logs/threats.csv';
+      const baseUrl = 'https://corsproxy.io/?https://raw.githubusercontent.com/etiqotwf/honeypotpro/main/logs/threats.csv';
       const nocacheUrl = `${baseUrl}?_=${Date.now()}`;
       try {
         const response = await fetch(nocacheUrl, { cache: "no-store" });
