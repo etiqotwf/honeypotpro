@@ -138,6 +138,10 @@ app.get("/ngrok-url", (req, res) => {
 // ✅ بدء الخادم و ngrok
 app.listen(PORT, () => {
     console.log(`🚀 Server running at http://localhost:${PORT}`);
+    
+
+  // 🟢 نسخ أولي عند تشغيل السيرفر
+    syncModelToPublic();
 
     exec("pgrep -f 'ngrok' && pkill -f 'ngrok'", () => {
         exec("ngrok.exe http 3000 --log=stdout", (err) => {
@@ -215,6 +219,50 @@ app.post('/api/add-threat', (req, res) => {
         res.status(500).json({ message: '❌ Failed to write threat' });
     }
 });
+
+
+// ========== Sync Model to Public ==========
+function syncModelToPublic() {
+  const ROOT_DIR = process.cwd();
+  const PUBLIC_DIR = path.join(ROOT_DIR, "public");
+
+  const MODEL_JSON = path.join(ROOT_DIR, "model.json");
+  const MODEL_BIN = path.join(ROOT_DIR, "weights.bin");
+
+  const PUBLIC_MODEL_JSON = path.join(PUBLIC_DIR, "model.json");
+  const PUBLIC_MODEL_BIN = path.join(PUBLIC_DIR, "weights.bin");
+
+  try {
+    if (fs.existsSync(MODEL_JSON)) {
+      fs.copyFileSync(MODEL_JSON, PUBLIC_MODEL_JSON);
+      console.log("✅ model.json copied to public/");
+    }
+    if (fs.existsSync(MODEL_BIN)) {
+      fs.copyFileSync(MODEL_BIN, PUBLIC_MODEL_BIN);
+      console.log("✅ weights.bin copied to public/");
+    }
+  } catch (err) {
+    console.error("❌ Error copying model files to public:", err);
+  }
+}
+
+// ========== Watch for model/weights changes ==========
+const modelPath = path.join(process.cwd(), 'model.json');
+const weightsPath = path.join(process.cwd(), 'weights.bin');
+
+[modelPath, weightsPath].forEach(file => {
+  if (fs.existsSync(file)) {
+    fs.watchFile(file, { interval: 5000 }, (curr, prev) => {
+      if (curr.mtime !== prev.mtime) {
+        console.log(`📝 Detected change in ${path.basename(file)}, syncing to public...`);
+        syncModelToPublic();
+      }
+    });
+  }
+});
+
+
+
 
 
 // ✅ مراقبة ملف threats.csv في مجلد logs (جذر المشروع)
