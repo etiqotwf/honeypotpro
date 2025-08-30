@@ -1,27 +1,31 @@
-// logThreats.js
+// logThreats.js (ESM)
 import fs from 'fs';
 import path from 'path';
-import fetch from 'node-fetch';
+import { fileURLToPath } from 'url';
 
-export function logThreat(ip, method, threatType) {
-    const logPath = path.join('./logs', 'threats.csv');
-    const timestamp = new Date().toISOString();
-    const logLine = `${timestamp},${ip},${method},${threatType}\n`;
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
-    // 📝 حفظ السطر في CSV
-    fs.appendFileSync(logPath, logLine);
+const LOGS_DIR = path.join(__dirname, 'logs');
+const OUTPUT_CSV = path.join(LOGS_DIR, 'threats.csv');
 
-    // 🚀 إرسال للسيرفر إذا كان يعمل
-    fetch('http://localhost:3000/api/logs', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-            timestamp,
-            ip,
-            method,
-            threatType
-        })
-    }).catch(err => {
-        console.error('❌ فشل في إرسال التهديد إلى السيرفر:', err.message);
-    });
+function ensureLogsCsv() {
+  if (!fs.existsSync(LOGS_DIR)) fs.mkdirSync(LOGS_DIR, { recursive: true });
+  if (!fs.existsSync(OUTPUT_CSV)) {
+    fs.writeFileSync(OUTPUT_CSV, 'Timestamp,IP,Method,ThreatType,Action\n', 'utf8');
+  } else {
+    // تأكد من وجود الهيدر "Action"
+    const content = fs.readFileSync(OUTPUT_CSV, 'utf8');
+    const lines = content.split(/\r?\n/);
+    if (lines.length && !lines[0].includes('Action')) {
+      lines[0] = 'Timestamp,IP,Method,ThreatType,Action';
+      fs.writeFileSync(OUTPUT_CSV, lines.join('\n') + '\n', 'utf8');
+    }
+  }
+}
+
+export function logThreat(ip, method, threatType, action = 'ignored', timestamp = new Date().toISOString()) {
+  ensureLogsCsv();
+  const row = `${timestamp},${ip},${method},${threatType},${action}\n`;
+  fs.appendFileSync(OUTPUT_CSV, row, 'utf8');
 }
