@@ -233,6 +233,42 @@ if (fs.existsSync(projectLogPath)) {
 
 
 
+// ✅ مراقبة ملف public/logs/threats.csv وتشغيل الـ Adaptive Honeypot على آخر سطر
+const publicLogPath = path.join(process.cwd(), 'public', 'logs', 'threats.csv');
+
+if (fs.existsSync(publicLogPath)) {
+    fs.watchFile(publicLogPath, { interval: 3000 }, (curr, prev) => {
+        if (curr.mtime !== prev.mtime) {
+            console.log("👁️ Detected new entry in public/logs/threats.csv");
+
+            // اقرأ آخر سطر
+            const content = fs.readFileSync(publicLogPath, 'utf8').trim();
+            const lines = content.split(/\r?\n/);
+            const lastLine = lines[lines.length - 1];
+
+            if (lastLine && !lastLine.startsWith("Timestamp")) {
+                console.log(`🆕 New line detected: ${lastLine}`);
+
+                // شغّل honeypot مع تمرير آخر سطر كـ argument
+                exec(`node adaptiveHoneypot.js "${lastLine}"`, (error, stdout, stderr) => {
+                    if (error) {
+                        console.error(`❌ Error running adaptiveHoneypot.js: ${error.message}`);
+                        return;
+                    }
+                    if (stderr) console.error(`⚠️ STDERR: ${stderr}`);
+                    console.log(`🤖 Honeypot Output:\n${stdout}`);
+                });
+            }
+        }
+    });
+} else {
+    console.warn("⚠️ public/logs/threats.csv not found, skipping watch...");
+}
+
+
+
+
+
 // ✅ أي طلب غير static و API يرجع صفحة الفيك
 app.get('*', (req, res) => {
   // استثناء ملفات static و api
