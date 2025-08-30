@@ -250,7 +250,7 @@ if (fs.existsSync(publicLogPath)) {
                 console.log(`🆕 New line detected: ${lastLine}`);
 
                 // شغّل honeypot مع تمرير آخر سطر كـ argument
-                exec(`node adaptiveHoneypot.js "${lastLine}"`, (error, stdout, stderr) => {
+                exec(`node adaptive-honeypot.js "${lastLine}"`, (error, stdout, stderr) => {
                     if (error) {
                         console.error(`❌ Error running adaptiveHoneypot.js: ${error.message}`);
                         return;
