@@ -216,46 +216,35 @@ function ensureOutputHeader() {
   }
 }
 
-async function processPublicRecords() {
+async function processLastPublicRecord() {
   const records = readPublicCsv();
   if (!records.length) {
     console.log(chalk.yellow('ℹ️ لا توجد سجلات في public/logs/threats.csv للمعالجة.'));
     return;
   }
-  console.log(chalk.cyan(`📥 قرأت ${records.length} سجلاً من public/logs/threats.csv`));
 
+  const lastRecord = records[records.length - 1];
   const processedKeys = loadAlreadyProcessedKeys();
+  const key = `${lastRecord.ip}|${lastRecord.method}|${lastRecord.threatType}`;
+
+  if (processedKeys.has(key)) {
+    console.log(chalk.gray('ℹ️ آخر إدخال تم معالجته مسبقًا.'));
+    return;
+  }
+
+  const state = encodeStateFromRecord(lastRecord);
+  const action = await selectAction(state);
+
+  // سجل النتيجة في ملف المشروع logs/threats.csv
+  logThreat(lastRecord.ip, lastRecord.method, lastRecord.threatType, action, lastRecord.timestamp);
+  console.log(chalk.greenBright(`✅ تمت معالجة آخر إدخال: ${lastRecord.ip} ${lastRecord.method} ${lastRecord.threatType} -> ${action}`));
+
   const replay = loadReplayMemory();
-  const newPairs = [];
-  let written = 0;
-
-  for (const r of records) {
-    const key = `${r.ip}|${r.method}|${r.threatType}`;
-    if (processedKeys.has(key)) continue;
-
-    const state = encodeStateFromRecord(r);
-    const action = await selectAction(state);
-
-    // سجل النتيجة في ملف المشروع logs/threats.csv
-    logThreat(r.ip, r.method, r.threatType, action, r.timestamp);
-    newPairs.push({ state, action });
-    processedKeys.add(key);
-    written++;
-  }
-
-  if (written) {
-    console.log(chalk.greenBright(`✅ تمت معالجة وكتابة ${written} سجل جديد إلى logs/threats.csv`));
-  } else {
-    console.log(chalk.yellow('ℹ️ لا توجد سجلات جديدة لمعالجتها (كلها موجودة مسبقًا).'));
-  }
-
-  if (newPairs.length) {
-    const updatedReplay = replay.concat(newPairs).slice(-BATCH_LIMIT);
-    saveReplayMemory(updatedReplay);
-    console.log(chalk.cyan('⚙️ إجراء Fine-tune (reinforcement-like) على البيانات الجديدة...'));
-    await trainModel(updatedReplay, FINETUNE_EPOCHS);
-    console.log(chalk.green('🧠 Fine-tune اكتمل.'));
-  }
+  replay.push({ state, action });
+  saveReplayMemory(replay);
+  console.log(chalk.cyan('⚙️ Fine-tune على آخر سجل...'));
+  await trainModel(replay, FINETUNE_EPOCHS);
+  console.log(chalk.green('🧠 Fine-tune اكتمل.'));
 }
 
 /* ---------- Backward compatibility: process local honeypot.log ---------- */
@@ -299,8 +288,8 @@ async function processHoneypotLog(logFile) {
   ensureOutputHeader();
   await loadOrInitModel();
 
-  // معالجة ملف public/logs/threats.csv الآن
-  await processPublicRecords();
+  // معالجة آخر سجل من public/logs/threats.csv الآن
+  await processLastPublicRecord();
 
   // optional: process local honeypot.log (back-compat)
   // const hf = ensureHoneypotLogExists();
@@ -313,9 +302,9 @@ async function processHoneypotLog(logFile) {
       if (eventType) {
         if (timer) clearTimeout(timer);
         timer = setTimeout(async () => {
-          console.log(chalk.cyan('🔁 تم الكشف عن تعديل في public/logs/threats.csv — إعادة المعالجة...'));
+          console.log(chalk.cyan('🔁 تم الكشف عن تعديل في public/logs/threats.csv — معالجة آخر إدخال...'));
           try {
-            await processPublicRecords();
+            await processLastPublicRecord();
           } catch (err) {
             console.error('Error processing updated CSV:', err);
           }
