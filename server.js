@@ -216,6 +216,23 @@ app.post('/api/add-threat', (req, res) => {
     }
 });
 
+
+// ✅ مراقبة ملف threats.csv في مجلد logs (جذر المشروع)
+const projectLogPath = path.join(process.cwd(), 'logs', 'threats.csv');
+
+if (fs.existsSync(projectLogPath)) {
+    fs.watchFile(projectLogPath, { interval: 5000 }, (curr, prev) => {
+        if (curr.mtime !== prev.mtime) {
+            console.log("📝 Detected change in project logs/threats.csv");
+            pushToGitHub();
+        }
+    });
+} else {
+    console.warn("⚠️ Project logs/threats.csv not found, skipping watch...");
+}
+
+
+
 // ✅ أي طلب غير static و API يرجع صفحة الفيك
 app.get('*', (req, res) => {
   // استثناء ملفات static و api

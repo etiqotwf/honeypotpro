@@ -6,3 +6,4 @@ Timestamp,IP,Method,ThreatType,Action
 2025-08-29T14:18:52.086Z,8.8.8.8,GET,attack vector
 
 2025-08-30T09:41:53.167Z,156.203.170.181,GET,normal visit,auto,ignore
+2025-08-30T09:59:00.226Z,156.203.170.181,GET,normal visit,auto,ignore
