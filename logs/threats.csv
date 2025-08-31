@@ -1,6 +1,0 @@
-Timestamp,IP,Method,ThreatType,Action
-2025-08-31T18:33:35.810Z,156.203.170.181,GET,normal visit,auto,ignore
-2025-08-31T18:40:09.060Z,156.203.170.181,GET,normal visit,auto,ignore
-2025-08-31T18:42:29.426Z,156.203.170.181,GET,normal visit,auto,ignore
-2025-08-31T18:43:31.600Z,156.203.170.181,GET,normal visit,auto,ignore
-2025-08-31T18:44:16.991Z,156.203.170.181,GET,normal visit,auto,ignore
