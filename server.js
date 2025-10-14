@@ -192,7 +192,8 @@ function runCommand(command, args, callback) {
     });
 }
 
-function pushToGitHub() {
+
+async function pushToGitHub() {
   const gitignorePath = ".gitignore";
 
   // 🚫 استبعاد node_modules من الرفع
@@ -225,7 +226,7 @@ function pushToGitHub() {
 
   runCommand("git", ["add", "-A"], () => {
     runCommand("git", ["commit", "-m", `"Auto update: ${new Date().toISOString()}"`], () => {
-      runCommand("git", ["pull", "--rebase", "origin", "main"], () => {
+      runCommand("git", ["pull", "--rebase", "origin", "main"], async () => {
         runCommand(
           "git",
           [
@@ -233,10 +234,16 @@ function pushToGitHub() {
             `https://etiqotwf:${process.env.GITHUB_TOKEN}@github.com/etiqotwf/honeypotpro.git`,
             "main",
           ],
-          () => {
+          async () => {
+            // 🔗 تشغيل ngrok والحصول على اللينك الحقيقي
+            const url = await ngrok.connect({
+              addr: 3000,
+              authtoken: process.env.NGROK_AUTH_TOKEN, // لازم يكون مضاف فى .env
+            });
+
             // ✅ عرض الرسائل النهائية فقط
             console.clear();
-            console.log("🌐 ngrok tunnel established successfully.");
+            console.log(`🌐 ngrok tunnel: ${url}`);
             console.log("💻 Running locally at: http://localhost:3000");
             console.log("📤 Files have been pushed successfully to GitHub.");
             console.log("🛡️ Server is now monitoring — waiting for any attack to analyze and activate the intelligent defense system...");
