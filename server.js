@@ -213,8 +213,6 @@ function pushToGitHub() {
   if (!fs.existsSync("package.json")) {
     console.warn("⚠️ package.json not found — creating default file...");
     runCommand("npm", ["init", "-y"], () => console.log("📦 Created default package.json"));
-  } else {
-    console.log("📦 Detected package.json — dependencies will be restored via npm install");
   }
 
   // 🧾 إنشاء أو تحديث README.md
@@ -243,12 +241,12 @@ node server.js
     if (!content.includes("npm install")) {
       fs.appendFileSync(readmePath, "\n" + setupInstructions, "utf8");
       console.log("📝 Updated README.md with setup instructions.");
-    } else {
-      console.log("🧾 README.md already contains setup instructions — no changes made.");
     }
   }
 
-  // 🚀 تنفيذ أوامر Git
+  // 🚀 تنفيذ أوامر Git بدون عرض stdout/stderr
+  const execOptions = { stdio: "ignore" }; // ⛔ إخفاء مخرجات stdout/stderr
+
   runCommand("git", ["add", "-A"], () => {
     runCommand("git", ["commit", "-m", `"Auto update (excluding node_modules): ${new Date().toISOString()}"`], () => {
       runCommand("git", ["pull", "--rebase", "origin", "main"], () => {
@@ -261,13 +259,13 @@ node server.js
           ],
           () => {
             console.log("✅ Project pushed successfully!");
-           console.log("🛡️ Server is now monitoring — waiting for any attack to analyze and activate the intelligent defense system...");
-
-          }
+            console.log("🛡️ Server is now monitoring — waiting for any attack to analyze and activate the intelligent defense system...");
+          },
+          execOptions
         );
-      });
-    });
-  });
+      }, execOptions);
+    }, execOptions);
+  }, execOptions);
 }
 
 
