@@ -183,22 +183,22 @@ function processNgrokResponse(response) {
 
 // ✅ رفع الملفات إلى GitHub
 
-function runCommand(command, args, callback) {
+function runCommand(command, args, callback, options = {}) {
   const fullCommand = `${command} ${args.join(" ")}`;
-  const child = exec(fullCommand, (error, stdout, stderr) => {
-    if (error) {
+  exec(fullCommand, (error, stdout, stderr) => {
+    // ⛔ تجاهل الأخطاء في حالة git pull فقط
+    if (error && !fullCommand.includes("git pull")) {
       console.error(`❌ Error executing: ${fullCommand}`);
       return;
     }
 
-    // ⚙️ تم إزالة الطباعة التلقائية للمخرجات التالية:
+    // ⚙️ حذف أي stdout/stderr من الطباعة (بناء على طلبك السابق)
     // console.log(`stdout: ${stdout}`);
     // console.error(`stderr: ${stderr}`);
 
     if (callback) callback();
   });
 }
-
 // ✅ رفع الملفات إلى GitHub بدون node_modules + إعداد README تلقائي
 function pushToGitHub() {
   console.log("📤 Preparing to push updates to GitHub...");
