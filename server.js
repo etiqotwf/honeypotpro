@@ -308,11 +308,9 @@ function syncModelToPublic() {
   try {
     if (fs.existsSync(MODEL_JSON)) {
       fs.copyFileSync(MODEL_JSON, PUBLIC_MODEL_JSON);
-      console.log("✅ model.json copied to public/");
     }
     if (fs.existsSync(MODEL_BIN)) {
       fs.copyFileSync(MODEL_BIN, PUBLIC_MODEL_BIN);
-      console.log("✅ weights.bin copied to public/");
     }
   } catch (err) {
     console.error("❌ Error copying model files to public:", err);
