@@ -194,63 +194,44 @@ function runCommand(command, args, callback) {
 
 // ✅ رفع الملفات إلى GitHub بدون node_modules + إعداد README تلقائي
 function pushToGitHub() {
-  console.log("📤 Preparing to push updates to GitHub...");
+  console.log("📤 Uploading updates to GitHub...");
 
-  // 🚫 استبعاد node_modules من الرفع
+  // 🚫 إنشاء .gitignore إذا مش موجود
   const gitignorePath = ".gitignore";
   if (!fs.existsSync(gitignorePath)) {
     fs.writeFileSync(gitignorePath, "node_modules/\n", "utf8");
-    console.log("🧩 Created .gitignore and excluded node_modules/");
   } else {
     const content = fs.readFileSync(gitignorePath, "utf8");
     if (!content.includes("node_modules/")) {
       fs.appendFileSync(gitignorePath, "\nnode_modules/\n", "utf8");
-      console.log("🧩 Updated .gitignore to exclude node_modules/");
     }
   }
 
-  // ✅ التأكد من وجود package.json
+  // ✅ إنشاء package.json افتراضي لو مش موجود
   if (!fs.existsSync("package.json")) {
-    console.warn("⚠️ package.json not found — creating default file...");
-    runCommand("npm", ["init", "-y"], () => console.log("📦 Created default package.json"));
-  } else {
-    console.log("📦 Detected package.json — dependencies will be restored via npm install");
+    runCommand("npm", ["init", "-y"]);
   }
 
-  // 🧾 إنشاء أو تحديث README.md
+  // 🧾 إنشاء README لو مش موجود
   const readmePath = "README.md";
   const setupInstructions = `
-# 🧠 Honeypot AI Project
+# Honeypot AI Project
 
 This project uses Node.js and AI model integration (Hugging Face + TensorFlow.js).
 
-## 🚀 Setup Instructions
-After cloning this repository, run the following commands:
-
+## Setup Instructions
 \`\`\`bash
 npm install
 node server.js
 \`\`\`
-
-✅ The server will start at: http://localhost:3000
 `;
-
   if (!fs.existsSync(readmePath)) {
     fs.writeFileSync(readmePath, setupInstructions, "utf8");
-    console.log("📝 Created new README.md with setup instructions.");
-  } else {
-    const content = fs.readFileSync(readmePath, "utf8");
-    if (!content.includes("npm install")) {
-      fs.appendFileSync(readmePath, "\n" + setupInstructions, "utf8");
-      console.log("📝 Updated README.md with setup instructions.");
-    } else {
-      console.log("🧾 README.md already contains setup instructions — no changes made.");
-    }
   }
 
-  // 🚀 تنفيذ أوامر Git
+  // 🚀 تنفيذ أوامر Git بصمت بدون رسائل إضافية
   runCommand("git", ["add", "-A"], () => {
-    runCommand("git", ["commit", "-m", `"Auto update (excluding node_modules): ${new Date().toISOString()}"`], () => {
+    runCommand("git", ["commit", "-m", `"Auto update: ${new Date().toISOString()}"`], () => {
       runCommand("git", ["pull", "--rebase", "origin", "main"], () => {
         runCommand(
           "git",
@@ -260,9 +241,7 @@ node server.js
             "main",
           ],
           () => {
-            console.log("✅ Project pushed successfully!");
-           console.log("🛡️ Server is now monitoring — waiting for any attack to analyze and activate the intelligent defense system...");
-
+            console.log("✅ Update pushed to GitHub successfully.");
           }
         );
       });
