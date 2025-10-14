@@ -182,14 +182,21 @@ function processNgrokResponse(response) {
 }
 
 // ✅ رفع الملفات إلى GitHub
+
 function runCommand(command, args, callback) {
-    const process = spawn(command, args);
-    process.stdout.on("data", (data) => console.log(`stdout: ${data}`));
-    process.stderr.on("data", (data) => console.error(`stderr: ${data}`));
-    process.on("close", (code) => {
-        if (code !== 0) return console.error(`❌ Command failed: ${command} ${args.join(" ")}`);
-        callback();
-    });
+  const fullCommand = `${command} ${args.join(" ")}`;
+  const child = exec(fullCommand, (error, stdout, stderr) => {
+    if (error) {
+      console.error(`❌ Error executing: ${fullCommand}`);
+      return;
+    }
+
+    // ⚙️ تم إزالة الطباعة التلقائية للمخرجات التالية:
+    // console.log(`stdout: ${stdout}`);
+    // console.error(`stderr: ${stderr}`);
+
+    if (callback) callback();
+  });
 }
 
 // ✅ رفع الملفات إلى GitHub بدون node_modules + إعداد README تلقائي
