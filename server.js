@@ -6,6 +6,8 @@ import path from 'path';
 import https from 'https';
 import { exec, spawn } from 'child_process';
 import { fork } from 'child_process';
+import { execSync } from "child_process"; // ✅ أضف هذا السطر هنا
+
 
 const app = express();
 const PORT = 3000;
@@ -203,6 +205,18 @@ function runCommand(command, args, callback, options = {}) {
 function pushToGitHub() {
   console.log("📤 Preparing to push updates to GitHub...");
 
+
+const hasChanges = fs.existsSync(".git")
+  ? execSync("git status --porcelain").toString().trim() !== ""
+  : true;
+
+
+if (!hasChanges) {
+  console.log("🟡 No changes detected — skipping GitHub push.");
+  return;
+}
+
+
   // 🚫 استبعاد node_modules من الرفع
   const gitignorePath = ".gitignore";
   if (!fs.existsSync(gitignorePath)) {
@@ -294,7 +308,19 @@ app.post('/api/add-threat', (req, res) => {
 });
 
 
-// ========== Sync Model to Public ==========
+// ========== Sync Model to Public (only if changed) ==========
+function copyIfChanged(src, dest) {
+  if (!fs.existsSync(src)) return;
+  const srcStat = fs.statSync(src);
+  const destStat = fs.existsSync(dest) ? fs.statSync(dest) : null;
+
+  // ✅ انسخ فقط إذا الملف مختلف في الحجم أو تاريخ التعديل
+  if (!destStat || srcStat.mtimeMs !== destStat.mtimeMs || srcStat.size !== destStat.size) {
+    fs.copyFileSync(src, dest);
+    console.log(`📝 File updated and copied: ${path.basename(src)}`);
+  }
+}
+
 function syncModelToPublic() {
   const ROOT_DIR = process.cwd();
   const PUBLIC_DIR = path.join(ROOT_DIR, "public");
@@ -306,12 +332,8 @@ function syncModelToPublic() {
   const PUBLIC_MODEL_BIN = path.join(PUBLIC_DIR, "weights.bin");
 
   try {
-    if (fs.existsSync(MODEL_JSON)) {
-      fs.copyFileSync(MODEL_JSON, PUBLIC_MODEL_JSON);
-    }
-    if (fs.existsSync(MODEL_BIN)) {
-      fs.copyFileSync(MODEL_BIN, PUBLIC_MODEL_BIN);
-    }
+    copyIfChanged(MODEL_JSON, PUBLIC_MODEL_JSON);
+    copyIfChanged(MODEL_BIN, PUBLIC_MODEL_BIN);
   } catch (err) {
     console.error("❌ Error copying model files to public:", err);
   }
@@ -325,13 +347,11 @@ const weightsPath = path.join(process.cwd(), 'weights.bin');
   if (fs.existsSync(file)) {
     fs.watchFile(file, { interval: 5000 }, (curr, prev) => {
       if (curr.mtime !== prev.mtime) {
-        console.log(`📝 Detected change in ${path.basename(file)}, syncing to public...`);
         syncModelToPublic();
       }
     });
   }
 });
-
 
 
 
