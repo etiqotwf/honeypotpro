@@ -261,8 +261,7 @@ node server.js
           ],
           () => {
             console.log("✅ Project pushed successfully!");
-           console.log("🛡️ Server is now monitoring — waiting for any attack to analyze and activate the intelligent defense system...");
-
+            console.log("💡 Any user can now run 'npm install' then 'node server.js' to start the app.");
           }
         );
       });
