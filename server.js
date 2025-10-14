@@ -193,8 +193,9 @@ function runCommand(command, args, callback) {
 }
 
 function pushToGitHub() {
-  // 🚫 استبعاد node_modules من الرفع
   const gitignorePath = ".gitignore";
+
+  // 🚫 استبعاد node_modules من الرفع
   if (!fs.existsSync(gitignorePath)) {
     fs.writeFileSync(gitignorePath, "node_modules/\n", "utf8");
   } else {
@@ -209,7 +210,7 @@ function pushToGitHub() {
     runCommand("npm", ["init", "-y"]);
   }
 
-  // 🧾 التأكد من وجود README (اختياري فقط لو ناقص)
+  // 🧾 التأكد من وجود README فقط إذا كان مفقود
   const readmePath = "README.md";
   if (!fs.existsSync(readmePath)) {
     fs.writeFileSync(
@@ -219,7 +220,9 @@ function pushToGitHub() {
     );
   }
 
-  // 🚀 تنفيذ أوامر Git
+  // 🚀 تنفيذ أوامر Git بدون عرض مخرجات stdout/stderr
+  const execOptions = { stdio: "ignore" };
+
   runCommand("git", ["add", "-A"], () => {
     runCommand("git", ["commit", "-m", `"Auto update: ${new Date().toISOString()}"`], () => {
       runCommand("git", ["pull", "--rebase", "origin", "main"], () => {
@@ -231,7 +234,8 @@ function pushToGitHub() {
             "main",
           ],
           () => {
-            // ✅ الرسائل المطلوبة فقط
+            // ✅ عرض الرسائل النهائية فقط
+            console.clear();
             console.log("🌐 ngrok tunnel established successfully.");
             console.log("💻 Running locally at: http://localhost:3000");
             console.log("📤 Files have been pushed successfully to GitHub.");
