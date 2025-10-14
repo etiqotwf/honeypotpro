@@ -192,41 +192,66 @@ function runCommand(command, args, callback) {
     });
 }
 
-
-async function pushToGitHub() {
-  const gitignorePath = ".gitignore";
+// ✅ رفع الملفات إلى GitHub بدون node_modules + إعداد README تلقائي
+function pushToGitHub() {
+  console.log("📤 Preparing to push updates to GitHub...");
 
   // 🚫 استبعاد node_modules من الرفع
+  const gitignorePath = ".gitignore";
   if (!fs.existsSync(gitignorePath)) {
     fs.writeFileSync(gitignorePath, "node_modules/\n", "utf8");
+    console.log("🧩 Created .gitignore and excluded node_modules/");
   } else {
     const content = fs.readFileSync(gitignorePath, "utf8");
     if (!content.includes("node_modules/")) {
       fs.appendFileSync(gitignorePath, "\nnode_modules/\n", "utf8");
+      console.log("🧩 Updated .gitignore to exclude node_modules/");
     }
   }
 
   // ✅ التأكد من وجود package.json
   if (!fs.existsSync("package.json")) {
-    runCommand("npm", ["init", "-y"]);
+    console.warn("⚠️ package.json not found — creating default file...");
+    runCommand("npm", ["init", "-y"], () => console.log("📦 Created default package.json"));
+  } else {
+    console.log("📦 Detected package.json — dependencies will be restored via npm install");
   }
 
-  // 🧾 التأكد من وجود README فقط إذا كان مفقود
+  // 🧾 إنشاء أو تحديث README.md
   const readmePath = "README.md";
+  const setupInstructions = `
+# 🧠 Honeypot AI Project
+
+This project uses Node.js and AI model integration (Hugging Face + TensorFlow.js).
+
+## 🚀 Setup Instructions
+After cloning this repository, run the following commands:
+
+\`\`\`bash
+npm install
+node server.js
+\`\`\`
+
+✅ The server will start at: http://localhost:3000
+`;
+
   if (!fs.existsSync(readmePath)) {
-    fs.writeFileSync(
-      readmePath,
-      "# 🧠 Honeypot AI Project\n\nThis project uses Node.js and AI model integration (Hugging Face + TensorFlow.js).",
-      "utf8"
-    );
+    fs.writeFileSync(readmePath, setupInstructions, "utf8");
+    console.log("📝 Created new README.md with setup instructions.");
+  } else {
+    const content = fs.readFileSync(readmePath, "utf8");
+    if (!content.includes("npm install")) {
+      fs.appendFileSync(readmePath, "\n" + setupInstructions, "utf8");
+      console.log("📝 Updated README.md with setup instructions.");
+    } else {
+      console.log("🧾 README.md already contains setup instructions — no changes made.");
+    }
   }
 
-  // 🚀 تنفيذ أوامر Git بدون عرض مخرجات stdout/stderr
-  const execOptions = { stdio: "ignore" };
-
+  // 🚀 تنفيذ أوامر Git
   runCommand("git", ["add", "-A"], () => {
-    runCommand("git", ["commit", "-m", `"Auto update: ${new Date().toISOString()}"`], () => {
-      runCommand("git", ["pull", "--rebase", "origin", "main"], async () => {
+    runCommand("git", ["commit", "-m", `"Auto update (excluding node_modules): ${new Date().toISOString()}"`], () => {
+      runCommand("git", ["pull", "--rebase", "origin", "main"], () => {
         runCommand(
           "git",
           [
@@ -234,26 +259,16 @@ async function pushToGitHub() {
             `https://etiqotwf:${process.env.GITHUB_TOKEN}@github.com/etiqotwf/honeypotpro.git`,
             "main",
           ],
-          async () => {
-            // 🔗 تشغيل ngrok والحصول على اللينك الحقيقي
-            const url = await ngrok.connect({
-              addr: 3000,
-              authtoken: process.env.NGROK_AUTH_TOKEN, // لازم يكون مضاف فى .env
-            });
+          () => {
+            console.log("✅ Project pushed successfully!");
+           console.log("🛡️ Server is now monitoring — waiting for any attack to analyze and activate the intelligent defense system...");
 
-            // ✅ عرض الرسائل النهائية فقط
-            console.clear();
-            console.log(`🌐 ngrok tunnel: ${url}`);
-            console.log("💻 Running locally at: http://localhost:3000");
-            console.log("📤 Files have been pushed successfully to GitHub.");
-            console.log("🛡️ Server is now monitoring — waiting for any attack to analyze and activate the intelligent defense system...");
           }
         );
       });
     });
   });
 }
-
 
 
 // ✅ API لإضافة تهديد يدويًا
