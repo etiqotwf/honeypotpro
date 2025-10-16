@@ -280,38 +280,36 @@ function openInBrowser(url) {
 }
 
 // ✅ رفع الملفات إلى GitHub
-
+// ✅ تنفيذ الأوامر مع معالجة دقيقة للأخطاء
 function runCommand(command, args, callback, options = {}) {
   const fullCommand = `${command} ${args.join(" ")}`;
-  exec(fullCommand, (error, stdout, stderr) => {
-    // ⛔ تجاهل الأخطاء في حالة git pull فقط
-    if (error && !fullCommand.includes("git pull")) {
-      console.error(`❌ Error executing: ${fullCommand}`);
-      return;
+  exec(fullCommand, options, (error, stdout, stderr) => {
+    if (error) {
+      if (fullCommand.includes("git pull")) {
+        console.warn(`⚠️ Warning during git pull (ignored): ${stderr || error.message}`);
+      } else {
+        console.error(`❌ Error executing: ${fullCommand}`);
+        console.error(stderr || error.message);
+        return; // ⛔ وقف التنفيذ
+      }
     }
-
-    // ⚙️ حذف أي stdout/stderr من الطباعة (بناء على طلبك السابق)
-    // console.log(`stdout: ${stdout}`);
-    // console.error(`stderr: ${stderr}`);
 
     if (callback) callback();
   });
 }
+
 // ✅ رفع الملفات إلى GitHub بدون node_modules + إعداد README تلقائي
 function pushToGitHub() {
   console.log("📤 Preparing to push updates to GitHub...");
 
+  const hasChanges = fs.existsSync(".git")
+    ? execSync("git status --porcelain").toString().trim() !== ""
+    : true;
 
-const hasChanges = fs.existsSync(".git")
-  ? execSync("git status --porcelain").toString().trim() !== ""
-  : true;
-
-
-if (!hasChanges) {
-  console.log("🟡 No changes detected — skipping GitHub push.");
-  return;
-}
-
+  if (!hasChanges) {
+    console.log("🟡 No changes detected — skipping GitHub push.");
+    return;
+  }
 
   // 🚫 استبعاد node_modules من الرفع
   const gitignorePath = ".gitignore";
@@ -361,8 +359,7 @@ node server.js
     }
   }
 
-  // 🚀 تنفيذ أوامر Git بدون عرض stdout/stderr
-  const execOptions = { stdio: "ignore" }; // ⛔ إخفاء مخرجات stdout/stderr
+  const execOptions = { stdio: "ignore" };
 
   runCommand("git", ["add", "-A"], () => {
     runCommand("git", ["commit", "-m", `"Auto update (excluding node_modules): ${new Date().toISOString()}"`], () => {
