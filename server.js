@@ -188,30 +188,54 @@ function processNgrokResponse(response) {
 }
 
 // فتح الرابط في المتصفح الافتراضي (Windows / macOS / Linux)
+// فتح الرابط في المتصفح: Chrome -> Firefox -> Default
 function openInBrowser(url) {
-  try {
-    const platform = process.platform; // 'win32', 'darwin', 'linux', ...
-    let cmd;
+  const platform = process.platform; // 'win32', 'darwin', 'linux'
+  // قائمة أوامر حسب التفضيل (كل عنصر قد يكون سلسلة أمر أو دالة لإرجاع أمر)
+  const attempts = [];
 
-    if (platform === 'win32') {
-      // cmd /c start "" "url" -> تجنب مشاكل المسافات في المسار
-      cmd = `cmd /c start "" "${url}"`;
-    } else if (platform === 'darwin') {
-      cmd = `open "${url}"`;
-    } else {
-      // Linux وأنظمة يونكس شبيهة
-      cmd = `xdg-open "${url}"`;
+  if (platform === 'win32') {
+    // على ويندوز: start "chrome" ... / start "firefox" ... / start "" "url" (default)
+    attempts.push(`start chrome "${url}"`);
+    attempts.push(`start firefox "${url}"`);
+    attempts.push(`start "" "${url}"`);
+  } else if (platform === 'darwin') {
+    // على ماك: open -a "Google Chrome" ... -> open -a "Firefox" ... -> open "url" (default)
+    attempts.push(`open -a "Google Chrome" "${url}"`);
+    attempts.push(`open -a "Firefox" "${url}"`);
+    attempts.push(`open "${url}"`);
+  } else {
+    // لينكس/يونكس: نحاول عدة أسماء شائعة للكروم ثم فايرفوكس ثم xdg-open كافتراضي
+    // نستخدم nohup ... & لتشغيل في الخلفية بسرعة
+    attempts.push(`(nohup google-chrome "${url}" >/dev/null 2>&1 &)|| (nohup google-chrome-stable "${url}" >/dev/null 2>&1 &)|| (nohup chromium-browser "${url}" >/dev/null 2>&1 &)|| (nohup chromium "${url}" >/dev/null 2>&1 & )`);
+    attempts.push(`(nohup firefox "${url}" >/dev/null 2>&1 & )`);
+    attempts.push(`xdg-open "${url}" >/dev/null 2>&1 || (nohup sensible-browser "${url}" >/dev/null 2>&1 &)`);
+  }
+
+  // نحاول الأوامر بالتتابع وبمهلة صغيرة لكل محاولة لتسريع التجربة
+  const tryCommand = (index) => {
+    if (index >= attempts.length) {
+      console.warn("⚠️ All browser open attempts failed. Maybe headless environment or browsers not installed.");
+      return;
     }
 
-    exec(cmd, (err) => {
-      if (err) {
-        console.warn("⚠️ Could not open URL automatically (maybe headless environment):", err.message || err);
-      } else {
-        console.log("✅ Opened ngrok URL in default browser.");
+    const cmd = attempts[index];
+    // exec مع timeout قصير (1500ms) حتى إن الأمر علّق لن ننتظر طويلاً
+    exec(cmd, { timeout: 1500 }, (err) => {
+      if (!err) {
+        console.log(`✅ Opened URL using attempt #${index + 1}: ${cmd}`);
+        return;
       }
+      // لو فشل بسرعة ننتقل للمحاولة التالية فورًا
+      console.log(`ℹ️ Attempt #${index + 1} failed, trying next... (${cmd})`);
+      tryCommand(index + 1);
     });
-  } catch (err) {
-    console.warn("⚠️ openInBrowser failed:", err);
+  };
+
+  try {
+    tryCommand(0);
+  } catch (e) {
+    console.warn("⚠️ openInBrowser unexpected error:", e);
   }
 }
 
