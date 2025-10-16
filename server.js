@@ -167,20 +167,52 @@ app.listen(PORT, () => {
 });
 
 // ✅ تحليل رد ngrok
+// ✅ تحليل رد ngrok + فتح الرابط تلقائياً في المتصفح
 function processNgrokResponse(response) {
-    try {
-        const tunnels = JSON.parse(response);
-        serverUrl = tunnels.tunnels[0]?.public_url;
-        if (serverUrl) {
-            console.log(`✅ Server is available at: 🔗 ${serverUrl}`);
-            fs.writeFileSync("serverUrl.json", JSON.stringify({ serverUrl }));
-            pushToGitHub();
-        } else {
-            console.log("⚠️ No ngrok URL found.");
-        }
-    } catch (e) {
-        console.error("❌ Error parsing ngrok response:", e);
+  try {
+    const tunnels = JSON.parse(response);
+    serverUrl = tunnels.tunnels[0]?.public_url;
+    if (serverUrl) {
+      console.log(`✅ Server is available at: 🔗 ${serverUrl}`);
+      fs.writeFileSync("serverUrl.json", JSON.stringify({ serverUrl }));
+      pushToGitHub();
+
+      // حاول فتح الرابط في المتصفح الافتراضي بحسب النظام
+      openInBrowser(serverUrl);
+    } else {
+      console.log("⚠️ No ngrok URL found.");
     }
+  } catch (e) {
+    console.error("❌ Error parsing ngrok response:", e);
+  }
+}
+
+// فتح الرابط في المتصفح الافتراضي (Windows / macOS / Linux)
+function openInBrowser(url) {
+  try {
+    const platform = process.platform; // 'win32', 'darwin', 'linux', ...
+    let cmd;
+
+    if (platform === 'win32') {
+      // cmd /c start "" "url" -> تجنب مشاكل المسافات في المسار
+      cmd = `cmd /c start "" "${url}"`;
+    } else if (platform === 'darwin') {
+      cmd = `open "${url}"`;
+    } else {
+      // Linux وأنظمة يونكس شبيهة
+      cmd = `xdg-open "${url}"`;
+    }
+
+    exec(cmd, (err) => {
+      if (err) {
+        console.warn("⚠️ Could not open URL automatically (maybe headless environment):", err.message || err);
+      } else {
+        console.log("✅ Opened ngrok URL in default browser.");
+      }
+    });
+  } catch (err) {
+    console.warn("⚠️ openInBrowser failed:", err);
+  }
 }
 
 // ✅ رفع الملفات إلى GitHub
