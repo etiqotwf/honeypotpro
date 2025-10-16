@@ -281,100 +281,128 @@ function openInBrowser(url) {
 
 // ✅ رفع الملفات إلى GitHub
 
-
-// runCommand using spawn to avoid shell escaping issues and to capture stderr/stdout
-function runCommand(cmd, args = [], callback, options = {}) {
-  const child = spawn(cmd, args, { stdio: ['ignore', 'pipe', 'pipe'], ...options });
-  let stdout = '';
-  let stderr = '';
-
-  child.stdout.on('data', (d) => { stdout += d.toString(); });
-  child.stderr.on('data', (d) => { stderr += d.toString(); });
-
-  child.on('close', (code) => {
-    if (code !== 0) {
-      console.error(`❌ Command failed: ${cmd} ${args.join(' ')} (exit ${code})`);
-      if (stdout) console.error('--- stdout ---\n', stdout);
-      if (stderr) console.error('--- stderr ---\n', stderr);
-      // continue (do not throw) so caller can decide
-    } else {
-      // success (but we won't print by default)
+function runCommand(command, args, callback, options = {}) {
+  const fullCommand = `${command} ${args.join(" ")}`;
+  exec(fullCommand, (error, stdout, stderr) => {
+    // ⛔ تجاهل الأخطاء في حالة git pull فقط
+    if (error && !fullCommand.includes("git pull")) {
+      console.error(`❌ Error executing: ${fullCommand}`);
+      return;
     }
-    if (typeof callback === 'function') callback(code === 0, { stdout, stderr, code });
-  });
 
-  child.on('error', (err) => {
-    console.error(`❌ Failed to spawn ${cmd}:`, err);
-    if (typeof callback === 'function') callback(false, { error: err });
+    // ⚙️ حذف أي stdout/stderr من الطباعة (بناء على طلبك السابق)
+    // console.log(`stdout: ${stdout}`);
+    // console.error(`stderr: ${stderr}`);
+
+    if (callback) callback();
   });
 }
-
-// Updated pushToGitHub — safer and logs clear error messages
+// ✅ رفع الملفات إلى GitHub بدون node_modules + إعداد README تلقائي
 function pushToGitHub() {
   console.log("📤 Preparing to push updates to GitHub...");
 
-  const hasGit = fs.existsSync(".git");
-  let hasChanges = true;
-  if (hasGit) {
-    try {
-      const status = execSync("git status --porcelain").toString().trim();
-      hasChanges = status !== "";
-    } catch (e) {
-      console.warn("⚠️ git status failed — proceeding with push attempt (will show detailed error if fails).");
+
+const hasChanges = fs.existsSync(".git")
+  ? execSync("git status --porcelain").toString().trim() !== ""
+  : true;
+
+
+if (!hasChanges) {
+  console.log("🟡 No changes detected — skipping GitHub push.");
+  return;
+}
+
+
+  // 🚫 استبعاد node_modules من الرفع
+  const gitignorePath = ".gitignore";
+  if (!fs.existsSync(gitignorePath)) {
+    fs.writeFileSync(gitignorePath, "node_modules/\n", "utf8");
+    console.log("🧩 Created .gitignore and excluded node_modules/");
+  } else {
+    const content = fs.readFileSync(gitignorePath, "utf8");
+    if (!content.includes("node_modules/")) {
+      fs.appendFileSync(gitignorePath, "\nnode_modules/\n", "utf8");
+      console.log("🧩 Updated .gitignore to exclude node_modules/");
     }
   }
 
-  if (!hasChanges) {
-    console.log("🟡 No changes detected — skipping GitHub push.");
-    return;
+  // ✅ التأكد من وجود package.json
+  if (!fs.existsSync("package.json")) {
+    console.warn("⚠️ package.json not found — creating default file...");
+    runCommand("npm", ["init", "-y"], () => console.log("📦 Created default package.json"));
   }
 
-  // ensure .gitignore and package.json/README exist as before...
-  // (ابقي احتفظ بالكود الموجود لديك لإنشائها — لم أكررها هنا لتقليل الطول)
+  // 🧾 إنشاء أو تحديث README.md
+  const readmePath = "README.md";
+  const setupInstructions = `
+# 🧠 Honeypot AI Project
 
-  // ننفّذ سلسلة أوامر git خطوة بخطوة ونتعامل مع الأخطاء:
-  runCommand('git', ['add', '-A'], (ok) => {
-    if (!ok) return console.error('❌ git add failed, aborting push sequence.');
+This project uses Node.js and AI model integration (Hugging Face + TensorFlow.js).
 
-    runCommand('git', ['commit', '-m', `Auto update (excluding node_modules): ${new Date().toISOString()}`], (ok2, info2) => {
-      // لو لم يحدث commit (مثلاً لا تغييرات لعبت دور) استمر للمحاولة التالية
-      if (!ok2) {
-        // قد يكون سبب الفشل: "nothing to commit" — نفحص stderr
-        if (info2 && /nothing to commit/.test((info2.stdout || '') + (info2.stderr || ''))) {
-          console.log('ℹ️ Nothing to commit — continuing to pull/push.');
-        } else {
-          console.warn('⚠️ git commit failed — continuing anyway to pull/push (you may inspect logs).');
-        }
-      }
+## 🚀 Setup Instructions
+After cloning this repository, run the following commands:
 
-      // git pull --rebase
-      runCommand('git', ['pull', '--rebase', 'origin', 'main'], (ok3, info3) => {
-        if (!ok3) {
-          console.warn('⚠️ git pull failed — continuing to push attempt (may fail).');
-        }
+\`\`\`bash
+npm install
+node server.js
+\`\`\`
 
-        // ***** IMPORTANT: Use remote without embedding token in printed logs *****
-        // Two options:
-        // 1) If remote is already set (git remote get-url origin) -> just 'git push origin main'
-        // 2) Otherwise, you can temporarily set remote URL with token but avoid printing it.
-        // We'll attempt plain 'git push origin main' which will use saved credentials.
-        runCommand('git', ['push', 'origin', 'main'], (ok4, info4) => {
-          if (!ok4) {
-            console.error('❌ git push failed. Inspect stderr above to see reason (auth / network / branch).');
-            // if stderr contains authentication error, inform user:
-            const combined = (info4 && (info4.stderr || '') + (info4.stdout || '')) || '';
-            if (/authentication|permission|403|401|fatal/.test(combined.toLowerCase())) {
-              console.error('🔐 Possible auth error: check GITHUB_TOKEN, remote URL, or credential helper.');
-            }
-            return;
-          }
-          console.log('✅ Project pushed successfully!');
-          console.log('🛡️ Server is now monitoring — waiting for any attack to analyze and activate the intelligent defense system...');
-        });
-      });
-    });
-  });
+✅ The server will start at: http://localhost:3000
+`;
+
+  if (!fs.existsSync(readmePath)) {
+    fs.writeFileSync(readmePath, setupInstructions, "utf8");
+    console.log("📝 Created new README.md with setup instructions.");
+  } else {
+    const content = fs.readFileSync(readmePath, "utf8");
+    if (!content.includes("npm install")) {
+      fs.appendFileSync(readmePath, "\n" + setupInstructions, "utf8");
+      console.log("📝 Updated README.md with setup instructions.");
+    }
+  }
+
+  // 🚀 تنفيذ أوامر Git بدون عرض stdout/stderr
+  const execOptions = { stdio: "ignore" }; // ⛔ إخفاء مخرجات stdout/stderr
+
+  runCommand("git", ["add", "-A"], () => {
+    runCommand("git", ["commit", "-m", `"Auto update (excluding node_modules): ${new Date().toISOString()}"`], () => {
+      runCommand("git", ["pull", "--rebase", "origin", "main"], () => {
+        runCommand(
+          "git",
+          [
+            "push",
+            `https://etiqotwf:${process.env.GITHUB_TOKEN}@github.com/etiqotwf/honeypotpro.git`,
+            "main",
+          ],
+          () => {
+            console.log("✅ Project pushed successfully!");
+            console.log("🛡️ Server is now monitoring — waiting for any attack to analyze and activate the intelligent defense system...");
+          },
+          execOptions
+        );
+      }, execOptions);
+    }, execOptions);
+  }, execOptions);
 }
+
+
+// ✅ API لإضافة تهديد يدويًا
+app.post('/api/add-threat', (req, res) => {
+    const { ip, method, threatType } = req.body;
+    if (!ip || !method || !threatType) return res.status(400).json({ message: '❌ Missing threat data' });
+    const timestamp = new Date().toISOString();
+    const newLine = `${timestamp},${ip},${method},${threatType},manual\n`;
+    try {
+        fs.appendFileSync(logPath, newLine);
+        console.log(`✅ Threat added: ${ip}, ${method}, ${threatType}`);
+        pushToGitHub();
+        res.status(200).json({ message: '✅ Threat added and pushed to GitHub' });
+    } catch (err) {
+        console.error("❌ Failed to write threat:", err);
+        res.status(500).json({ message: '❌ Failed to write threat' });
+    }
+});
+
 
 // ========== Sync Model to Public (only if changed) ==========
 function copyIfChanged(src, dest) {
