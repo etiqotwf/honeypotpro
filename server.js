@@ -193,12 +193,12 @@ function openInBrowser(url) {
   const platform = process.platform; // 'win32', 'darwin', 'linux'
 
   // helper: spawn detached (non-blocking) and ignore output
-  const launchDetached = (command, args = []) => {
+  const launchDetached = (command, args = [], useShell = false) => {
     try {
       const child = spawn(command, args, {
         detached: true,
         stdio: 'ignore',
-        shell: false
+        shell: useShell // sometimes we need shell for start command on Windows
       });
       child.unref();
       return true;
@@ -208,33 +208,35 @@ function openInBrowser(url) {
   };
 
   if (platform === 'win32') {
-    // حاول أولًا مسارات Chrome المعروفة (أسرع وأكثر دقة)
+    // أسرع وموثوق: حاول chromium exe مباشرة (لكن افتح مصغّر باستخدام start /min)
     const chromePaths = [
-      process.env['PROGRAMFILES'] + '\\Google\\Chrome\\Application\\chrome.exe',
-      process.env['PROGRAMFILES(X86)'] + '\\Google\\Chrome\\Application\\chrome.exe',
-      process.env['LOCALAPPDATA'] + '\\Google\\Chrome\\Application\\chrome.exe'
+      process.env['PROGRAMFILES'] ? path.join(process.env['PROGRAMFILES'], 'Google\\Chrome\\Application\\chrome.exe') : null,
+      process.env['PROGRAMFILES(X86)'] ? path.join(process.env['PROGRAMFILES(X86)'], 'Google\\Chrome\\Application\\chrome.exe') : null,
+      process.env['LOCALAPPDATA'] ? path.join(process.env['LOCALAPPDATA'], 'Google\\Chrome\\Application\\chrome.exe') : null
     ].filter(Boolean);
 
+    // إذا وُجد exe مباشر سنحاول فتحه مصغّراً عبر start /min (shell required)
     for (const p of chromePaths) {
       if (fs.existsSync(p)) {
-        const ok = launchDetached(p, ['--new-window', url]);
-        if (ok) {
-          console.log('✅ Opened URL in Google Chrome (direct exe):', p);
+        // استخدم start /min لتجنّب سرقة الفوكس
+        const cmd = `start "" /min "${p}" --new-window "${url}"`;
+        if (launchDetached(cmd, [], true)) {
+          console.log('✅ Opened URL in Google Chrome (minimized via start):', p);
           return;
         }
       }
     }
 
-    // إذا لم يُعثر على المسار، حاول start with chrome ثم firefox ثم default
+    // fallback: جرب chrome عبر start minimized، ثم firefox، ثم default (كلها باستخدام shell start)
     const attempts = [
-      { cmd: 'cmd', args: ['/c', 'start', '""', 'chrome', url] },
-      { cmd: 'cmd', args: ['/c', 'start', '""', 'firefox', url] },
-      { cmd: 'cmd', args: ['/c', 'start', '""', url] }
+      `start "" /min chrome "${url}"`,
+      `start "" /min firefox "${url}"`,
+      `start "" /min "${url}"`
     ];
 
-    for (const a of attempts) {
-      if (launchDetached(a.cmd, a.args)) {
-        console.log('✅ Opened URL using:', a.cmd, a.args.join(' '));
+    for (const cmd of attempts) {
+      if (launchDetached(cmd, [], true)) {
+        console.log('✅ Opened URL on Windows (minimized) using:', cmd);
         return;
       }
     }
@@ -244,15 +246,15 @@ function openInBrowser(url) {
   }
 
   if (platform === 'darwin') {
-    // macOS: Chrome -> Firefox -> default
+    // macOS: -g => do not bring application to foreground (no-activate)
     const attempts = [
-      { cmd: 'open', args: ['-a', 'Google Chrome', url] },
-      { cmd: 'open', args: ['-a', 'Firefox', url] },
-      { cmd: 'open', args: [url] }
+      { cmd: 'open', args: ['-g', '-a', 'Google Chrome', url] },
+      { cmd: 'open', args: ['-g', '-a', 'Firefox', url] },
+      { cmd: 'open', args: ['-g', url] } // default browser without activation
     ];
     for (const a of attempts) {
       if (launchDetached(a.cmd, a.args)) {
-        console.log('✅ Opened URL on macOS using:', a.cmd, a.args.join(' '));
+        console.log('✅ Opened URL on macOS without stealing focus using:', a.cmd, a.args.join(' '));
         return;
       }
     }
@@ -260,24 +262,28 @@ function openInBrowser(url) {
     return;
   }
 
-  // Linux / other unix-like
-  // نحاول تشغيل المتصفحات مباشرة في الخلفية (no hang)
+  // Linux / Unix-like
+  // ننفّذ في الخلفية عبر setsid/nohup أو xdg-open. عادةً لا يخطف الفوكس.
   const linuxAttempts = [
-    { cmd: 'google-chrome', args: [url] },
-    { cmd: 'google-chrome-stable', args: [url] },
-    { cmd: 'chromium-browser', args: [url] },
-    { cmd: 'chromium', args: [url] },
-    { cmd: 'firefox', args: [url] },
-    { cmd: 'xdg-open', args: [url] }
+    { cmd: 'setsid', args: ['google-chrome', url], useShell: false },
+    { cmd: 'setsid', args: ['google-chrome-stable', url], useShell: false },
+    { cmd: 'setsid', args: ['chromium-browser', url], useShell: false },
+    { cmd: 'setsid', args: ['chromium', url], useShell: false },
+    { cmd: 'setsid', args: ['firefox', url], useShell: false },
+    { cmd: 'nohup', args: ['xdg-open', url], useShell: false },
+    { cmd: 'xdg-open', args: [url], useShell: false }
   ];
+
   for (const a of linuxAttempts) {
-    if (launchDetached(a.cmd, a.args)) {
-      console.log('✅ Opened URL on Linux using:', a.cmd);
+    if (launchDetached(a.cmd, a.args, a.useShell || false)) {
+      console.log('✅ Opened URL on Linux without stealing focus using:', a.cmd);
       return;
     }
   }
+
   console.warn('⚠️ Failed to open browser on Linux.');
 }
+
 
 // ✅ رفع الملفات إلى GitHub
 // ✅ تنفيذ الأوامر مع معالجة دقيقة للأخطاء
