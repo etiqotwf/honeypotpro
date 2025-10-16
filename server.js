@@ -188,181 +188,193 @@ function processNgrokResponse(response) {
 }
 
 // فتح الرابط في المتصفح الافتراضي (Windows / macOS / Linux)
-// فتح الرابط في المتصفح: Chrome -> Firefox -> Default
+
 function openInBrowser(url) {
   const platform = process.platform; // 'win32', 'darwin', 'linux'
-  // قائمة أوامر حسب التفضيل (كل عنصر قد يكون سلسلة أمر أو دالة لإرجاع أمر)
-  const attempts = [];
 
-  if (platform === 'win32') {
-    // على ويندوز: start "chrome" ... / start "firefox" ... / start "" "url" (default)
-    attempts.push(`start chrome "${url}"`);
-    attempts.push(`start firefox "${url}"`);
-    attempts.push(`start "" "${url}"`);
-  } else if (platform === 'darwin') {
-    // على ماك: open -a "Google Chrome" ... -> open -a "Firefox" ... -> open "url" (default)
-    attempts.push(`open -a "Google Chrome" "${url}"`);
-    attempts.push(`open -a "Firefox" "${url}"`);
-    attempts.push(`open "${url}"`);
-  } else {
-    // لينكس/يونكس: نحاول عدة أسماء شائعة للكروم ثم فايرفوكس ثم xdg-open كافتراضي
-    // نستخدم nohup ... & لتشغيل في الخلفية بسرعة
-    attempts.push(`(nohup google-chrome "${url}" >/dev/null 2>&1 &)|| (nohup google-chrome-stable "${url}" >/dev/null 2>&1 &)|| (nohup chromium-browser "${url}" >/dev/null 2>&1 &)|| (nohup chromium "${url}" >/dev/null 2>&1 & )`);
-    attempts.push(`(nohup firefox "${url}" >/dev/null 2>&1 & )`);
-    attempts.push(`xdg-open "${url}" >/dev/null 2>&1 || (nohup sensible-browser "${url}" >/dev/null 2>&1 &)`);
-  }
-
-  // نحاول الأوامر بالتتابع وبمهلة صغيرة لكل محاولة لتسريع التجربة
-  const tryCommand = (index) => {
-    if (index >= attempts.length) {
-      console.warn("⚠️ All browser open attempts failed. Maybe headless environment or browsers not installed.");
-      return;
+  // helper: spawn detached (non-blocking) and ignore output
+  const launchDetached = (command, args = []) => {
+    try {
+      const child = spawn(command, args, {
+        detached: true,
+        stdio: 'ignore',
+        shell: false
+      });
+      child.unref();
+      return true;
+    } catch (err) {
+      return false;
     }
-
-    const cmd = attempts[index];
-    // exec مع timeout قصير (1500ms) حتى إن الأمر علّق لن ننتظر طويلاً
-    exec(cmd, { timeout: 1500 }, (err) => {
-      if (!err) {
-        console.log(`✅ Opened URL using attempt #${index + 1}: ${cmd}`);
-        return;
-      }
-      // لو فشل بسرعة ننتقل للمحاولة التالية فورًا
-      console.log(`ℹ️ Attempt #${index + 1} failed, trying next... (${cmd})`);
-      tryCommand(index + 1);
-    });
   };
 
-  try {
-    tryCommand(0);
-  } catch (e) {
-    console.warn("⚠️ openInBrowser unexpected error:", e);
+  if (platform === 'win32') {
+    // حاول أولًا مسارات Chrome المعروفة (أسرع وأكثر دقة)
+    const chromePaths = [
+      process.env['PROGRAMFILES'] + '\\Google\\Chrome\\Application\\chrome.exe',
+      process.env['PROGRAMFILES(X86)'] + '\\Google\\Chrome\\Application\\chrome.exe',
+      process.env['LOCALAPPDATA'] + '\\Google\\Chrome\\Application\\chrome.exe'
+    ].filter(Boolean);
+
+    for (const p of chromePaths) {
+      if (fs.existsSync(p)) {
+        const ok = launchDetached(p, ['--new-window', url]);
+        if (ok) {
+          console.log('✅ Opened URL in Google Chrome (direct exe):', p);
+          return;
+        }
+      }
+    }
+
+    // إذا لم يُعثر على المسار، حاول start with chrome ثم firefox ثم default
+    const attempts = [
+      { cmd: 'cmd', args: ['/c', 'start', '""', 'chrome', url] },
+      { cmd: 'cmd', args: ['/c', 'start', '""', 'firefox', url] },
+      { cmd: 'cmd', args: ['/c', 'start', '""', url] }
+    ];
+
+    for (const a of attempts) {
+      if (launchDetached(a.cmd, a.args)) {
+        console.log('✅ Opened URL using:', a.cmd, a.args.join(' '));
+        return;
+      }
+    }
+
+    console.warn('⚠️ Failed to open browser on Windows.');
+    return;
   }
+
+  if (platform === 'darwin') {
+    // macOS: Chrome -> Firefox -> default
+    const attempts = [
+      { cmd: 'open', args: ['-a', 'Google Chrome', url] },
+      { cmd: 'open', args: ['-a', 'Firefox', url] },
+      { cmd: 'open', args: [url] }
+    ];
+    for (const a of attempts) {
+      if (launchDetached(a.cmd, a.args)) {
+        console.log('✅ Opened URL on macOS using:', a.cmd, a.args.join(' '));
+        return;
+      }
+    }
+    console.warn('⚠️ Failed to open browser on macOS.');
+    return;
+  }
+
+  // Linux / other unix-like
+  // نحاول تشغيل المتصفحات مباشرة في الخلفية (no hang)
+  const linuxAttempts = [
+    { cmd: 'google-chrome', args: [url] },
+    { cmd: 'google-chrome-stable', args: [url] },
+    { cmd: 'chromium-browser', args: [url] },
+    { cmd: 'chromium', args: [url] },
+    { cmd: 'firefox', args: [url] },
+    { cmd: 'xdg-open', args: [url] }
+  ];
+  for (const a of linuxAttempts) {
+    if (launchDetached(a.cmd, a.args)) {
+      console.log('✅ Opened URL on Linux using:', a.cmd);
+      return;
+    }
+  }
+  console.warn('⚠️ Failed to open browser on Linux.');
 }
 
 // ✅ رفع الملفات إلى GitHub
 
-function runCommand(command, args, callback, options = {}) {
-  const fullCommand = `${command} ${args.join(" ")}`;
-  exec(fullCommand, (error, stdout, stderr) => {
-    // ⛔ تجاهل الأخطاء في حالة git pull فقط
-    if (error && !fullCommand.includes("git pull")) {
-      console.error(`❌ Error executing: ${fullCommand}`);
-      return;
+
+// runCommand using spawn to avoid shell escaping issues and to capture stderr/stdout
+function runCommand(cmd, args = [], callback, options = {}) {
+  const child = spawn(cmd, args, { stdio: ['ignore', 'pipe', 'pipe'], ...options });
+  let stdout = '';
+  let stderr = '';
+
+  child.stdout.on('data', (d) => { stdout += d.toString(); });
+  child.stderr.on('data', (d) => { stderr += d.toString(); });
+
+  child.on('close', (code) => {
+    if (code !== 0) {
+      console.error(`❌ Command failed: ${cmd} ${args.join(' ')} (exit ${code})`);
+      if (stdout) console.error('--- stdout ---\n', stdout);
+      if (stderr) console.error('--- stderr ---\n', stderr);
+      // continue (do not throw) so caller can decide
+    } else {
+      // success (but we won't print by default)
     }
+    if (typeof callback === 'function') callback(code === 0, { stdout, stderr, code });
+  });
 
-    // ⚙️ حذف أي stdout/stderr من الطباعة (بناء على طلبك السابق)
-    // console.log(`stdout: ${stdout}`);
-    // console.error(`stderr: ${stderr}`);
-
-    if (callback) callback();
+  child.on('error', (err) => {
+    console.error(`❌ Failed to spawn ${cmd}:`, err);
+    if (typeof callback === 'function') callback(false, { error: err });
   });
 }
-// ✅ رفع الملفات إلى GitHub بدون node_modules + إعداد README تلقائي
+
+// Updated pushToGitHub — safer and logs clear error messages
 function pushToGitHub() {
   console.log("📤 Preparing to push updates to GitHub...");
 
-
-const hasChanges = fs.existsSync(".git")
-  ? execSync("git status --porcelain").toString().trim() !== ""
-  : true;
-
-
-if (!hasChanges) {
-  console.log("🟡 No changes detected — skipping GitHub push.");
-  return;
-}
-
-
-  // 🚫 استبعاد node_modules من الرفع
-  const gitignorePath = ".gitignore";
-  if (!fs.existsSync(gitignorePath)) {
-    fs.writeFileSync(gitignorePath, "node_modules/\n", "utf8");
-    console.log("🧩 Created .gitignore and excluded node_modules/");
-  } else {
-    const content = fs.readFileSync(gitignorePath, "utf8");
-    if (!content.includes("node_modules/")) {
-      fs.appendFileSync(gitignorePath, "\nnode_modules/\n", "utf8");
-      console.log("🧩 Updated .gitignore to exclude node_modules/");
-    }
-  }
-
-  // ✅ التأكد من وجود package.json
-  if (!fs.existsSync("package.json")) {
-    console.warn("⚠️ package.json not found — creating default file...");
-    runCommand("npm", ["init", "-y"], () => console.log("📦 Created default package.json"));
-  }
-
-  // 🧾 إنشاء أو تحديث README.md
-  const readmePath = "README.md";
-  const setupInstructions = `
-# 🧠 Honeypot AI Project
-
-This project uses Node.js and AI model integration (Hugging Face + TensorFlow.js).
-
-## 🚀 Setup Instructions
-After cloning this repository, run the following commands:
-
-\`\`\`bash
-npm install
-node server.js
-\`\`\`
-
-✅ The server will start at: http://localhost:3000
-`;
-
-  if (!fs.existsSync(readmePath)) {
-    fs.writeFileSync(readmePath, setupInstructions, "utf8");
-    console.log("📝 Created new README.md with setup instructions.");
-  } else {
-    const content = fs.readFileSync(readmePath, "utf8");
-    if (!content.includes("npm install")) {
-      fs.appendFileSync(readmePath, "\n" + setupInstructions, "utf8");
-      console.log("📝 Updated README.md with setup instructions.");
-    }
-  }
-
-  // 🚀 تنفيذ أوامر Git بدون عرض stdout/stderr
-  const execOptions = { stdio: "ignore" }; // ⛔ إخفاء مخرجات stdout/stderr
-
-  runCommand("git", ["add", "-A"], () => {
-    runCommand("git", ["commit", "-m", `"Auto update (excluding node_modules): ${new Date().toISOString()}"`], () => {
-      runCommand("git", ["pull", "--rebase", "origin", "main"], () => {
-        runCommand(
-          "git",
-          [
-            "push",
-            `https://etiqotwf:${process.env.GITHUB_TOKEN}@github.com/etiqotwf/honeypotpro.git`,
-            "main",
-          ],
-          () => {
-            console.log("✅ Project pushed successfully!");
-            console.log("🛡️ Server is now monitoring — waiting for any attack to analyze and activate the intelligent defense system...");
-          },
-          execOptions
-        );
-      }, execOptions);
-    }, execOptions);
-  }, execOptions);
-}
-
-
-// ✅ API لإضافة تهديد يدويًا
-app.post('/api/add-threat', (req, res) => {
-    const { ip, method, threatType } = req.body;
-    if (!ip || !method || !threatType) return res.status(400).json({ message: '❌ Missing threat data' });
-    const timestamp = new Date().toISOString();
-    const newLine = `${timestamp},${ip},${method},${threatType},manual\n`;
+  const hasGit = fs.existsSync(".git");
+  let hasChanges = true;
+  if (hasGit) {
     try {
-        fs.appendFileSync(logPath, newLine);
-        console.log(`✅ Threat added: ${ip}, ${method}, ${threatType}`);
-        pushToGitHub();
-        res.status(200).json({ message: '✅ Threat added and pushed to GitHub' });
-    } catch (err) {
-        console.error("❌ Failed to write threat:", err);
-        res.status(500).json({ message: '❌ Failed to write threat' });
+      const status = execSync("git status --porcelain").toString().trim();
+      hasChanges = status !== "";
+    } catch (e) {
+      console.warn("⚠️ git status failed — proceeding with push attempt (will show detailed error if fails).");
     }
-});
+  }
 
+  if (!hasChanges) {
+    console.log("🟡 No changes detected — skipping GitHub push.");
+    return;
+  }
+
+  // ensure .gitignore and package.json/README exist as before...
+  // (ابقي احتفظ بالكود الموجود لديك لإنشائها — لم أكررها هنا لتقليل الطول)
+
+  // ننفّذ سلسلة أوامر git خطوة بخطوة ونتعامل مع الأخطاء:
+  runCommand('git', ['add', '-A'], (ok) => {
+    if (!ok) return console.error('❌ git add failed, aborting push sequence.');
+
+    runCommand('git', ['commit', '-m', `Auto update (excluding node_modules): ${new Date().toISOString()}`], (ok2, info2) => {
+      // لو لم يحدث commit (مثلاً لا تغييرات لعبت دور) استمر للمحاولة التالية
+      if (!ok2) {
+        // قد يكون سبب الفشل: "nothing to commit" — نفحص stderr
+        if (info2 && /nothing to commit/.test((info2.stdout || '') + (info2.stderr || ''))) {
+          console.log('ℹ️ Nothing to commit — continuing to pull/push.');
+        } else {
+          console.warn('⚠️ git commit failed — continuing anyway to pull/push (you may inspect logs).');
+        }
+      }
+
+      // git pull --rebase
+      runCommand('git', ['pull', '--rebase', 'origin', 'main'], (ok3, info3) => {
+        if (!ok3) {
+          console.warn('⚠️ git pull failed — continuing to push attempt (may fail).');
+        }
+
+        // ***** IMPORTANT: Use remote without embedding token in printed logs *****
+        // Two options:
+        // 1) If remote is already set (git remote get-url origin) -> just 'git push origin main'
+        // 2) Otherwise, you can temporarily set remote URL with token but avoid printing it.
+        // We'll attempt plain 'git push origin main' which will use saved credentials.
+        runCommand('git', ['push', 'origin', 'main'], (ok4, info4) => {
+          if (!ok4) {
+            console.error('❌ git push failed. Inspect stderr above to see reason (auth / network / branch).');
+            // if stderr contains authentication error, inform user:
+            const combined = (info4 && (info4.stderr || '') + (info4.stdout || '')) || '';
+            if (/authentication|permission|403|401|fatal/.test(combined.toLowerCase())) {
+              console.error('🔐 Possible auth error: check GITHUB_TOKEN, remote URL, or credential helper.');
+            }
+            return;
+          }
+          console.log('✅ Project pushed successfully!');
+          console.log('🛡️ Server is now monitoring — waiting for any attack to analyze and activate the intelligent defense system...');
+        });
+      });
+    });
+  });
+}
 
 // ========== Sync Model to Public (only if changed) ==========
 function copyIfChanged(src, dest) {
