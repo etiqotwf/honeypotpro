@@ -333,74 +333,49 @@ function runCommand(command, args, callback, options = {}) {
 }
 
 // ✅ رفع الملفات إلى GitHub بدون node_modules + إعداد README تلقائي
-// ✅ رفع الملفات إلى GitHub تلقائيًا (مع git add و commit قبل push)
 function pushToGitHub() {
   console.log("📤 Preparing to push updates to GitHub...");
 
-  // ✅ استبعاد node_modules من الرفع
+  // استبعاد node_modules + ملفات غير مهمة
   const gitignorePath = ".gitignore";
   if (!fs.existsSync(gitignorePath)) {
-    fs.writeFileSync(gitignorePath, "node_modules/\n", "utf8");
-    console.log("🧩 Created .gitignore and excluded node_modules/");
+    fs.writeFileSync(gitignorePath, "node_modules/\nserverUrl.json\n", "utf8");
   } else {
-    const content = fs.readFileSync(gitignorePath, "utf8");
-    if (!content.includes("node_modules/")) {
-      fs.appendFileSync(gitignorePath, "\nnode_modules/\n", "utf8");
-      console.log("🧩 Updated .gitignore to exclude node_modules/");
-    }
-  }
-
-  // ✅ إنشاء README.md أو تحديثه
-  const readmePath = "README.md";
-  const setupInstructions = `
-# 🧠 Honeypot AI Project
-
-This project uses Node.js and AI model integration (Hugging Face + TensorFlow.js).
-
-## 🚀 Setup Instructions
-After cloning this repository, run the following commands:
-
-\`\`\`bash
-npm install
-node server.js
-\`\`\`
-
-✅ The server will start at: http://localhost:3000
-`;
-  if (!fs.existsSync(readmePath)) {
-    fs.writeFileSync(readmePath, setupInstructions, "utf8");
-    console.log("📝 Created README.md");
+    let content = fs.readFileSync(gitignorePath, "utf8");
+    if (!content.includes("node_modules/")) content += "\nnode_modules/\n";
+    if (!content.includes("serverUrl.json")) content += "serverUrl.json\n";
+    fs.writeFileSync(gitignorePath, content, "utf8");
   }
 
   try {
-    // ✅ إضافة الملفات والتأكد من وجود تغييرات
+    // إضافة كل الملفات
     execSync("git add -A");
+
+    // التحقق من وجود تغييرات فعلية
     const changes = execSync("git status --porcelain").toString().trim();
 
-    if (!changes) {
-      console.log("🟡 No changes detected — skipping push.");
+    // تجاهل تغييرات في serverUrl.json فقط
+    const meaningfulChanges = changes
+      .split('\n')
+      .filter(line => !line.includes('serverUrl.json'))
+      .join('\n');
+
+    if (!meaningfulChanges) {
+      console.log("🟡 No meaningful changes detected — skipping push.");
       return;
     }
 
-    // ✅ عمل commit قبل الـ push
-    execSync(`git commit -m "Auto commit before push: ${new Date().toISOString()}"`);
-    // console.log("✅ Auto commit created.");
+    // commit + push
+    execSync(`git commit -m "Auto commit: ${new Date().toISOString()}"`);
+    try { execSync("git pull --rebase origin main", { stdio: "pipe" }); } 
+    catch(e){ console.warn("⚠️ Warning during git pull (ignored)."); }
 
-    // ✅ سحب آخر التحديثات مع تجاهل التعارضات
-    try {
-      execSync("git pull --rebase origin main", { stdio: "pipe" });
-    } catch (e) {
-      console.warn("⚠️ Warning during git pull (ignored).");
-    }
-
-    // ✅ تنفيذ الـ push
     execSync(
       `git push https://etiqotwf:${process.env.GITHUB_TOKEN}@github.com/etiqotwf/honeypotpro.git main`,
       { stdio: "pipe" }
     );
 
     console.log("✅ Project pushed successfully!");
-    console.log("🛡️ Server is now monitoring — waiting for any attack to analyze and activate the intelligent defense system...");
   } catch (err) {
     console.error("❌ Error pushing to GitHub:", err.message);
   }
