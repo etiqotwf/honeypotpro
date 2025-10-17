@@ -305,19 +305,11 @@ function runCommand(command, args, callback, options = {}) {
 }
 
 // ✅ رفع الملفات إلى GitHub بدون node_modules + إعداد README تلقائي
+// ✅ رفع الملفات إلى GitHub تلقائيًا (مع git add و commit قبل push)
 function pushToGitHub() {
   console.log("📤 Preparing to push updates to GitHub...");
 
-  const hasChanges = fs.existsSync(".git")
-    ? execSync("git status --porcelain").toString().trim() !== ""
-    : true;
-
-  if (!hasChanges) {
-    console.log("🟡 No changes detected — skipping GitHub push.");
-    return;
-  }
-
-  // 🚫 استبعاد node_modules من الرفع
+  // ✅ استبعاد node_modules من الرفع
   const gitignorePath = ".gitignore";
   if (!fs.existsSync(gitignorePath)) {
     fs.writeFileSync(gitignorePath, "node_modules/\n", "utf8");
@@ -330,13 +322,7 @@ function pushToGitHub() {
     }
   }
 
-  // ✅ التأكد من وجود package.json
-  if (!fs.existsSync("package.json")) {
-    console.warn("⚠️ package.json not found — creating default file...");
-    runCommand("npm", ["init", "-y"], () => console.log("📦 Created default package.json"));
-  }
-
-  // 🧾 إنشاء أو تحديث README.md
+  // ✅ إنشاء README.md أو تحديثه
   const readmePath = "README.md";
   const setupInstructions = `
 # 🧠 Honeypot AI Project
@@ -353,39 +339,43 @@ node server.js
 
 ✅ The server will start at: http://localhost:3000
 `;
-
   if (!fs.existsSync(readmePath)) {
     fs.writeFileSync(readmePath, setupInstructions, "utf8");
-    console.log("📝 Created new README.md with setup instructions.");
-  } else {
-    const content = fs.readFileSync(readmePath, "utf8");
-    if (!content.includes("npm install")) {
-      fs.appendFileSync(readmePath, "\n" + setupInstructions, "utf8");
-      console.log("📝 Updated README.md with setup instructions.");
-    }
+    console.log("📝 Created README.md");
   }
 
-  const execOptions = { stdio: "ignore" };
+  try {
+    // ✅ إضافة الملفات والتأكد من وجود تغييرات
+    execSync("git add -A");
+    const changes = execSync("git status --porcelain").toString().trim();
 
-  runCommand("git", ["add", "-A"], () => {
-    runCommand("git", ["commit", "-m", `"Auto update (excluding node_modules): ${new Date().toISOString()}"`], () => {
-      runCommand("git", ["pull", "--rebase", "origin", "main"], () => {
-        runCommand(
-          "git",
-          [
-            "push",
-            `https://etiqotwf:${process.env.GITHUB_TOKEN}@github.com/etiqotwf/honeypotpro.git`,
-            "main",
-          ],
-          () => {
-            console.log("✅ Project pushed successfully!");
-            console.log("🛡️ Server is now monitoring — waiting for any attack to analyze and activate the intelligent defense system...");
-          },
-          execOptions
-        );
-      }, execOptions);
-    }, execOptions);
-  }, execOptions);
+    if (!changes) {
+      console.log("🟡 No changes detected — skipping push.");
+      return;
+    }
+
+    // ✅ عمل commit قبل الـ push
+    execSync(`git commit -m "Auto commit before push: ${new Date().toISOString()}"`);
+    console.log("✅ Auto commit created.");
+
+    // ✅ سحب آخر التحديثات مع تجاهل التعارضات
+    try {
+      execSync("git pull --rebase origin main", { stdio: "pipe" });
+    } catch (e) {
+      console.warn("⚠️ Warning during git pull (ignored).");
+    }
+
+    // ✅ تنفيذ الـ push
+    execSync(
+      `git push https://etiqotwf:${process.env.GITHUB_TOKEN}@github.com/etiqotwf/honeypotpro.git main`,
+      { stdio: "pipe" }
+    );
+
+    console.log("✅ Project pushed successfully!");
+    console.log("🛡️ Server is now monitoring — waiting for any attack to analyze and activate the intelligent defense system...");
+  } catch (err) {
+    console.error("❌ Error pushing to GitHub:", err.message);
+  }
 }
 
 
