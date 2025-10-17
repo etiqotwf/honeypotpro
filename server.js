@@ -12,7 +12,6 @@ exec('git config core.autocrlf false', (error) => {
   if (error) {
     console.warn('⚠️ Warning: Failed to set Git config for autocrlf');
   } else {
-    console.log('✅ Git line ending config set (LF preserved)');
   }
 });
 
