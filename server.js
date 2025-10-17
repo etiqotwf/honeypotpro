@@ -12,6 +12,7 @@ exec('git config core.autocrlf false', (error) => {
   if (error) {
     console.warn('⚠️ Warning: Failed to set Git config for autocrlf');
   } else {
+   // console.log('✅ Git line ending config set (LF preserved)');
   }
 });
 
@@ -433,7 +434,7 @@ function copyIfChanged(src, dest) {
   // ✅ انسخ فقط إذا الملف مختلف في الحجم أو تاريخ التعديل
   if (!destStat || srcStat.mtimeMs !== destStat.mtimeMs || srcStat.size !== destStat.size) {
     fs.copyFileSync(src, dest);
-    console.log(`📝 File updated and copied: ${path.basename(src)}`);
+    // console.log(`📝 File updated and copied: ${path.basename(src)}`);
   }
 }
 
