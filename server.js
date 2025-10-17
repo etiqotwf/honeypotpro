@@ -7,6 +7,15 @@ import https from 'https';
 import { exec, spawn } from 'child_process';
 import { fork } from 'child_process';
 import { execSync } from "child_process"; // ✅ أضف هذا السطر هنا
+// ✅ منع تحذير LF → CRLF في Git
+exec('git config core.autocrlf false', (error) => {
+  if (error) {
+    console.warn('⚠️ Warning: Failed to set Git config for autocrlf');
+  } else {
+    console.log('✅ Git line ending config set (LF preserved)');
+  }
+});
+
 
 
 const app = express();
