@@ -1,4 +1,5 @@
-// dqn-honeypot-ai-llm.js
+// dqn-honeypot-ai-llm.js (modified by assistant)
+// ------------------------------------------------
 import * as tf from '@tensorflow/tfjs';
 import fs from 'fs';
 import path from 'path';
@@ -20,6 +21,7 @@ const OUTPUT_PROJECT_CSV = path.join(__dirname, 'logs', 'threats.csv');
 const REPLAY_FILE = path.join(__dirname, 'logs', 'replay.json');
 const MODEL_FILE = path.join(__dirname, 'model.json');
 const WEIGHTS_FILE = path.join(__dirname, 'weights.bin');
+const DECISIONS_FILE = path.join(__dirname, 'logs', 'decisions.json');
 
 const ACTIONS = ['block', 'alert', 'ignore'];
 const LEARNING_RATE = 0.01;
@@ -53,14 +55,63 @@ function encodeStateFromRecord({ ip = '', method = '', threatType = '' }) {
   return [ipSuspicion, requestType, keywordDetected, 0, 0, 0, 0, 0];
 }
 
-function inferLabelHeuristic(logLine) {
-  if (/(malware|attack|scan)/i.test(logLine)) return 'block';
-  if (/POST/i.test(logLine)) return 'alert';
-  return 'ignore';
-}
-
 function encodeAction(action) {
   return ACTIONS.map(a => (a === action ? 1 : 0));
+}
+
+// ======= محسّن: تحليل مبدئي بالقواعد (Heuristic) =======
+function inferLabelHeuristic(logLineOrRecord) {
+  const line = typeof logLineOrRecord === 'string'
+    ? logLineOrRecord
+    : `${logLineOrRecord.method || ''} ${logLineOrRecord.threatType || ''} ${logLineOrRecord.ip || ''}`;
+
+  // قواعد قوية لاكتشاف SQLi / XSS / RCE / Scans
+  const sqlPatterns = [
+    /\b(union\s+select)\b/i,
+    /\b(select\b.+\bfrom\b)/i,
+    /\b(or|and)\s+['"]?1['"]?\s*=\s*['"]?1['"]?/i,
+    /--/i,
+    /;\s*--?/i,
+    /\b(drop|truncate|delete|insert|update)\b/i,
+    /(\bunion\b|\binto\b.*\boutfile\b)/i,
+    /\bselect\b\s+.*\bfrom\b/i,
+    /\bunion\b.*\bselect\b/i
+  ];
+
+  const xssPatterns = [
+    /<script\b[^>]*>([\s\S]*?)<\/script>/i,
+    /onerror\s*=/i,
+    /javascript:/i,
+    /<img\b[^>]*src=.*>/i,
+    /<iframe\b/i
+  ];
+
+  const rcePatterns = [
+    /(\.exe\b|\/bin\/sh\b|\/bin\/bash\b|system\(|exec\(|popen\()/i,
+    /curl\s+http/i
+  ];
+
+  const scanPatterns = [
+    /\bnmap\b/i,
+    /\bnikto\b/i,
+    /masscan/i,
+    /sqlmap/i,
+    /wp-login\.php/i,
+    /\bportscan\b/i
+  ];
+
+  // فحص كل مجموعة
+  for (const rx of sqlPatterns) if (rx.test(line)) return { actionSuggested: 'block', reason: 'sql injection pattern', severityHint: 'high' };
+  for (const rx of xssPatterns) if (rx.test(line)) return { actionSuggested: 'block', reason: 'xss pattern', severityHint: 'high' };
+  for (const rx of rcePatterns) if (rx.test(line)) return { actionSuggested: 'block', reason: 'rce/command execution pattern', severityHint: 'high' };
+  for (const rx of scanPatterns) if (rx.test(line)) return { actionSuggested: 'alert', reason: 'scan/tool fingerprint', severityHint: 'medium' };
+
+  // كلمات عامة
+  if (/(malware|attack|exploit|virus)/i.test(line)) return { actionSuggested: 'block', reason: 'malware/attack keyword', severityHint: 'high' };
+  if (/post/i.test(line)) return { actionSuggested: 'alert', reason: 'http method POST', severityHint: 'low' };
+
+  // افتراضي
+  return { actionSuggested: 'ignore', reason: 'no heuristic match', severityHint: 'low' };
 }
 
 // -------------------- Model --------------------
@@ -109,7 +160,7 @@ async function loadOrInitModel() {
     { ip: '8.8.8.8', method: 'GET', threatType: 'attack vector' },
   ];
 
-  const data = bootstrap.map(r => ({ state: encodeStateFromRecord(r), action: inferLabelHeuristic(`${r.method} ${r.threatType}`) }));
+  const data = bootstrap.map(r => ({ state: encodeStateFromRecord(r), action: inferLabelHeuristic(`${r.method} ${r.threatType}`).actionSuggested }));
   await trainModel(data, EPOCHS);
 }
 
@@ -148,27 +199,74 @@ async function analyzeWithLLM(record) {
     let severity = 'low';
     if (top.score >= 0.85) severity = 'high';
     else if (top.score >= 0.6) severity = 'medium';
-    return { type: top.label, severity, summary: `Label=${top.label} score=${top.score.toFixed(2)}` };
+    return { type: top.label, severity, score: top.score, summary: `Label=${top.label} score=${top.score.toFixed(2)}` };
   } catch (err) {
     console.log(chalk.red('⚠️ LLM failed:', err.message));
     return { type: 'Other', severity: 'unknown', summary: 'LLM error' };
   }
 }
 
-// -------------------- Inference --------------------
-async function selectAction(state, llmResult = null) {
+// ======= محسّن: اختيار الإجراء مع تتبع مسار القرار =======
+async function selectAction(state, llmResult = null, rawRecord = null) {
+  // 1) احصل على قرار الـ DQN الافتراضي
   const input = tf.tensor2d([state]);
   const pred = model.predict(input);
   const idx = (await pred.argMax(-1).data())[0];
   input.dispose();
   if (pred.dispose) pred.dispose();
-  let action = ACTIONS[idx];
+  let dqnAction = ACTIONS[idx];
 
-  // تعديل القرار بناءً على LLM
-  if (llmResult && llmResult.severity === 'high') action = 'block';
-  else if (llmResult && llmResult.severity === 'medium' && action === 'ignore') action = 'alert';
+  // 2) احصل على نتيجة الـ heuristic (نستخدم rawRecord لو متاح)
+  const heuristic = inferLabelHeuristic(rawRecord || state);
 
-  return action;
+  // 3) ابدأ بالإجراء المبدئي من DQN ثم نطبّق Overrides
+  let finalAction = dqnAction;
+  const decisionLog = {
+    timestamp: new Date().toISOString(),
+    ip: rawRecord?.ip || null,
+    record: rawRecord || null,
+    dqnAction,
+    heuristic,
+    llm: llmResult,
+    finalAction: null,
+    reason: null
+  };
+
+  // إذا الـ heuristic يطالب بالـ block مباشرة => override
+  if (heuristic && heuristic.actionSuggested === 'block') {
+    finalAction = 'block';
+    decisionLog.reason = 'heuristic override (high confidence)';
+  } else if (llmResult && llmResult.severity === 'high') {
+    finalAction = 'block';
+    decisionLog.reason = 'llm severity high';
+  } else if (llmResult && llmResult.severity === 'medium' && finalAction === 'ignore') {
+    finalAction = 'alert';
+    decisionLog.reason = 'llm medium increased to alert';
+  } else {
+    decisionLog.reason = 'trusted dqn output';
+  }
+
+  decisionLog.finalAction = finalAction;
+
+  // اطبع مسار القرار كاملًا
+  console.log(chalk.magenta('🔎 Decision path:'), JSON.stringify(decisionLog, null, 2));
+
+  // خزّن القرار في ملف decisions.json
+  try {
+    if (!fs.existsSync(path.dirname(DECISIONS_FILE))) fs.mkdirSync(path.dirname(DECISIONS_FILE), { recursive: true });
+    let arr = [];
+    if (fs.existsSync(DECISIONS_FILE)) {
+      try { arr = JSON.parse(fs.readFileSync(DECISIONS_FILE, 'utf8')) || []; } catch { arr = []; }
+    }
+    arr.push(decisionLog);
+    // احتفظ بآخر 500 قرار لتقليل النموذج
+    if (arr.length > 500) arr = arr.slice(-500);
+    fs.writeFileSync(DECISIONS_FILE, JSON.stringify(arr, null, 2), 'utf8');
+  } catch (err) {
+    console.error('❌ Failed to write decision log:', err.message);
+  }
+
+  return finalAction;
 }
 
 // -------------------- CSV Handling --------------------
@@ -186,7 +284,7 @@ function readPublicCsv() {
       const ip = (parts[1] || '').trim();
       const method = (parts[2] || '').trim();
       const threatType = (parts.slice(3).join(',') || '').trim() || 'unknown';
-      return { timestamp, ip, method, threatType };
+      return { timestamp, ip, method, threatType, raw: line };
     })
     .filter(r => r.ip && r.method);
 }
@@ -256,8 +354,8 @@ async function processLastPublicRecord() {
 
   const state = encodeStateFromRecord(lastRecord);
   const llm = await analyzeWithLLM(lastRecord);
-  console.log(chalk.blue(`🤖 LLM analysis: type=${llm.type}, severity=${llm.severity}`));
-  const action = await selectAction(state, llm);
+  console.log(chalk.blue(`🤖 LLM analysis: type=${llm.type}, severity=${llm.severity} score=${llm.score || 0}`));
+  const action = await selectAction(state, llm, lastRecord);
 
   logThreat(lastRecord.ip, lastRecord.method, lastRecord.threatType, action, lastRecord.timestamp);
   console.log(chalk.greenBright(`✅ Last entry processed: ${lastRecord.ip} ${lastRecord.method} ${lastRecord.threatType} -> ${action}`));
@@ -274,7 +372,7 @@ async function processLastPublicRecord() {
 (async () => {
   welcomeBanner();
   ensureOutputHeader();
-  
+
   await loadOrInitModel();
 
   await processLastPublicRecord();
