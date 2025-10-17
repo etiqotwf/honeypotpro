@@ -384,7 +384,7 @@ node server.js
 
     // ✅ عمل commit قبل الـ push
     execSync(`git commit -m "Auto commit before push: ${new Date().toISOString()}"`);
-    console.log("✅ Auto commit created.");
+    // console.log("✅ Auto commit created.");
 
     // ✅ سحب آخر التحديثات مع تجاهل التعارضات
     try {
