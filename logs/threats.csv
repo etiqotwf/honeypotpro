@@ -1,0 +1,2 @@
+Timestamp,IP,Method,ThreatType,Action
+2025-10-17T17:53:27.119Z,156.203.206.74,GET,"normal visit | /favicon.ico",auto,alert

@@ -1,0 +1,27 @@
+[
+  {
+    "timestamp": "2025-10-17T17:55:22.341Z",
+    "ip": "156.203.206.74",
+    "record": {
+      "timestamp": "2025-10-17T17:53:27.119Z",
+      "ip": "156.203.206.74",
+      "method": "GET",
+      "threatType": "\"normal visit | /favicon.ico\",auto",
+      "raw": "2025-10-17T17:53:27.119Z,156.203.206.74,GET,\"normal visit | /favicon.ico\",auto"
+    },
+    "dqnAction": "ignore",
+    "heuristic": {
+      "actionSuggested": "ignore",
+      "reason": "no heuristic match",
+      "severityHint": "low"
+    },
+    "llm": {
+      "type": "neutral",
+      "severity": "medium",
+      "score": 0.7982574701309204,
+      "summary": "Label=neutral score=0.80"
+    },
+    "finalAction": "alert",
+    "reason": "llm medium increased to alert"
+  }
+]
