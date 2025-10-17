@@ -32,6 +32,16 @@ if (!GITHUB_TOKEN) {
 }
 
 
+
+// ===== Concurrency / scheduling helpers =====
+let honeypotProcessing = false;
+let honeypotPending = false;
+let pushTimer = null;
+const PUSH_DEBOUNCE_MS = 15 * 1000; // اجمع push واحد كل 15 ثانية كحد أدنى
+
+
+
+
 app.use(bodyParser.urlencoded({ extended: true }));
 
 
@@ -53,37 +63,46 @@ if (!fs.existsSync(logPath)) {
 
 
 // Middleware القديم اللي كان يسجل كل زيارة تلقائيًا أصبح معلق
-app.use(async (req, res, next) => {
+// ---- Enhanced logging middleware (replace existing middleware) ----
+app.use((req, res, next) => {
+  try {
     const ip = req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.socket.remoteAddress?.replace('::ffff:', '') || 'unknown';
     const method = req.method;
-    const pathReq = req.originalUrl || '';
+    const originalUrl = req.originalUrl || req.url || '';
     const bodyData = Object.keys(req.body || {}).length ? JSON.stringify(req.body) : '';
-    const lowerData = (pathReq + bodyData).toLowerCase();
+    const combined = `${originalUrl} ${bodyData}`.trim();
+    const lowerData = combined.toLowerCase();
 
+    // heuristic simple improved
     let threatType = "normal visit";
-    if (lowerData.includes("malware") || lowerData.includes(".exe") || lowerData.includes("virus"))
-        threatType = "malware detected";
-    else if (lowerData.includes("nmap") || lowerData.includes("scan") || lowerData.includes("banner grab"))
-        threatType = "scan attempt";
-    else if (lowerData.includes("attack") || lowerData.includes("exploit"))
-        threatType = "attack vector";
-    else if (lowerData.includes("union select") || lowerData.includes("drop table") || lowerData.includes("' or '1'='1"))
-        threatType = "sql injection attempt";
-    else if (lowerData.includes("<script>") || lowerData.includes("onerror="))
-        threatType = "xss attempt";
-    else if (lowerData.includes("login attempt") || lowerData.includes("password guess"))
-        threatType = "brute force attempt";
+    if (/(malware|\.exe|virus|exploit)/i.test(lowerData)) threatType = "malware detected";
+    else if (/(nmap|scan|banner grab|sqlmap)/i.test(lowerData)) threatType = "scan attempt";
+    else if (/union\s+select|drop\s+table|\bor\b\s+['"]?1['"]?\s*=\s*['"]?1|or 1=1/i.test(lowerData)) threatType = "sql injection attempt";
+    else if (/(<script\b|onerror=|javascript:)/i.test(lowerData)) threatType = "xss attempt";
+    else if (/(login attempt|password guess|brute force)/i.test(lowerData)) threatType = "brute force attempt";
+    else if (/post/i.test(method)) threatType = "post request";
 
     const timestamp = new Date().toISOString();
-    const logLine = `${timestamp},${ip},${method},${threatType},auto\n`;
-    try {
-        fs.appendFileSync(logPath, logLine);
-        console.log(`📥 [AUTO] ${ip} ${method} ${pathReq} => ${threatType}`);
-        await pushToGitHub();
-    } catch (err) {
-        console.error("❌ Error writing to threats.csv or pushing to GitHub:", err);
-    }
-    next();
+    // احفظ originalUrl مع نوع التهديد (نستبدل الفاصلة علشان لا تكسر CSV)
+    const safeOriginal = originalUrl.replace(/,/g, ';').replace(/"/g, '\\"');
+    const logLine = `${timestamp},${ip},${method},"${threatType} | ${safeOriginal}",auto\n`;
+    fs.appendFileSync(logPath, logLine);
+    console.log(`📥 [AUTO] ${ip} ${method} ${originalUrl} => ${threatType}`);
+
+    // جدولة push جماعي بعد debounce بدل كل request
+    if (pushTimer) clearTimeout(pushTimer);
+    pushTimer = setTimeout(() => {
+      try {
+        pushToGitHub();
+      } catch (e) {
+        console.error('Push scheduled failed:', e.message);
+      }
+    }, PUSH_DEBOUNCE_MS);
+
+  } catch (err) {
+    console.error("❌ Middleware error writing to threats.csv:", err);
+  }
+  next();
 });
 
 
@@ -474,33 +493,56 @@ if (fs.existsSync(projectLogPath)) {
 const publicLogPath = path.join(process.cwd(), 'public', 'logs', 'threats.csv');
 
 if (fs.existsSync(publicLogPath)) {
-    fs.watchFile(publicLogPath, { interval: 3000 }, (curr, prev) => {
-        if (curr.mtime !== prev.mtime) {
-            console.log("👁️ Detected new entry in public/logs/threats.csv");
+  fs.watchFile(publicLogPath, { interval: 3000 }, (curr, prev) => {
+    if (curr.mtime !== prev.mtime) {
+      console.log("👁️ Detected new entry in public/logs/threats.csv");
 
-            // اقرأ آخر سطر
-            const content = fs.readFileSync(publicLogPath, 'utf8').trim();
-            const lines = content.split(/\r?\n/);
-            const lastLine = lines[lines.length - 1];
+      // اقرأ آخر سطر بشكل آمن
+      const content = fs.readFileSync(publicLogPath, 'utf8').trim();
+      const lines = content.split(/\r?\n/);
+      const lastLine = lines[lines.length - 1];
 
-            if (lastLine && !lastLine.startsWith("Timestamp")) {
-                console.log(`🆕 New line detected: ${lastLine}`);
+      if (lastLine && !lastLine.startsWith("Timestamp")) {
+        console.log(`🆕 New line detected: ${lastLine}`);
 
-                // شغّل honeypot مع تمرير آخر سطر كـ argument
-                exec(`node adaptive-honeypot.js "${lastLine}"`, (error, stdout, stderr) => {
-                    if (error) {
-                        console.error(`❌ Error running adaptiveHoneypot.js: ${error.message}`);
-                        return;
-                    }
-                    if (stderr) console.error(`⚠️ STDERR: ${stderr}`);
-                    console.log(`🤖 Honeypot Output:\n${stdout}`);
-                });
+        // جدولة تشغيل honeypot لكن امنع التداخل
+        const runHoneypot = () => {
+          if (honeypotProcessing) {
+            honeypotPending = true;
+            console.log('⏳ Honeypot busy — scheduling pending run.');
+            return;
+          }
+          honeypotProcessing = true;
+          // استخدم spawn بدلاً من exec لتجنب مشاكل الاقتباسات
+          const child = spawn(process.execPath, ['adaptive-honeypot.js', lastLine], { cwd: process.cwd() });
+
+          child.stdout.on('data', (data) => {
+            process.stdout.write(`[HONEYPOT] ${data.toString()}`);
+          });
+          child.stderr.on('data', (data) => {
+            process.stderr.write(`[HONEYPOT-ERR] ${data.toString()}`);
+          });
+
+          child.on('close', (code) => {
+            console.log(`🤖 Honeypot process exited with code ${code}`);
+            honeypotProcessing = false;
+            if (honeypotPending) {
+              honeypotPending = false;
+              // تأخير بسيط قبل التشغيل التالي لتجميع أحداث إضافية
+              setTimeout(runHoneypot, 500);
             }
-        }
-    });
+          });
+        };
+
+        // شغّل
+        runHoneypot();
+      }
+    }
+  });
 } else {
-    console.warn("⚠️ public/logs/threats.csv not found, skipping watch...");
+  console.warn("⚠️ public/logs/threats.csv not found, skipping watch...");
 }
+
 
 
 
