@@ -1,0 +1,27 @@
+[
+  {
+    "timestamp": "2025-10-17T16:41:51.524Z",
+    "ip": "156.203.206.74",
+    "record": {
+      "timestamp": "2025-10-17T16:40:11.031Z",
+      "ip": "156.203.206.74",
+      "method": "GET",
+      "threatType": "normal visit,auto",
+      "raw": "2025-10-17T16:40:11.031Z,156.203.206.74,GET,normal visit,auto"
+    },
+    "dqnAction": "block",
+    "heuristic": {
+      "actionSuggested": "ignore",
+      "reason": "no heuristic match",
+      "severityHint": "low"
+    },
+    "llm": {
+      "type": "neutral",
+      "severity": "high",
+      "score": 0.9408872127532959,
+      "summary": "Label=neutral score=0.94"
+    },
+    "finalAction": "block",
+    "reason": "llm severity high"
+  }
+]
