@@ -153,3 +153,6 @@ Timestamp,IP,Method,ThreatType,Action,Attempts
 2025-10-18T21:48:39.691Z,::1,GET,"normal visit | /events",auto
 2025-10-18T21:54:26.499Z,::1,GET,"normal visit | /events",auto
 2025-10-18T21:54:26.753Z,::1,POST,"post request | /start-powershell",auto
+2025-10-18T22:00:52.187Z,::1,POST,"post request | /start-ngrok",auto
+2025-10-18T22:01:00.779Z,::1,GET,"normal visit | /events",auto
+2025-10-18T22:01:03.054Z,::1,POST,"post request | /start-powershell",auto
