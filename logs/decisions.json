@@ -373,5 +373,55 @@
     },
     "finalAction": "alert",
     "reason": "trusted dqn output"
+  },
+  {
+    "timestamp": "2025-10-18T21:25:46.532Z",
+    "ip": "::1",
+    "record": {
+      "timestamp": "2025-10-18T21:24:44.818Z",
+      "ip": "::1",
+      "method": "POST",
+      "threatType": "\"post request | /start-ngrok\",auto",
+      "raw": "2025-10-18T21:24:44.818Z,::1,POST,\"post request | /start-ngrok\",auto"
+    },
+    "dqnAction": "alert",
+    "heuristic": {
+      "actionSuggested": "alert",
+      "reason": "http method POST",
+      "severityHint": "low"
+    },
+    "llm": {
+      "type": "neutral",
+      "severity": "medium",
+      "score": 0.8437262177467346,
+      "summary": "Label=neutral score=0.84"
+    },
+    "finalAction": "alert",
+    "reason": "trusted dqn output"
+  },
+  {
+    "timestamp": "2025-10-18T21:26:07.902Z",
+    "ip": "::1",
+    "record": {
+      "timestamp": "2025-10-18T21:26:06.760Z",
+      "ip": "::1",
+      "method": "POST",
+      "threatType": "\"post request | /start-sse\",auto",
+      "raw": "2025-10-18T21:26:06.760Z,::1,POST,\"post request | /start-sse\",auto"
+    },
+    "dqnAction": "alert",
+    "heuristic": {
+      "actionSuggested": "alert",
+      "reason": "http method POST",
+      "severityHint": "low"
+    },
+    "llm": {
+      "type": "neutral",
+      "severity": "medium",
+      "score": 0.8483902215957642,
+      "summary": "Label=neutral score=0.85"
+    },
+    "finalAction": "alert",
+    "reason": "trusted dqn output"
   }
 ]

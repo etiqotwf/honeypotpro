@@ -14,3 +14,5 @@ Timestamp,IP,Method,ThreatType,Action
 2025-10-18T20:20:30.987Z,::1,GET,"normal visit | /events",auto,alert
 2025-10-18T21:10:16.982Z,::1,POST,"post request | /start-ngrok",auto,alert
 2025-10-18T21:21:15.238Z,::1,POST,"post request | /start-ngrok",auto,alert
+2025-10-18T21:24:44.818Z,::1,POST,"post request | /start-ngrok",auto,alert
+2025-10-18T21:26:06.760Z,::1,POST,"post request | /start-sse",auto,alert
