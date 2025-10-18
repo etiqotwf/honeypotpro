@@ -6,6 +6,7 @@
 <title>🧠 AI Honeypot Terminal</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap');
+
   body {
     margin: 0;
     font-family: 'Share Tech Mono', monospace;
@@ -15,14 +16,13 @@
     overflow: hidden;
     display: flex;
     flex-direction: column;
-    cursor: pointer;
+    user-select: none;
   }
 
   body::before {
     content: "";
     position: absolute;
-    width: 200%;
-    height: 200%;
+    inset: 0;
     background: repeating-linear-gradient(
       45deg,
       rgba(0,255,200,0.03),
@@ -30,9 +30,10 @@
       transparent 2px,
       transparent 8px
     );
-    animation: moveGrid 30s linear infinite;
+    animation: moveGrid 40s linear infinite;
     z-index: 0;
   }
+
   @keyframes moveGrid {
     from { transform: translate(0, 0); }
     to { transform: translate(-50%, -50%); }
@@ -70,8 +71,9 @@
     box-shadow: 0 0 8px #ff4444;
     animation: pulse 1.5s infinite;
   }
+
   @keyframes pulse {
-    0%, 100% { opacity: 0.7; transform: scale(1); }
+    0%, 100% { opacity: 0.6; transform: scale(1); }
     50% { opacity: 1; transform: scale(1.4); }
   }
 
@@ -79,16 +81,18 @@
     display: flex;
     gap: 8px;
   }
+
   button {
     background: #00ffaa22;
     border: 1px solid #00ffaa66;
     color: #00ffaa;
-    padding: 6px 12px;
+    padding: 6px 14px;
     border-radius: 4px;
     cursor: pointer;
     transition: 0.3s;
-    z-index: 2;
+    font-weight: bold;
   }
+
   button:hover {
     background: #00ffaa55;
     box-shadow: 0 0 8px #00ffaaaa;
@@ -101,13 +105,15 @@
     z-index: 1;
     color: #d1fff5;
     text-shadow: 0 0 5px #00ffee55;
+    scrollbar-width: thin;
+    scrollbar-color: #00ffaa22 transparent;
   }
 
   .normal { color: #aaffff; }
   .info { color: #66ff99; }
-  .attack { color: #ff6666; font-weight: bold; }
-  .warn { color: #ffff66; }
-  .system { color: #66ccff; }
+  .attack { color: #ff6666; font-weight: bold; text-shadow: 0 0 10px #ff6666; }
+  .warn { color: #ffff66; text-shadow: 0 0 8px #ffff66; }
+  .system { color: #66ccff; text-shadow: 0 0 8px #00aaff; }
 
   #sideGlow {
     position: absolute;
@@ -118,6 +124,7 @@
     background: linear-gradient(to bottom, #00ffcc55, transparent);
     animation: glow 3s ease-in-out infinite;
   }
+
   @keyframes glow {
     0%,100% { opacity: 0.3; }
     50% { opacity: 1; }
@@ -131,10 +138,25 @@
     color: #00ffee;
     z-index: 2;
   }
+
+  .fullscreen-lock {
+    position: fixed;
+    bottom: 15px;
+    right: 20px;
+    background: rgba(0,255,200,0.2);
+    color: #00ffaa;
+    border: 1px solid #00ffaa66;
+    padding: 5px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.8em;
+    z-index: 5;
+  }
 </style>
 </head>
 <body>
 <div id="sideGlow"></div>
+
 <header>
   <h1>🧠 AI Honeypot Command Center</h1>
   <div id="status"><span class="status-dot"></span>Disconnected</div>
@@ -150,10 +172,11 @@
 
 <footer>💻 Honeypot AI Terminal — Monitoring cyber threats in real-time</footer>
 
+<div class="fullscreen-lock" id="fsLock">🔒 Fullscreen Mode</div>
+
 <script>
 let eventSource = null;
 let running = false;
-let fullscreenActivated = false; // ✅ متغير لتتبع حالة الدخول إلى فل سكرين
 const logContainer = document.getElementById('logContainer');
 const statusEl = document.getElementById('status');
 
@@ -167,9 +190,9 @@ function appendLine(line) {
 
 function classify(line) {
   if (/attack|malware|threat|xss|sql/i.test(line)) return 'attack';
-  if (/starting|listening|connected/i.test(line)) return 'info';
+  if (/starting|listening|connected|model loaded/i.test(line)) return 'info';
   if (/error|fail/i.test(line)) return 'warn';
-  if (/system|server/i.test(line)) return 'system';
+  if (/system|server|honeypot/i.test(line)) return 'system';
   return 'normal';
 }
 
@@ -203,8 +226,16 @@ function updateStatus(connected) {
   }
 }
 
-document.getElementById('startBtn').onclick = startSSE;
-document.getElementById('stopBtn').onclick = stopSSE;
+document.getElementById('startBtn').onclick = async () => {
+  await fetch('http://localhost:5000/start-server').catch(()=>{});
+  startSSE();
+};
+
+document.getElementById('stopBtn').onclick = async () => {
+  await fetch('http://localhost:5000/stop-server').catch(()=>{});
+  stopSSE();
+};
+
 document.getElementById('clearBtn').onclick = () => logContainer.innerHTML = '';
 document.getElementById('copyBtn').onclick = async () => {
   const text = Array.from(logContainer.children).map(d => d.textContent).join('\n');
@@ -212,35 +243,23 @@ document.getElementById('copyBtn').onclick = async () => {
   alert('✅ Logs copied!');
 };
 
-
-// 🖥️ الدخول أو الرجوع لوضع ملء الشاشة عند الضغط فقط
-document.body.addEventListener('click', async () => {
-  // لو مش في fullscreen حالياً → دخله
+// 🖥️ دخول يدوي إلى fullscreen فقط بزر خاص (ESC لا يعمل)
+const fsLock = document.getElementById('fsLock');
+fsLock.addEventListener('click', async () => {
   if (!document.fullscreenElement) {
-    try {
-      await document.documentElement.requestFullscreen();
-      fullscreenActivated = true;
-      console.log("✅ دخل وضع ملء الشاشة");
-    } catch (err) {
-      console.warn("⚠️ فشل الدخول إلى وضع ملء الشاشة:", err);
-    }
+    await document.documentElement.requestFullscreen();
+    fsLock.textContent = "🔓 Exit Fullscreen";
   } else {
-    // لو بالفعل في fullscreen → تجاهل الضغط
-    console.log("ℹ️ بالفعل في وضع ملء الشاشة، لن يتم الخروج");
+    await document.exitFullscreen();
+    fsLock.textContent = "🔒 Fullscreen Mode";
   }
 });
 
-// 🎯 تشغيل SSE تلقائي عند الفتح
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') e.preventDefault(); // يمنع الخروج بـ ESC
+});
+
 startSSE();
-
-// 📡 مراقبة حالة الخروج من fullscreen
-document.addEventListener('fullscreenchange', () => {
-  if (!document.fullscreenElement) {
-    fullscreenActivated = false; // يسمح بالعودة بعد الخروج
-    console.log("🚪 خرجت من وضع ملء الشاشة - جاهز للعودة عند الضغط التالي");
-  }
-});
-
 </script>
 </body>
 </html>
