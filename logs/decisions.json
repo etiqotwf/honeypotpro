@@ -548,5 +548,30 @@
     },
     "finalAction": "block",
     "reason": "llm severity high"
+  },
+  {
+    "timestamp": "2025-10-18T22:05:57.740Z",
+    "ip": "::1",
+    "record": {
+      "timestamp": "2025-10-18T22:05:30.052Z",
+      "ip": "::1",
+      "method": "POST",
+      "threatType": "\"post request | /start-powershell\",auto",
+      "raw": "2025-10-18T22:05:30.052Z,::1,POST,\"post request | /start-powershell\",auto"
+    },
+    "dqnAction": "alert",
+    "heuristic": {
+      "actionSuggested": "alert",
+      "reason": "http method POST",
+      "severityHint": "low"
+    },
+    "llm": {
+      "type": "neutral",
+      "severity": "high",
+      "score": 0.882315993309021,
+      "summary": "Label=neutral score=0.88"
+    },
+    "finalAction": "block",
+    "reason": "llm severity high"
   }
 ]
