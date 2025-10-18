@@ -14,3 +14,4 @@ Timestamp,IP,Method,ThreatType,Action
 2025-10-18T13:44:42.675Z,::1,GET,"normal visit | /events",auto,alert
 2025-10-18T13:47:11.065Z,::1,GET,"normal visit | /events",auto,alert
 2025-10-18T13:47:22.815Z,::1,GET,"normal visit | /events",auto,alert
+2025-10-18T13:47:34.119Z,::1,GET,"normal visit | /events",auto,alert
