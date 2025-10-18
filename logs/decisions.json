@@ -598,5 +598,55 @@
     },
     "finalAction": "alert",
     "reason": "trusted dqn output"
+  },
+  {
+    "timestamp": "2025-10-18T22:35:54.630Z",
+    "ip": "156.203.251.239",
+    "record": {
+      "timestamp": "2025-10-18T22:35:15.073Z",
+      "ip": "156.203.251.239",
+      "method": "GET",
+      "threatType": "\"normal visit | /favicon.ico\",auto",
+      "raw": "2025-10-18T22:35:15.073Z,156.203.251.239,GET,\"normal visit | /favicon.ico\",auto"
+    },
+    "dqnAction": "alert",
+    "heuristic": {
+      "actionSuggested": "ignore",
+      "reason": "no heuristic match",
+      "severityHint": "low"
+    },
+    "llm": {
+      "type": "neutral",
+      "severity": "high",
+      "score": 0.8919969797134399,
+      "summary": "Label=neutral score=0.89"
+    },
+    "finalAction": "block",
+    "reason": "llm severity high"
+  },
+  {
+    "timestamp": "2025-10-18T22:48:13.731Z",
+    "ip": "::1",
+    "record": {
+      "timestamp": "2025-10-18T22:47:30.723Z",
+      "ip": "::1",
+      "method": "GET",
+      "threatType": "\"normal visit | /ngrok-url\",auto",
+      "raw": "2025-10-18T22:47:30.723Z,::1,GET,\"normal visit | /ngrok-url\",auto"
+    },
+    "dqnAction": "alert",
+    "heuristic": {
+      "actionSuggested": "ignore",
+      "reason": "no heuristic match",
+      "severityHint": "low"
+    },
+    "llm": {
+      "type": "neutral",
+      "severity": "high",
+      "score": 0.8613393902778625,
+      "summary": "Label=neutral score=0.86"
+    },
+    "finalAction": "block",
+    "reason": "llm severity high"
   }
 ]

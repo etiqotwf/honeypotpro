@@ -68,7 +68,7 @@
   </div>
 
   <div id="controls">
-    <button id="startBtn">▶ Start SSE</button>
+    <!-- زر Start SSE أُلغي هنا (لم يعد موجودًا) -->
     <button id="stopBtn">⏸ Stop SSE</button>
     <button id="clearBtn">🗑 Clear Log</button>
     <button id="copyBtn">📋 Copy Log</button>
@@ -83,8 +83,10 @@
 <script>
 /* -------------------------------------------
    JavaScript for SSE and UI buttons
+   Now: Start ngrok & Attack does both:
+        - start SSE (if not started)
+        - request ngrok URL and open it
 ------------------------------------------- */
-const startBtn = document.getElementById('startBtn');
 const stopBtn = document.getElementById('stopBtn');
 const clearBtn = document.getElementById('clearBtn');
 const copyBtn = document.getElementById('copyBtn');
@@ -122,10 +124,11 @@ function setConnected(connected) {
   }
 }
 
+// startSSE now returns Promise that resolves on open
 function startSSE() {
   if (es) {
     appendLine('[System] SSE already running', 'system');
-    return Promise.resolve(); // رجع Promise لأننا سنستخدم await عليه
+    return Promise.resolve();
   }
 
   return new Promise((resolve, reject) => {
@@ -139,7 +142,6 @@ function startSSE() {
       };
 
       es.onmessage = (evt) => {
-        // نفس المعالجة الحالية
         try {
           const parsed = JSON.parse(evt.data);
           if (parsed && parsed.type) {
@@ -150,28 +152,17 @@ function startSSE() {
             }
             if (parsed.type === 'attack') { appendLine(parsed.msg || evt.data, 'attack'); return; }
             if (parsed.type === 'line') { appendLine(parsed.msg || evt.data, 'line'); return; }
+            if (parsed.type === 'system') { appendLine(parsed.msg || evt.data, 'system'); return; }
           }
         } catch {
           appendLine(evt.data, 'line');
         }
       };
 
-      es.onerror = (err) => {
+      es.onerror = () => {
         setConnected(false);
         appendLine('[System] SSE error occurred', 'system');
-        // لا نرفض هنا حتى لا نوقف الـ promise المفتوح بعد الانفتاح
       };
-
-      es.addEventListener('ngrok', (e) => {
-        try {
-          const d = JSON.parse(e.data);
-          ngrokVal.textContent = d.url || e.data;
-          appendLine(`[ngrok-event] ${d.url || e.data}`, 'system');
-        } catch {
-          ngrokVal.textContent = e.data;
-          appendLine(`[ngrok-event] ${e.data}`, 'system');
-        }
-      });
 
     } catch (err) {
       appendLine('[System] Failed to start SSE: ' + err.message, 'system');
@@ -179,27 +170,6 @@ function startSSE() {
     }
   });
 }
-
-async function startSSEAndPS() {
-  try {
-    await startSSE(); // الآن نضمن أن SSE مفتوح
-  } catch (err) {
-    appendLine('[Error] Could not open SSE: ' + err.message, 'system');
-    return;
-  }
-
-  try {
-    const res = await fetch('/start-powershell', { method: 'POST' });
-    if (!res.ok) throw new Error('Server response not OK: ' + res.status);
-    appendLine('[System] PowerShell started', 'system');
-  } catch (err) {
-    appendLine('[Error] Failed to start PowerShell: ' + err.message, 'system');
-  }
-}
-
-startBtn.removeEventListener('click', startSSE);
-startBtn.addEventListener('click', startSSEAndPS);
-
 
 function stopSSE() {
   if (!es) {
@@ -228,44 +198,60 @@ async function copyLog() {
   }
 }
 
-// ---- استبدال startNgrokAndOpen ليطلب ngrok URL من السيرفر مباشرة ----
+// New unified action: start SSE (if needed) then request ngrok URL and open it.
+// It will NOT trigger PowerShell. It only ensures SSE + ngrok open.
 async function startNgrokAndOpen() {
-  appendLine('[System] Requesting ngrok URL from server...', 'system');
+  appendLine('[System] Start requested: ensuring SSE then ngrok URL...', 'system');
   startAttackBtn.disabled = true;
   const prevText = startAttackBtn.textContent;
-  startAttackBtn.textContent = 'Requesting...';
+  startAttackBtn.textContent = 'Starting...';
 
   try {
-    // اطلب ngrok URL من السيرفر (GET على /ngrok-url)
-    const res = await fetch('/ngrok-url'); // <- هنا التغيير: GET بدل POST على /start-ngrok
-    if (!res.ok) {
-      // لو السيرفر ما رجعش URL بعد، ارجع رسالة واضحة
-      const txt = await res.text().catch(() => '');
-      throw new Error('Server response not OK: ' + res.status + ' ' + txt);
+    // 1) ensure SSE is open
+    try {
+      await startSSE();
+    } catch (err) {
+      appendLine('[Error] Failed to open SSE: ' + err.message, 'system');
+      // proceed to ngrok check anyway (optional) or return; here we continue
     }
 
-    const data = await res.json();
-    const url = data?.serverUrl || data?.url || null;
+    // 2) poll /ngrok-url up to MAX_TRIES
+    const MAX_TRIES = 12;
+    const INTERVAL_MS = 1000;
+    let tries = 0;
+    let url = null;
+
+    while (tries < MAX_TRIES && !url) {
+      tries++;
+      try {
+        const res = await fetch('/ngrok-url');
+        if (res.ok) {
+          const data = await res.json();
+          url = data?.serverUrl || data?.url || null;
+          if (url) break;
+        }
+      } catch (e) {
+        // ignore fetch errors, will retry
+      }
+      appendLine(`[System] ngrok not ready — retry ${tries}/${MAX_TRIES}`, 'system');
+      await new Promise(r => setTimeout(r, INTERVAL_MS));
+    }
 
     if (url) {
       ngrokVal.textContent = url;
       appendLine(`[System] ngrok URL: ${url}`, 'system');
-      // افتح الرابط في نافذة جديدة
+      // only the front-end opens the URL (server won't auto-open)
       window.open(url, '_blank');
     } else {
-      appendLine('[System] ngrok not ready yet (server returned no URL)', 'system');
+      appendLine('[Error] ngrok URL not available after retries', 'system');
     }
-  } catch (err) {
-    appendLine('[Error] Failed to get ngrok URL: ' + err.message, 'system');
+
   } finally {
     startAttackBtn.disabled = false;
     startAttackBtn.textContent = prevText;
   }
 }
 
-
-
-startBtn.addEventListener('click', startSSE);
 stopBtn.addEventListener('click', stopSSE);
 clearBtn.addEventListener('click', clearLog);
 copyBtn.addEventListener('click', copyLog);
@@ -296,9 +282,6 @@ window.addEventListener('load', () => {
   appendLine('[System] Terminal UI ready', 'system');
 });
 </script>
-
-
-
 
 </body>
 </html>
