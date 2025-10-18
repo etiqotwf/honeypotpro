@@ -228,32 +228,41 @@ async function copyLog() {
   }
 }
 
+// ---- استبدال startNgrokAndOpen ليطلب ngrok URL من السيرفر مباشرة ----
 async function startNgrokAndOpen() {
-  appendLine('[System] Starting ngrok...', 'system');
+  appendLine('[System] Requesting ngrok URL from server...', 'system');
   startAttackBtn.disabled = true;
   const prevText = startAttackBtn.textContent;
-  startAttackBtn.textContent = 'Starting...';
+  startAttackBtn.textContent = 'Requesting...';
 
   try {
-    const res = await fetch('/start-ngrok', { method: 'POST' }); // نفس الـ fetch
-    if (!res.ok) throw new Error('Server response not OK: ' + res.status);
+    // اطلب ngrok URL من السيرفر (GET على /ngrok-url)
+    const res = await fetch('/ngrok-url'); // <- هنا التغيير: GET بدل POST على /start-ngrok
+    if (!res.ok) {
+      // لو السيرفر ما رجعش URL بعد، ارجع رسالة واضحة
+      const txt = await res.text().catch(() => '');
+      throw new Error('Server response not OK: ' + res.status + ' ' + txt);
+    }
+
     const data = await res.json();
-    const url = data?.url;
+    const url = data?.serverUrl || data?.url || null;
 
     if (url) {
       ngrokVal.textContent = url;
-      appendLine(`[System] ngrok started: ${url}`, 'system');
+      appendLine(`[System] ngrok URL: ${url}`, 'system');
+      // افتح الرابط في نافذة جديدة
       window.open(url, '_blank');
     } else {
-      appendLine('[System] ngrok URL not returned by server', 'system');
+      appendLine('[System] ngrok not ready yet (server returned no URL)', 'system');
     }
   } catch (err) {
-    appendLine('[Error] Failed to start ngrok: ' + err.message, 'system');
+    appendLine('[Error] Failed to get ngrok URL: ' + err.message, 'system');
   } finally {
     startAttackBtn.disabled = false;
     startAttackBtn.textContent = prevText;
   }
 }
+
 
 
 startBtn.addEventListener('click', startSSE);
