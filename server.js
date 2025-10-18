@@ -244,7 +244,7 @@ app.listen(PORT, () => {
 
 // ✅ تحليل رد ngrok + فتح الرابط تلقائياً في المتصفح
 // ✅ تحليل رد ngrok + فتح الرابط تلقائياً في المتصفح
-// ✅ تحليل رد ngrok + فتح صفحة التيرمينال محليًا فقط (لا يفتح ngrok في المتصفح)
+// ✅ تحليل رد ngrok + فتح صفحة التيرمينال محليًا فقط (بدون openInBrowser)
 function processNgrokResponse(response) {
   try {
     const tunnels = JSON.parse(response);
@@ -261,29 +261,35 @@ function processNgrokResponse(response) {
           const localTerminal = `http://localhost:${PORT}/terminal.html`;
           console.log(`✅ Attempting to open local terminal: ${localTerminal}`);
 
-          // اطلب من دالة فتح المتصفح فتح عنوان الـ localhost فقط
-          const opened = openInBrowser(localTerminal);
-
-          // لو الدالة رجعت false أو لم تنجح، نطبع تحذير ونحاول fallback باستخدام start (Windows) كحل احتياطي
-          if (!opened) {
-            console.warn('⚠️ openInBrowser لم تفتح المتصفح تلقائياً — محاولة احتياطية (Windows start).');
-            try {
-              // محاولة احتياطية بسيطة لنظام Windows عبر exec
-              if (process.platform === 'win32') {
-                exec(`start "" "http://localhost:${PORT}/terminal.html"`, { shell: true }, () => {});
-              } else if (process.platform === 'darwin') {
-                exec(`open "http://localhost:${PORT}/terminal.html"`);
-              } else {
-                exec(`xdg-open "http://localhost:${PORT}/terminal.html"`);
+          // حاول فتح المتصفح بواسطة أوامر النظام مباشرة (بدون الاعتماد على openInBrowser)
+          if (process.platform === 'win32') {
+            // start "" "url"
+            exec(`start "" "${localTerminal}"`, { shell: true }, (err) => {
+              if (err) console.error('❌ Failed to open terminal (start):', err);
+            });
+          } else if (process.platform === 'darwin') {
+            exec(`open "${localTerminal}"`, (err) => {
+              if (err) console.error('❌ Failed to open terminal (open):', err);
+            });
+          } else {
+            // Linux
+            exec(`xdg-open "${localTerminal}"`, (err) => {
+              if (err) {
+                console.error('❌ Failed to open terminal (xdg-open):', err);
+                // محاولة بديلة باستخدام sensible-browser أو nohup
+                try {
+                  exec(`sensible-browser "${localTerminal}"`, (e2) => {
+                    if (e2) console.error('❌ fallback sensible-browser failed:', e2);
+                  });
+                } catch (e) { /* ignore */ }
               }
-            } catch (e) {
-              console.error('❌ فشل المحاولة الاحتياطية لفتح التيرمينال:', e);
-            }
+            });
           }
+
         } catch (e) {
           console.error('❌ Error while trying to open terminal page:', e);
         }
-      }, 800); // 800ms تأخير
+      }, 800); // تأخير 800ms
     } else {
       console.log("⚠️ No ngrok URL found.");
     }
