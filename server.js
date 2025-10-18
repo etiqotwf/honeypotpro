@@ -338,6 +338,7 @@ function openTerminal(url) {
 
 
 
+// فتح الرابط في المتصفح الافتراضي (Windows / macOS / Linux)
 // ✅ رفع الملفات إلى GitHub تلقائيًا (مع git add و commit قبل push)
 function pushToGitHub() {
   console.log("📤 Preparing to push updates to GitHub...");

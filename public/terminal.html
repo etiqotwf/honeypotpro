@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ar">
+<html lang="en" dir="ltr">
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
@@ -30,6 +30,7 @@
   h1 { font-size:1.2rem; margin:0; color:#00ffee; }
   #status { font-size:0.9rem; color:#aaffff; display:flex; align-items:center; gap:8px; }
   .status-dot { width:10px;height:10px;border-radius:50%;background:#ff4444;box-shadow:0 0 8px #ff4444; animation:pulse 1.5s infinite; }
+  .status-dot.connected { background:#44ff88; box-shadow:0 0 10px #44ff8855; }
   @keyframes pulse {0%,100%{opacity:.7;transform:scale(1)}50%{opacity:1;transform:scale(1.3)}}
   #controls { display:flex; gap:8px; align-items:center; }
   button {
@@ -42,13 +43,18 @@
   }
   button:hover { box-shadow:0 0 8px rgba(0,255,170,0.06); transform:translateY(-1px); }
   #startAttack { background:#00aa66; border-color:#008844; color:#fff; }
-  #logContainer { flex:1; overflow:auto; padding:14px; color:#d1fff5; text-shadow:0 0 5px #00ffee55; }
-  .line { margin:4px 0; white-space:pre-wrap; font-size:0.95rem; }
+  #logContainer { flex:1; overflow:auto; padding:14px; color:#d1fff5; text-shadow:0 0 5px #00ffee55; font-size:0.95rem; }
+  .line { margin:4px 0; white-space:pre-wrap; }
   .attack { color:#ff8888; font-weight:600; }
   .system { color:#66ccff; }
   footer { background: rgba(0,255,200,0.03); text-align:center; padding:6px; font-size:0.86rem; color:#00ffee; }
   #infoBar { display:flex; gap:10px; align-items:center; color:#cffff0; }
-  #ngrokUrl { font-size:0.85rem; color:#ffdca3; overflow:hidden; text-overflow:ellipsis; max-width:420px; }
+  #ngrokUrl { font-size:0.85rem; color:#ffdca3; overflow:hidden; text-overflow:ellipsis; max-width:420px; direction:ltr; }
+  @media (max-width:640px){
+    header { flex-direction:column; align-items:stretch; gap:8px; }
+    #controls { flex-wrap:wrap; justify-content:flex-start; }
+    #ngrokUrl { max-width:220px; }
+  }
 </style>
 </head>
 <body>
@@ -64,10 +70,9 @@
   <div id="controls">
     <button id="startBtn">▶ Start SSE</button>
     <button id="stopBtn">⏸ Stop SSE</button>
-    <button id="clearBtn">🗑 Clear</button>
-    <button id="copyBtn">📋 Copy</button>
-    <!-- زر فتح ngrok المخصص -->
-    <button id="startAttack">🚀 فتح ngrok & بدء الهجوم</button>
+    <button id="clearBtn">🗑 Clear Log</button>
+    <button id="copyBtn">📋 Copy Log</button>
+    <button id="startAttack">🚀 Start ngrok & Attack</button>
   </div>
 </header>
 
@@ -76,125 +81,196 @@
 <footer>💻 Honeypot AI Terminal — Monitoring cyber threats in real-time</footer>
 
 <script>
+/* -------------------------------------------
+   JavaScript for SSE and UI buttons
+------------------------------------------- */
+const startBtn = document.getElementById('startBtn');
+const stopBtn = document.getElementById('stopBtn');
+const clearBtn = document.getElementById('clearBtn');
+const copyBtn = document.getElementById('copyBtn');
+const startAttackBtn = document.getElementById('startAttack');
+
 const logContainer = document.getElementById('logContainer');
-const statusDot = document.getElementById('dot');
 const statusText = document.getElementById('statusText');
+const dot = document.getElementById('dot');
 const ngrokVal = document.getElementById('ngrokVal');
 
-let eventSource = null;
-let running = false;
-let attackStarted = false;
+let es = null;
+let isAutoScroll = true;
+const MAX_LINES = 5000;
 
-// Append lines to log
-function appendLine(text, cls='line') {
-  const d = document.createElement('div');
-  d.className = cls;
-  d.textContent = text;
-  logContainer.appendChild(d);
-  logContainer.scrollTop = logContainer.scrollHeight;
+function appendLine(text, cls = '') {
+  const el = document.createElement('div');
+  el.className = 'line ' + cls;
+  el.textContent = text;
+  logContainer.appendChild(el);
+
+  while (logContainer.children.length > MAX_LINES) {
+    logContainer.removeChild(logContainer.firstChild);
+  }
+
+  if (isAutoScroll) logContainer.scrollTop = logContainer.scrollHeight;
 }
 
-// SSE handlers
-function updateStatus(connected) {
+function setConnected(connected) {
   if (connected) {
-    statusDot.style.background = '#00ff55';
-    statusDot.style.boxShadow = '0 0 10px #00ff55';
     statusText.textContent = 'Connected';
+    dot.classList.add('connected');
   } else {
-    statusDot.style.background = '#ff4444';
-    statusDot.style.boxShadow = '0 0 8px #ff4444';
     statusText.textContent = 'Disconnected';
+    dot.classList.remove('connected');
   }
 }
 
 function startSSE() {
-  if (running) return;
-  eventSource = new EventSource('/events');
-  running = true;
-  updateStatus(true);
-  appendLine('[SYSTEM] Connection established.');
-  eventSource.addEventListener('line', e => appendLine(JSON.parse(e.data)));
-  eventSource.onerror = () => {
-    appendLine('[WARN] Connection lost... attempting reconnect');
-    updateStatus(false);
-    running = false;
-    setTimeout(startSSE, 2000);
-  };
+  if (es) {
+    appendLine('[System] SSE already running', 'system');
+    return;
+  }
+
+  try {
+    es = new EventSource('/events');
+
+    es.onopen = () => {
+      setConnected(true);
+      appendLine('[System] SSE connection established', 'system');
+    };
+
+    es.onmessage = (evt) => {
+      try {
+        const parsed = JSON.parse(evt.data);
+        if (parsed && parsed.type) {
+          if (parsed.type === 'ngrok' && parsed.url) {
+            ngrokVal.textContent = parsed.url;
+            appendLine(`[ngrok] ${parsed.url}`, 'system');
+            return;
+          }
+          if (parsed.type === 'attack') {
+            appendLine(parsed.msg || evt.data, 'attack');
+            return;
+          }
+          if (parsed.type === 'line') {
+            appendLine(parsed.msg || evt.data, 'line');
+            return;
+          }
+        }
+      } catch {
+        appendLine(evt.data, 'line'); // أي شيء غير JSON
+      }
+    };
+
+    es.onerror = () => {
+      setConnected(false);
+      appendLine('[System] SSE error occurred', 'system');
+    };
+
+    es.addEventListener('ngrok', (e) => {
+      try {
+        const d = JSON.parse(e.data);
+        ngrokVal.textContent = d.url || e.data;
+        appendLine(`[ngrok-event] ${d.url || e.data}`, 'system');
+      } catch {
+        ngrokVal.textContent = e.data;
+        appendLine(`[ngrok-event] ${e.data}`, 'system');
+      }
+    });
+
+  } catch (err) {
+    appendLine('[System] Failed to start SSE: ' + err.message, 'system');
+  }
 }
+
+
+
 
 function stopSSE() {
-  if (eventSource) eventSource.close();
-  running = false;
-  updateStatus(false);
-  appendLine('[SYSTEM] Stream stopped.');
+  if (!es) {
+    appendLine('[System] No active SSE', 'system');
+    setConnected(false);
+    return;
+  }
+  try { es.close(); } catch {}
+  es = null;
+  setConnected(false);
+  appendLine('[System] SSE stopped', 'system');
 }
 
-// Buttons
-document.getElementById('startBtn').onclick = startSSE;
-document.getElementById('stopBtn').onclick = stopSSE;
-document.getElementById('clearBtn').onclick = () => { logContainer.innerHTML = ''; };
-document.getElementById('copyBtn').onclick = async () => {
-  const text = Array.from(logContainer.children).map(el => el.textContent).join('\n');
-  await navigator.clipboard.writeText(text);
-  alert('✅ Logs copied to clipboard');
-};
+function clearLog() {
+  logContainer.innerHTML = '';
+  appendLine('[System] Log cleared', 'system');
+}
 
-// زر فتح ngrok — ينادي السيرفر مرة واحدة فقط
-document.getElementById('startAttack').addEventListener('click', async function() {
-  if (attackStarted) return alert('⚠️ تم بدء العملية سابقًا');
-  attackStarted = true;
-  this.disabled = true;
-  this.textContent = '⌛ جاري الفتح...';
-
+async function copyLog() {
   try {
-    const res = await fetch('/api/open-ngrok', { method: 'POST' });
-    const data = await res.json();
-    if (!res.ok) {
-      appendLine('[ERROR] فشل فتح ngrok: ' + (data.message || 'Unknown'), 'line system');
-      alert('❌ فشل فتح ngrok: ' + (data.message || 'Unknown'));
-      this.disabled = false;
-      this.textContent = '🚀 فتح ngrok & بدء الهجوم';
-      attackStarted = false;
-      return;
-    }
-    appendLine('[SYSTEM] ngrok opened: ' + data.url, 'line system');
-    ngrokVal.textContent = data.url;
-    this.textContent = '✅ ngrok مفتوح';
-    alert('✅ ngrok تم فتحه — راجع المتصفح المخصص (Chrome)');
+    let text = Array.from(logContainer.children).map(n => n.textContent).join('\n');
+    await navigator.clipboard.writeText(text);
+    appendLine('[System] Log copied to clipboard', 'system');
   } catch (err) {
-    appendLine('[ERROR] خطأ في الاتصال بالسيرفر: ' + err.message, 'line');
-    alert('⚠️ خطأ في الاتصال بالسيرفر: ' + err.message);
-    this.disabled = false;
-    this.textContent = '🚀 فتح ngrok & بدء الهجوم';
-    attackStarted = false;
+    appendLine('[Error] Failed to copy log: ' + err.message, 'system');
   }
-});
+}
 
-// فتح وضع ملء الشاشة عند النقر (اختياري)
-document.body.addEventListener('click', async () => {
-  if (!document.fullscreenElement) {
-    try { await document.documentElement.requestFullscreen(); } catch(e) { /* ignore */ }
-  }
-});
+async function startNgrokAndOpen() {
+  appendLine('[System] Starting ngrok...', 'system');
+  startAttackBtn.disabled = true;
+  const prevText = startAttackBtn.textContent;
+  startAttackBtn.textContent = 'Starting...';
 
-// شغّل SSE تلقائيًا
-startSSE();
-
-// احصل على ngrok URL الموجود في serverUrl.json إن وُجد لعرضه مبكرًا
-(async function fetchNgrokUrl() {
   try {
-    const res = await fetch('/ngrok-url');
-    if (res.ok) {
-      const j = await res.json();
-      if (j.serverUrl) ngrokVal.textContent = j.serverUrl;
+    const res = await fetch('/start-ngrok', { method: 'POST' });
+    if (!res.ok) throw new Error('Server response not OK: ' + res.status);
+    const data = await res.json();
+    const url = data?.url || data?.public_url || null;
+
+    if (url) {
+      ngrokVal.textContent = url;
+      appendLine(`[System] ngrok started: ${url}`, 'system');
+      window.open(url, '_blank');
     } else {
-      // قد لا يكون جاهزًا بعد
-      ngrokVal.textContent = 'waiting...';
+      appendLine('[System] ngrok URL not returned by server', 'system');
     }
-  } catch (e) {
-    ngrokVal.textContent = 'waiting...';
+  } catch (err) {
+    appendLine('[Error] Failed to start ngrok: ' + err.message, 'system');
+  } finally {
+    startAttackBtn.disabled = false;
+    startAttackBtn.textContent = prevText;
   }
-})();
+}
+
+startBtn.addEventListener('click', startSSE);
+stopBtn.addEventListener('click', stopSSE);
+clearBtn.addEventListener('click', clearLog);
+copyBtn.addEventListener('click', copyLog);
+startAttackBtn.addEventListener('click', startNgrokAndOpen);
+
+let userScrolling = false;
+logContainer.addEventListener('wheel', () => { userScrolling = true; });
+logContainer.addEventListener('scroll', () => {
+  const atBottom = (logContainer.scrollHeight - logContainer.scrollTop - logContainer.clientHeight) < 10;
+  if (atBottom) { userScrolling = false; isAutoScroll = true; }
+  else if (!userScrolling) { isAutoScroll = false; }
+});
+
+window.addEventListener('keydown', (e) => {
+  if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'l') {
+    e.preventDefault();
+    clearLog();
+  }
+  if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'c') {
+    if (e.shiftKey) {
+      e.preventDefault();
+      copyLog();
+    }
+  }
+});
+
+window.addEventListener('load', () => {
+  appendLine('[System] Terminal UI ready', 'system');
+});
 </script>
+
+
+
+
 </body>
 </html>
