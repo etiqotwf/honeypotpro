@@ -81,3 +81,11 @@ Timestamp,IP,Method,ThreatType,Action,Attempts
 2025-10-18T19:24:49.775Z,156.203.206.74,GET,"normal visit | /events",auto
 2025-10-18T19:24:49.795Z,156.203.206.74,GET,"normal visit | /ngrok-url",auto
 2025-10-18T19:24:50.074Z,156.203.206.74,GET,"normal visit | /favicon.ico",auto
+2025-10-18T19:38:54.570Z,::1,GET,"normal visit | /events",auto
+2025-10-18T19:38:54.576Z,::1,GET,"normal visit | /ngrok-url",auto
+2025-10-18T19:38:55.172Z,156.203.251.239,GET,"normal visit | /ngrok-url",auto
+2025-10-18T19:38:55.178Z,156.203.251.239,GET,"normal visit | /events",auto
+2025-10-18T19:38:55.430Z,156.203.251.239,GET,"normal visit | /favicon.ico",auto
+2025-10-18T19:39:28.285Z,::1,GET,"normal visit | /events",auto
+2025-10-18T19:39:28.635Z,::1,GET,"normal visit | /events",auto
+2025-10-18T19:39:28.897Z,::1,GET,"normal visit | /events",auto
