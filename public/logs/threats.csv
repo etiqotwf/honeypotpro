@@ -144,3 +144,5 @@ Timestamp,IP,Method,ThreatType,Action,Attempts
 2025-10-18T21:27:57.306Z,::1,POST,"post request | /start-sse",auto
 2025-10-18T21:27:57.321Z,::1,GET,"normal visit | /events",auto
 2025-10-18T21:30:02.482Z,::1,GET,"normal visit | /events",auto
+2025-10-18T21:30:51.636Z,::1,GET,"normal visit | /events",auto
+2025-10-18T21:32:28.881Z,::1,GET,"normal visit | /events",auto
