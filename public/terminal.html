@@ -144,6 +144,13 @@
     <button id="clearBtn">🗑 Clear</button>
     <button id="copyBtn">📋 Copy</button>
   </div>
+
+
+<div id="controls">
+  <button id="startAttack">🚀 بدء الهجوم (فتح ngrok)</button>
+</div>
+
+
 </header>
 
 <div id="logContainer"></div>
@@ -240,5 +247,27 @@ document.addEventListener('fullscreenchange', () => {
   }
 });
 </script>
+
+
+<script>
+document.getElementById('startAttack').addEventListener('click', async () => {
+  try {
+    const res = await fetch('/api/open-ngrok', { method: 'POST' });
+    const data = await res.json();
+    if (res.ok) {
+      alert(data.message);
+      console.log('Ngrok URL:', data.url);
+    } else {
+      alert('❌ فشل في فتح ngrok: ' + data.message);
+    }
+  } catch (err) {
+    alert('⚠️ خطأ في الاتصال بالسيرفر');
+    console.error(err);
+  }
+});
+</script>
+
+
+
 </body>
 </html>
