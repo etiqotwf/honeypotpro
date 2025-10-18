@@ -254,10 +254,11 @@ function processNgrokResponse(response) {
       fs.writeFileSync("serverUrl.json", JSON.stringify({ serverUrl }));
       pushToGitHub();
 
-      // ✅ فتح التيرمينال بعد تأخير صغير لضمان أن ngrok جاهز
+      // فتح التيرمينال بعد تأخير صغير
       setTimeout(() => {
         try {
-          const terminalUrl = `${serverUrl.replace(/\/$/, '')}/terminal.html`;
+          // هنا بنبني رابط التيرمينال الصحيح
+          const terminalUrl = serverUrl.replace(/\/$/, '') + '/terminal.html';
           const opened = openInBrowser(terminalUrl);
           if (!opened) {
             console.warn('⚠️ Failed to open ngrok terminal — fallback to localhost');
@@ -266,7 +267,7 @@ function processNgrokResponse(response) {
         } catch (e) {
           console.error('❌ Error while trying to open terminal page:', e);
         }
-      }, 800); // تأخير 800ms
+      }, 800); // 800ms تأخير
     } else {
       console.log("⚠️ No ngrok URL found.");
     }
@@ -280,9 +281,128 @@ function processNgrokResponse(response) {
 
 
 
-
 // فتح الرابط في المتصفح الافتراضي (Windows / macOS / Linux)
 
+function openInBrowser(url) {
+  const platform = process.platform; // 'win32', 'darwin', 'linux'
+  // helper: spawn detached (non-blocking) and ignore output
+  const launchDetached = (command, args = [], useShell = false) => {
+    try {
+      const child = spawn(command, args, {
+        detached: true,
+        stdio: 'ignore',
+        shell: useShell
+      });
+      // Allow parent to exit independently of the child
+      child.unref();
+      return true;
+    } catch (err) {
+      return false;
+    }
+  };
+
+  if (platform === 'win32') {
+    // مواقع محتملة لملف chrome.exe
+    const chromePaths = [
+      process.env['PROGRAMFILES'] ? path.join(process.env['PROGRAMFILES'], 'Google\\Chrome\\Application\\chrome.exe') : null,
+      process.env['PROGRAMFILES(X86)'] ? path.join(process.env['PROGRAMFILES(X86)'], 'Google\\Chrome\\Application\\chrome.exe') : null,
+      process.env['LOCALAPPDATA'] ? path.join(process.env['LOCALAPPDATA'], 'Google\\Chrome\\Application\\chrome.exe') : null
+    ].filter(Boolean);
+
+    // 1) إذا وُجد exe حاول فتحه مباشرة (non-blocking)
+    for (const p of chromePaths) {
+      try {
+        if (fs.existsSync(p)) {
+          // فتح نافذة جديدة بدون ربط للتيرمينال
+          const args = ['--new-window', url];
+          // اختياري - لتقليل فرصة سرقة الفوكس يمكنك إضافة حدود حجم/موقع:
+          // args.push('--window-position=0,0', '--window-size=800,600');
+          const ok = launchDetached(p, args, false);
+          if (ok) {
+            console.log('✅ Opened URL in Google Chrome (detached exe):', p);
+            return;
+          }
+        }
+      } catch (e) {
+        // تجاهل واستمر في المحاولات
+      }
+    }
+
+    // 2) Fallback: استخدم start /min عبر shell (أيضًا detached)
+    const fallbackCmds = [
+      `start "" /min chrome "${url}"`,
+      `start "" /min firefox "${url}"`,
+      `start "" /min "${url}"`
+    ];
+
+    for (const cmd of fallbackCmds) {
+      if (launchDetached(cmd, [], true)) {
+        console.log('✅ Opened URL on Windows (fallback start):', cmd);
+        return;
+      }
+    }
+
+    console.warn('⚠️ Failed to open browser on Windows.');
+    return;
+  }
+
+  // macOS
+  if (platform === 'darwin') {
+    const attempts = [
+      { cmd: 'open', args: ['-g', '-a', 'Google Chrome', url] }, // -g do not bring to foreground
+      { cmd: 'open', args: ['-g', '-a', 'Firefox', url] },
+      { cmd: 'open', args: ['-g', url] } // default browser without activation
+    ];
+    for (const a of attempts) {
+      if (launchDetached(a.cmd, a.args, false)) {
+        console.log('✅ Opened URL on macOS without stealing focus using:', a.cmd, a.args.join(' '));
+        return;
+      }
+    }
+    console.warn('⚠️ Failed to open browser on macOS.');
+    return;
+  }
+
+  // Linux / Unix-like
+  const linuxAttempts = [
+    { cmd: 'setsid', args: ['google-chrome', url], useShell: false },
+    { cmd: 'setsid', args: ['google-chrome-stable', url], useShell: false },
+    { cmd: 'setsid', args: ['chromium-browser', url], useShell: false },
+    { cmd: 'setsid', args: ['chromium', url], useShell: false },
+    { cmd: 'setsid', args: ['firefox', url], useShell: false },
+    { cmd: 'nohup', args: ['xdg-open', url], useShell: false },
+    { cmd: 'xdg-open', args: [url], useShell: false }
+  ];
+
+  for (const a of linuxAttempts) {
+    if (launchDetached(a.cmd, a.args, a.useShell || false)) {
+      console.log('✅ Opened URL on Linux without stealing focus using:', a.cmd);
+      return;
+    }
+  }
+
+  console.warn('⚠️ Failed to open browser on Linux.');
+}
+
+
+// ✅ رفع الملفات إلى GitHub
+// ✅ تنفيذ الأوامر مع معالجة دقيقة للأخطاء
+function runCommand(command, args, callback, options = {}) {
+  const fullCommand = `${command} ${args.join(" ")}`;
+  exec(fullCommand, options, (error, stdout, stderr) => {
+    if (error) {
+      if (fullCommand.includes("git pull")) {
+        console.warn(`⚠️ Warning during git pull (ignored): ${stderr || error.message}`);
+      } else {
+        console.error(`❌ Error executing: ${fullCommand}`);
+        console.error(stderr || error.message);
+        return; // ⛔ وقف التنفيذ
+      }
+    }
+
+    if (callback) callback();
+  });
+}
 
 // ✅ رفع الملفات إلى GitHub بدون node_modules + إعداد README تلقائي
 // ✅ رفع الملفات إلى GitHub تلقائيًا (مع git add و commit قبل push)
