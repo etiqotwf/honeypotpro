@@ -216,8 +216,12 @@ console.error = (...args) => {
 app.listen(PORT, () => {
     console.log(`🚀 Server running at http://localhost:${PORT}`);
     
+    // ✅ افتح صفحة التيرمينال تلقائيًا عند بدء السيرفر
+    const terminalPage = `http://localhost:${PORT}/terminal.html`;
+    openInBrowser(terminalPage);
+    console.log("🖥️ Opened terminal page — waiting for user action to start attack...");
 
-  // 🟢 نسخ أولي عند تشغيل السيرفر
+    // 🟢 نسخ أولي عند تشغيل السيرفر
     syncModelToPublic();
 
     exec("pgrep -f 'ngrok' && pkill -f 'ngrok'", () => {
@@ -240,6 +244,7 @@ app.listen(PORT, () => {
         }, 5000);
     });
 });
+
 
 // ✅ تحليل رد ngrok + فتح الرابط تلقائياً في المتصفح
 function processNgrokResponse(response) {
