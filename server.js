@@ -250,11 +250,8 @@ function processNgrokResponse(response) {
       console.log(`✅ Server is available at: 🔗 ${serverUrl}`);
       fs.writeFileSync("serverUrl.json", JSON.stringify({ serverUrl }));
       pushToGitHub();
-
-      // ✅ بدلاً من فتح ngrok تلقائيًا، افتح التيرمينال فقط
-      openInBrowser(`http://localhost:${PORT}/terminal.html`);
-      console.log("🖥️ Opened terminal page — waiting for user action to start attack...");
-
+      // ملاحظة: لا نفتح المتصفح هنا أبداً — فقط نعلِم أن ngrok جاهز
+      console.log("🖥️ ngrok URL is ready — waiting for user action to open it from the terminal page.");
     } else {
       console.log("⚠️ No ngrok URL found.");
     }
@@ -262,6 +259,7 @@ function processNgrokResponse(response) {
     console.error("❌ Error parsing ngrok response:", e);
   }
 }
+
 
 // فتح الرابط في المتصفح الافتراضي (Windows / macOS / Linux)
 
