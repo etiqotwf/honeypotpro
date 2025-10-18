@@ -214,35 +214,33 @@ console.error = (...args) => {
 
 // ✅ بدء الخادم و ngrok
 app.listen(PORT, () => {
-    console.log(`🚀 Server running at http://localhost:${PORT}`);
-    
-    // ✅ افتح صفحة التيرمينال تلقائيًا عند بدء السيرفر
-    const terminalPage = `http://localhost:${PORT}/terminal.html`;
-    openInBrowser(terminalPage);
-    console.log("🖥️ Opened terminal page — waiting for user action to start attack...");
+  console.log(`🚀 Server running at http://localhost:${PORT}`);
 
-    // 🟢 نسخ أولي عند تشغيل السيرفر
-    syncModelToPublic();
+  // ✅ افتح صفحة التيرمينال فقط
+  openInBrowser(`http://localhost:${PORT}/terminal.html`);
+  console.log("🖥️ Opened terminal page — waiting for user action to start attack...");
 
-    exec("pgrep -f 'ngrok' && pkill -f 'ngrok'", () => {
-        exec("ngrok.exe http 3000 --log=stdout", (err) => {
-            if (err) return console.error("❌ Error starting ngrok:", err);
-            console.log("✅ ngrok started successfully!");
-        });
+  syncModelToPublic();
 
-        setTimeout(() => {
-            exec("curl -s http://127.0.0.1:4040/api/tunnels", (err, stdout) => {
-                if (err || !stdout) {
-                    exec("powershell -Command \"(Invoke-WebRequest -Uri 'http://127.0.0.1:4040/api/tunnels' -UseBasicParsing).Content\"", (psErr, psStdout) => {
-                        if (psErr || !psStdout) return console.error("❌ Error fetching ngrok URL:", psErr);
-                        processNgrokResponse(psStdout);
-                    });
-                } else {
-                    processNgrokResponse(stdout);
-                }
-            });
-        }, 5000);
+  exec("pgrep -f 'ngrok' && pkill -f 'ngrok'", () => {
+    exec("ngrok.exe http 3000 --log=stdout", (err) => {
+      if (err) return console.error("❌ Error starting ngrok:", err);
+      console.log("✅ ngrok started successfully!");
     });
+
+    setTimeout(() => {
+      exec("curl -s http://127.0.0.1:4040/api/tunnels", (err, stdout) => {
+        if (err || !stdout) {
+          exec("powershell -Command \"(Invoke-WebRequest -Uri 'http://127.0.0.1:4040/api/tunnels' -UseBasicParsing).Content\"", (psErr, psStdout) => {
+            if (psErr || !psStdout) return console.error("❌ Error fetching ngrok URL:", psErr);
+            processNgrokResponse(psStdout);
+          });
+        } else {
+          processNgrokResponse(stdout);
+        }
+      });
+    }, 5000);
+  });
 });
 
 
@@ -254,8 +252,10 @@ function processNgrokResponse(response) {
     if (serverUrl) {
       console.log(`✅ Server is available at: 🔗 ${serverUrl}`);
       fs.writeFileSync("serverUrl.json", JSON.stringify({ serverUrl }));
+
       pushToGitHub();
-      // ملاحظة: لا نفتح المتصفح هنا أبداً — فقط نعلِم أن ngrok جاهز
+
+      // ❌ لا تفتح المتصفح هنا أبداً
       console.log("🖥️ ngrok URL is ready — waiting for user action to open it from the terminal page.");
     } else {
       console.log("⚠️ No ngrok URL found.");
