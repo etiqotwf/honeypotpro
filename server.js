@@ -219,15 +219,15 @@ function processNgrokResponse(response) {
 
 function openInBrowser(url) {
   const platform = process.platform; // 'win32', 'darwin', 'linux'
-
   // helper: spawn detached (non-blocking) and ignore output
   const launchDetached = (command, args = [], useShell = false) => {
     try {
       const child = spawn(command, args, {
         detached: true,
         stdio: 'ignore',
-        shell: useShell // sometimes we need shell for start command on Windows
+        shell: useShell
       });
+      // Allow parent to exit independently of the child
       child.unref();
       return true;
     } catch (err) {
@@ -236,35 +236,42 @@ function openInBrowser(url) {
   };
 
   if (platform === 'win32') {
-    // أسرع وموثوق: حاول chromium exe مباشرة (لكن افتح مصغّر باستخدام start /min)
+    // مواقع محتملة لملف chrome.exe
     const chromePaths = [
       process.env['PROGRAMFILES'] ? path.join(process.env['PROGRAMFILES'], 'Google\\Chrome\\Application\\chrome.exe') : null,
       process.env['PROGRAMFILES(X86)'] ? path.join(process.env['PROGRAMFILES(X86)'], 'Google\\Chrome\\Application\\chrome.exe') : null,
       process.env['LOCALAPPDATA'] ? path.join(process.env['LOCALAPPDATA'], 'Google\\Chrome\\Application\\chrome.exe') : null
     ].filter(Boolean);
 
-    // إذا وُجد exe مباشر سنحاول فتحه مصغّراً عبر start /min (shell required)
+    // 1) إذا وُجد exe حاول فتحه مباشرة (non-blocking)
     for (const p of chromePaths) {
-      if (fs.existsSync(p)) {
-        // استخدم start /min لتجنّب سرقة الفوكس
-        const cmd = `start "" /min "${p}" --new-window "${url}"`;
-        if (launchDetached(cmd, [], true)) {
-          console.log('✅ Opened URL in Google Chrome (minimized via start):', p);
-          return;
+      try {
+        if (fs.existsSync(p)) {
+          // فتح نافذة جديدة بدون ربط للتيرمينال
+          const args = ['--new-window', url];
+          // اختياري - لتقليل فرصة سرقة الفوكس يمكنك إضافة حدود حجم/موقع:
+          // args.push('--window-position=0,0', '--window-size=800,600');
+          const ok = launchDetached(p, args, false);
+          if (ok) {
+            console.log('✅ Opened URL in Google Chrome (detached exe):', p);
+            return;
+          }
         }
+      } catch (e) {
+        // تجاهل واستمر في المحاولات
       }
     }
 
-    // fallback: جرب chrome عبر start minimized، ثم firefox، ثم default (كلها باستخدام shell start)
-    const attempts = [
+    // 2) Fallback: استخدم start /min عبر shell (أيضًا detached)
+    const fallbackCmds = [
       `start "" /min chrome "${url}"`,
       `start "" /min firefox "${url}"`,
       `start "" /min "${url}"`
     ];
 
-    for (const cmd of attempts) {
+    for (const cmd of fallbackCmds) {
       if (launchDetached(cmd, [], true)) {
-        console.log('✅ Opened URL on Windows (minimized) using:', cmd);
+        console.log('✅ Opened URL on Windows (fallback start):', cmd);
         return;
       }
     }
@@ -273,15 +280,15 @@ function openInBrowser(url) {
     return;
   }
 
+  // macOS
   if (platform === 'darwin') {
-    // macOS: -g => do not bring application to foreground (no-activate)
     const attempts = [
-      { cmd: 'open', args: ['-g', '-a', 'Google Chrome', url] },
+      { cmd: 'open', args: ['-g', '-a', 'Google Chrome', url] }, // -g do not bring to foreground
       { cmd: 'open', args: ['-g', '-a', 'Firefox', url] },
       { cmd: 'open', args: ['-g', url] } // default browser without activation
     ];
     for (const a of attempts) {
-      if (launchDetached(a.cmd, a.args)) {
+      if (launchDetached(a.cmd, a.args, false)) {
         console.log('✅ Opened URL on macOS without stealing focus using:', a.cmd, a.args.join(' '));
         return;
       }
@@ -291,7 +298,6 @@ function openInBrowser(url) {
   }
 
   // Linux / Unix-like
-  // ننفّذ في الخلفية عبر setsid/nohup أو xdg-open. عادةً لا يخطف الفوكس.
   const linuxAttempts = [
     { cmd: 'setsid', args: ['google-chrome', url], useShell: false },
     { cmd: 'setsid', args: ['google-chrome-stable', url], useShell: false },
