@@ -28,3 +28,5 @@ Timestamp,IP,Method,ThreatType,Action,Attempts
 2025-10-18T14:01:31.710Z,156.203.206.74,GET,"normal visit | /favicon.ico",auto
 2025-10-18T14:03:26.358Z,::1,GET,"normal visit | /events",auto
 2025-10-18T14:05:51.601Z,::1,GET,"normal visit | /events",auto
+2025-10-18T14:09:24.502Z,::1,GET,"normal visit | /events",auto
+2025-10-18T14:09:28.897Z,::1,GET,"normal visit | /events",auto
