@@ -496,52 +496,147 @@ if (fs.existsSync(projectLogPath)) {
 
 
 // ✅ مراقبة ملف public/logs/threats.csv وتشغيل الـ Adaptive Honeypot على آخر سطر
+// -----------------------------
+// Live SSE endpoint + CSV download + watch threats.csv -> run honeypot
+// -----------------------------
+
 const publicLogPath = path.join(process.cwd(), 'public', 'logs', 'threats.csv');
 
+// SSE endpoint — يعرض لوج التهديدات مباشرة على المتصفح
+app.get('/events', (req, res) => {
+  try {
+    res.set({
+      'Content-Type': 'text/event-stream',
+      'Cache-Control': 'no-cache',
+      Connection: 'keep-alive',
+      'Access-Control-Allow-Origin': '*'
+    });
+    res.flushHeaders && res.flushHeaders();
+
+    // heartbeat للحفاظ على الاتصال حي
+    const heartbeat = setInterval(() => res.write(':heartbeat\n\n'), 20000);
+
+    // إرسال آخر N سطر عند الاتصال
+    const sendInitial = (n = 200) => {
+      try {
+        if (!fs.existsSync(publicLogPath)) {
+          res.write(`event: initial\ndata: ${JSON.stringify([])}\n\n`);
+          return;
+        }
+        const raw = fs.readFileSync(publicLogPath, 'utf8').trim();
+        if (!raw) {
+          res.write(`event: initial\ndata: ${JSON.stringify([])}\n\n`);
+          return;
+        }
+        const lines = raw.split(/\r?\n/).filter(l => l && !l.toLowerCase().startsWith('timestamp'));
+        res.write(`event: initial\ndata: ${JSON.stringify(lines.slice(-n))}\n\n`);
+      } catch (e) {
+        res.write(`event: initial\ndata: ${JSON.stringify([])}\n\n`);
+      }
+    };
+    sendInitial();
+
+    // ترسل آخر سطر جديد فقط إذا اختلف عن آخر مرسل
+    let lastSentLine = null;
+    const sendLastLineIfNew = () => {
+      try {
+        if (!fs.existsSync(publicLogPath)) return;
+        const raw = fs.readFileSync(publicLogPath, 'utf8').trim();
+        if (!raw) return;
+        const lines = raw.split(/\r?\n/).filter(l => l && !l.toLowerCase().startsWith('timestamp'));
+        const last = lines[lines.length - 1];
+        if (last && last !== lastSentLine) {
+          lastSentLine = last;
+          res.write(`event: line\ndata: ${JSON.stringify(last)}\n\n`);
+        }
+      } catch (e) {
+        // ignore read errors
+      }
+    };
+
+    // راقب الملف مع debounce بسيط
+    let debounce = null;
+    const watcher = fs.watch(publicLogPath, (ev) => {
+      if (debounce) clearTimeout(debounce);
+      debounce = setTimeout(() => sendLastLineIfNew(), 120);
+    });
+
+    // تنظيف عند إغلاق الاتصال
+    req.on('close', () => {
+      clearInterval(heartbeat);
+      try { watcher && watcher.close(); } catch (e) {}
+      res.end();
+    });
+  } catch (err) {
+    console.error('SSE /events error:', err);
+    res.status(500).end();
+  }
+});
+
+// Download CSV endpoint
+app.get('/download/csv', (req, res) => {
+  if (fs.existsSync(publicLogPath)) {
+    return res.download(publicLogPath, 'threats.csv');
+  }
+  res.status(404).send('CSV not found');
+});
+
+// Watch public/logs/threats.csv and run honeypot on new lines
 if (fs.existsSync(publicLogPath)) {
   fs.watchFile(publicLogPath, { interval: 3000 }, (curr, prev) => {
     if (curr.mtime !== prev.mtime) {
       console.log("👁️ Detected new entry in public/logs/threats.csv");
 
       // اقرأ آخر سطر بشكل آمن
-      const content = fs.readFileSync(publicLogPath, 'utf8').trim();
-      const lines = content.split(/\r?\n/);
-      const lastLine = lines[lines.length - 1];
+      try {
+        const content = fs.readFileSync(publicLogPath, 'utf8').trim();
+        const lines = content.split(/\r?\n/).filter(Boolean);
+        const lastLine = lines[lines.length - 1];
 
-      if (lastLine && !lastLine.startsWith("Timestamp")) {
-        console.log(`🆕 New line detected: ${lastLine}`);
+        if (lastLine && !lastLine.toLowerCase().startsWith("timestamp")) {
+          console.log(`🆕 New line detected: ${lastLine}`);
 
-        // جدولة تشغيل honeypot لكن امنع التداخل
-        const runHoneypot = () => {
-          if (honeypotProcessing) {
-            honeypotPending = true;
-            console.log('⏳ Honeypot busy — scheduling pending run.');
-            return;
-          }
-          honeypotProcessing = true;
-          // استخدم spawn بدلاً من exec لتجنب مشاكل الاقتباسات
-          const child = spawn(process.execPath, ['adaptive-honeypot.js', lastLine], { cwd: process.cwd() });
-
-          child.stdout.on('data', (data) => {
-            process.stdout.write(`[HONEYPOT] ${data.toString()}`);
-          });
-          child.stderr.on('data', (data) => {
-            process.stderr.write(`[HONEYPOT-ERR] ${data.toString()}`);
-          });
-
-          child.on('close', (code) => {
-            console.log(`🤖 Honeypot process exited with code ${code}`);
-            honeypotProcessing = false;
-            if (honeypotPending) {
-              honeypotPending = false;
-              // تأخير بسيط قبل التشغيل التالي لتجميع أحداث إضافية
-              setTimeout(runHoneypot, 500);
+          // جدولة تشغيل honeypot لكن امنع التداخل
+          const runHoneypot = () => {
+            if (honeypotProcessing) {
+              honeypotPending = true;
+              console.log('⏳ Honeypot busy — scheduling pending run.');
+              return;
             }
-          });
-        };
+            honeypotProcessing = true;
 
-        // شغّل
-        runHoneypot();
+            // استخدم spawn لتشغيل السكربت بدون مشاكل الاقتباسات
+            const child = spawn(process.execPath, ['adaptive-honeypot.js', lastLine], { cwd: process.cwd(), stdio: ['ignore','pipe','pipe'] });
+
+            child.stdout.on('data', (data) => {
+              // اطبع إخراج الهوني بوت على التيرمينال الاب
+              process.stdout.write(`[HONEYPOT] ${data.toString()}`);
+            });
+            child.stderr.on('data', (data) => {
+              process.stderr.write(`[HONEYPOT-ERR] ${data.toString()}`);
+            });
+
+            child.on('close', (code) => {
+              console.log(`🤖 Honeypot process exited with code ${code}`);
+              honeypotProcessing = false;
+              if (honeypotPending) {
+                honeypotPending = false;
+                // تأخير بسيط قبل التشغيل التالي لتجميع أحداث إضافية
+                setTimeout(runHoneypot, 500);
+              }
+            });
+
+            child.on('error', (err) => {
+              console.error('❌ Failed to spawn honeypot process:', err);
+              honeypotProcessing = false;
+            });
+          };
+
+          // شغّل
+          runHoneypot();
+        }
+      } catch (e) {
+        console.error('❌ Error reading public log file:', e);
       }
     }
   });
@@ -549,12 +644,7 @@ if (fs.existsSync(publicLogPath)) {
   console.warn("⚠️ public/logs/threats.csv not found, skipping watch...");
 }
 
-
-
-
-
-
-// ✅ أي طلب غير static و API يرجع صفحة الفيك
+// أي طلب غير static و API يرجع صفحة الفيك (كما في كودك الأصلي)
 app.get('*', (req, res) => {
   // استثناء ملفات static و api
   if (
