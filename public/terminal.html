@@ -123,7 +123,6 @@ function setConnected(connected) {
     dot.classList.remove('connected');
   }
 }
-
 // startSSE now returns Promise that resolves on open
 function startSSE() {
   if (es) {
@@ -135,16 +134,57 @@ function startSSE() {
     try {
       es = new EventSource('/events');
 
-      es.onopen = () => {
-        setConnected(true);
-        appendLine('[System] SSE connection established', 'system');
-        resolve();
-      };
+      // ---- مستمعون للأحداث المخصصة التي يرسلها السيرفر ----
+      es.addEventListener('line', (e) => {
+        try {
+          const parsed = JSON.parse(e.data);
+          const msg = parsed && (parsed.msg || parsed.message) ? (parsed.msg || parsed.message) : parsed;
+          appendLine(String(msg), 'line');
+        } catch {
+          appendLine(e.data, 'line');
+        }
+      });
 
+      es.addEventListener('system', (e) => {
+        try {
+          const parsed = JSON.parse(e.data);
+          const msg = parsed && (parsed.msg || parsed.message) ? (parsed.msg || parsed.message) : parsed;
+          appendLine(String(msg), 'system');
+        } catch {
+          appendLine(e.data, 'system');
+        }
+      });
+
+      es.addEventListener('attack', (e) => {
+        try {
+          const parsed = JSON.parse(e.data);
+          const msg = parsed && (parsed.msg || parsed.message) ? (parsed.msg || parsed.message) : parsed;
+          appendLine(String(msg), 'attack');
+        } catch {
+          appendLine(e.data, 'attack');
+        }
+      });
+
+      es.addEventListener('ngrok', (e) => {
+        try {
+          const parsed = JSON.parse(e.data);
+          const url = parsed?.url || parsed?.serverUrl || e.data;
+          ngrokVal.textContent = String(url);
+          appendLine(`[ngrok-event] ${url}`, 'system');
+        } catch {
+          ngrokVal.textContent = e.data;
+          appendLine(`[ngrok-event] ${e.data}`, 'system');
+        }
+      });
+
+      // ---- الرسائل الافتراضية عبر data: ----
       es.onmessage = (evt) => {
+        // evt.data قد يكون JSON-stringified object { type, msg } أو مجرد نص
         try {
           const parsed = JSON.parse(evt.data);
+
           if (parsed && parsed.type) {
+            // لو السيرفر يستخدم الصيغة الموحدة { type, msg }
             if (parsed.type === 'ngrok' && parsed.url) {
               ngrokVal.textContent = parsed.url;
               appendLine(`[ngrok] ${parsed.url}`, 'system');
@@ -153,19 +193,35 @@ function startSSE() {
             if (parsed.type === 'attack') { appendLine(parsed.msg || evt.data, 'attack'); return; }
             if (parsed.type === 'line') { appendLine(parsed.msg || evt.data, 'line'); return; }
             if (parsed.type === 'system') { appendLine(parsed.msg || evt.data, 'system'); return; }
+            // fallback: لو نوع غير معروف اعرض الرسالة كاملة
+            appendLine(JSON.stringify(parsed), 'line');
+            return;
           }
-        } catch {
+
+          // لو مش في حقل type، افترض أن evt.data هو نص عادي
+          appendLine(evt.data, 'line');
+        } catch (err) {
+          // لو JSON.parse فشل: عرض النص كما هو
           appendLine(evt.data, 'line');
         }
       };
 
-      es.onerror = () => {
+      es.onopen = () => {
+        setConnected(true);
+        appendLine('[System] SSE connection established', 'system');
+        resolve();
+      };
+
+      es.onerror = (err) => {
         setConnected(false);
         appendLine('[System] SSE error occurred', 'system');
+        // لا نرفض هنا لأن بعض الأخطاء تظهر بعد فتح الاتصال
       };
 
     } catch (err) {
       appendLine('[System] Failed to start SSE: ' + err.message, 'system');
+      // تأكد من إفراغ es لو فشل الإنشاء
+      try { if (es) { es.close(); es = null; } } catch (_) {}
       reject(err);
     }
   });
@@ -281,7 +337,7 @@ window.addEventListener('keydown', (e) => {
 window.addEventListener('load', () => {
   appendLine('[System] Terminal UI ready', 'system');
 });
-</script>
+</script> 
 
 </body>
 </html>
