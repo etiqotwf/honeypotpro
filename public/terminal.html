@@ -153,6 +153,7 @@
 <script>
 let eventSource = null;
 let running = false;
+let fullscreenActivated = false; // ✅ متغير لتتبع حالة الدخول إلى فل سكرين
 const logContainer = document.getElementById('logContainer');
 const statusEl = document.getElementById('status');
 
@@ -211,12 +212,11 @@ document.getElementById('copyBtn').onclick = async () => {
   alert('✅ Logs copied!');
 };
 
-// 🖥️ وضع ملء الشاشة بالتبديل عند النقر في أي مكان
+// 🖥️ الدخول مرة واحدة فقط لوضع ملء الشاشة عند أول ضغطة
 document.body.addEventListener('click', async () => {
-  if (!document.fullscreenElement) {
+  if (!fullscreenActivated && !document.fullscreenElement) {
     await document.documentElement.requestFullscreen();
-  } else {
-    await document.exitFullscreen();
+    fullscreenActivated = true; // ✅ لا تسمح بالخروج عند الضغط مرة أخرى
   }
 });
 

@@ -323,5 +323,30 @@
     },
     "finalAction": "alert",
     "reason": "trusted dqn output"
+  },
+  {
+    "timestamp": "2025-10-18T13:47:12.603Z",
+    "ip": "::1",
+    "record": {
+      "timestamp": "2025-10-18T13:47:11.065Z",
+      "ip": "::1",
+      "method": "GET",
+      "threatType": "\"normal visit | /events\",auto",
+      "raw": "2025-10-18T13:47:11.065Z,::1,GET,\"normal visit | /events\",auto"
+    },
+    "dqnAction": "alert",
+    "heuristic": {
+      "actionSuggested": "ignore",
+      "reason": "no heuristic match",
+      "severityHint": "low"
+    },
+    "llm": {
+      "type": "neutral",
+      "severity": "medium",
+      "score": 0.7551267743110657,
+      "summary": "Label=neutral score=0.76"
+    },
+    "finalAction": "alert",
+    "reason": "trusted dqn output"
   }
 ]
