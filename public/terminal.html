@@ -235,7 +235,6 @@ async function startNgrokAndOpen() {
   startAttackBtn.textContent = 'Starting...';
 
   try {
-    const res = await fetch('/start-ngrok', { method: 'POST' });
     if (!res.ok) throw new Error('Server response not OK: ' + res.status);
     const data = await res.json();
     const url = data?.url || data?.public_url || null;

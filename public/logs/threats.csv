@@ -160,3 +160,4 @@ Timestamp,IP,Method,ThreatType,Action,Attempts
 2025-10-18T22:02:40.774Z,::1,POST,"post request | /start-powershell",auto
 2025-10-18T22:05:28.272Z,::1,GET,"normal visit | /events",auto
 2025-10-18T22:05:30.052Z,::1,POST,"post request | /start-powershell",auto
+2025-10-18T22:11:52.561Z,::1,GET,"normal visit | /events",auto
