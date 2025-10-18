@@ -167,3 +167,7 @@ Timestamp,IP,Method,ThreatType,Action,Attempts
 2025-10-18T22:29:14.794Z,::1,GET,"normal visit | /events",auto
 2025-10-18T22:29:17.432Z,::1,POST,"post request | /start-powershell",auto
 2025-10-18T22:29:20.954Z,::1,GET,"normal visit | /ngrok-url",auto
+2025-10-18T22:33:24.120Z,::1,GET,"normal visit | /events",auto
+2025-10-18T22:33:26.442Z,::1,POST,"post request | /start-powershell",auto
+2025-10-18T22:33:30.122Z,::1,GET,"normal visit | /ngrok-url",auto
+2025-10-18T22:33:36.758Z,156.203.251.239,GET,"normal visit | /favicon.ico",auto

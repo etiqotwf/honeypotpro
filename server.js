@@ -272,8 +272,10 @@ app.listen(PORT, () => {
 function processNgrokResponse(response) {
   try {
     const tunnels = JSON.parse(response);
-    const serverUrl = tunnels.tunnels[0]?.public_url;
+    // assign to the top-level variable (not a new const)
+    serverUrl = tunnels.tunnels[0]?.public_url || null;
     console.log(`✅ Server URL (ngrok) is: ${serverUrl || 'not used'}`);
+
     fs.writeFileSync("serverUrl.json", JSON.stringify({ serverUrl }));
 
     const terminalUrl = `http://localhost:${PORT}/terminal.html`;
