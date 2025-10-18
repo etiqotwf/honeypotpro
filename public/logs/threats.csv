@@ -146,3 +146,8 @@ Timestamp,IP,Method,ThreatType,Action,Attempts
 2025-10-18T21:30:02.482Z,::1,GET,"normal visit | /events",auto
 2025-10-18T21:30:51.636Z,::1,GET,"normal visit | /events",auto
 2025-10-18T21:32:28.881Z,::1,GET,"normal visit | /events",auto
+2025-10-18T21:34:06.264Z,127.0.0.1,GET,"normal visit | /events",auto
+2025-10-18T21:45:35.243Z,::1,POST,"post request | /start-powershell",auto
+2025-10-18T21:45:35.271Z,::1,GET,"normal visit | /events",auto
+2025-10-18T21:48:39.384Z,::1,POST,"post request | /start-powershell",auto
+2025-10-18T21:48:39.691Z,::1,GET,"normal visit | /events",auto

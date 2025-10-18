@@ -171,18 +171,44 @@ app.get("/ngrok-url", (req, res) => {
 let clients = [];
 
 app.get('/events', (req, res) => {
-  res.set({
-    'Content-Type': 'text/event-stream',
-    'Cache-Control': 'no-cache',
-    'Connection': 'keep-alive'
-  });
-  res.flushHeaders();
+  res.setHeader('Content-Type', 'text/event-stream');
+  res.setHeader('Cache-Control', 'no-cache');
+  res.setHeader('Connection', 'keep-alive');
+
   clients.push(res);
 
   req.on('close', () => {
     clients = clients.filter(c => c !== res);
   });
 });
+
+// دالة لإرسال رسالة لكل الـ clients
+function sendToClients(data, type = 'line') {
+  clients.forEach(res => {
+    res.write(`data: ${JSON.stringify({ type, msg: data })}\n\n`);
+  });
+}
+
+// مثال على تشغيل PowerShell
+app.post('/start-powershell', (req, res) => {
+  const ps = spawn('powershell.exe', ['-NoProfile', '-Command', 'Get-Process']); // مثال: يمكن تعديل أي أمر
+
+  ps.stdout.on('data', chunk => {
+    sendToClients(chunk.toString(), 'line'); // إرسال stdout
+  });
+
+  ps.stderr.on('data', chunk => {
+    sendToClients(chunk.toString(), 'attack'); // إرسال stderr بلون مختلف
+  });
+
+  ps.on('close', code => {
+    sendToClients(`[System] PowerShell exited with code ${code}`, 'system');
+  });
+
+  res.json({ status: 'started' });
+});
+
+
 
 // ✅ دالة تبث أى سطر يظهر في التيرمينال
 function broadcastLine(line) {

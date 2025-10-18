@@ -18,3 +18,4 @@ Timestamp,IP,Method,ThreatType,Action
 2025-10-18T21:26:06.760Z,::1,POST,"post request | /start-sse",auto,alert
 2025-10-18T21:26:18.163Z,::1,GET,"normal visit | /events",auto,alert
 2025-10-18T21:27:57.321Z,::1,GET,"normal visit | /events",auto,alert
+2025-10-18T21:32:28.881Z,::1,GET,"normal visit | /events",auto,alert

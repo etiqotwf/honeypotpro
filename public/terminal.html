@@ -181,6 +181,21 @@ function startSSE() {
 }
 
 
+async function startSSEAndPS() {
+  startSSE(); // بدء SSE
+
+  try {
+    await fetch('/start-powershell', { method: 'POST' });
+    appendLine('[System] PowerShell started', 'system');
+  } catch (err) {
+    appendLine('[Error] Failed to start PowerShell: ' + err.message, 'system');
+  }
+}
+
+// --- ربط الزر بالدالة الجديدة ---
+startBtn.removeEventListener('click', startSSE);
+startBtn.addEventListener('click', startSSEAndPS);
+
 
 
 function stopSSE() {
