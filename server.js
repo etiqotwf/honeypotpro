@@ -243,6 +243,7 @@ app.listen(PORT, () => {
 });
 
 // ✅ تحليل رد ngrok + فتح الرابط تلقائياً في المتصفح
+// ✅ تحليل رد ngrok + فتح الرابط تلقائياً في المتصفح
 function processNgrokResponse(response) {
   try {
     const tunnels = JSON.parse(response);
@@ -253,22 +254,19 @@ function processNgrokResponse(response) {
       fs.writeFileSync("serverUrl.json", JSON.stringify({ serverUrl }));
       pushToGitHub();
 
-      // ✅ تم تعطيل فتح المتصفح تلقائيًا
-      // إذا أردت إعادة تفعيله لاحقًا، أزل التعليق عن الكود التالي:
-      /*
-      try {
-        const terminalUrl = `${serverUrl.replace(/\/$/, '')}/terminal.html`;
-        setTimeout(() => {
+      // ✅ فتح التيرمينال بعد تأخير صغير لضمان أن ngrok جاهز
+      setTimeout(() => {
+        try {
+          const terminalUrl = `${serverUrl.replace(/\/$/, '')}/terminal.html`;
           const opened = openInBrowser(terminalUrl);
           if (!opened) {
-            console.warn('⚠️ openInBrowser فشلت — محاولة فتح localhost كحل احتياطي');
+            console.warn('⚠️ Failed to open ngrok terminal — fallback to localhost');
             openInBrowser(`http://localhost:${PORT}/terminal.html`);
           }
-        }, 1000);
-      } catch (e) {
-        console.error('❌ Error while trying to open terminal page:', e);
-      }
-      */
+        } catch (e) {
+          console.error('❌ Error while trying to open terminal page:', e);
+        }
+      }, 800); // تأخير 800ms
     } else {
       console.log("⚠️ No ngrok URL found.");
     }
@@ -277,6 +275,7 @@ function processNgrokResponse(response) {
     console.error("❌ Error parsing ngrok response:", e);
   }
 }
+
 
 
 
