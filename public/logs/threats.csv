@@ -6,3 +6,5 @@ Timestamp,IP,Method,ThreatType,Action,Attempts
 2025-10-18T12:52:20.967Z,156.203.206.74,GET,"normal visit | /favicon.ico",auto
 2025-10-18T12:59:50.383Z,156.203.206.74,GET,"normal visit | /favicon.ico",auto
 2025-10-18T13:08:52.993Z,156.203.206.74,GET,"normal visit | /favicon.ico",auto
+2025-10-18T13:10:15.712Z,::1,GET,"normal visit | /events",auto
+2025-10-18T13:10:20.507Z,::1,GET,"normal visit | /favicon.ico",auto

@@ -123,5 +123,30 @@
     },
     "finalAction": "alert",
     "reason": "trusted dqn output"
+  },
+  {
+    "timestamp": "2025-10-18T13:10:25.969Z",
+    "ip": "156.203.206.74",
+    "record": {
+      "timestamp": "2025-10-18T13:08:52.993Z",
+      "ip": "156.203.206.74",
+      "method": "GET",
+      "threatType": "\"normal visit | /favicon.ico\",auto",
+      "raw": "2025-10-18T13:08:52.993Z,156.203.206.74,GET,\"normal visit | /favicon.ico\",auto"
+    },
+    "dqnAction": "alert",
+    "heuristic": {
+      "actionSuggested": "ignore",
+      "reason": "no heuristic match",
+      "severityHint": "low"
+    },
+    "llm": {
+      "type": "neutral",
+      "severity": "medium",
+      "score": 0.7982574701309204,
+      "summary": "Label=neutral score=0.80"
+    },
+    "finalAction": "alert",
+    "reason": "trusted dqn output"
   }
 ]
