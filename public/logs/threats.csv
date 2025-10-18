@@ -31,3 +31,9 @@ Timestamp,IP,Method,ThreatType,Action,Attempts
 2025-10-18T18:14:03.513Z,127.0.0.1,GET,"normal visit | /events",auto
 2025-10-18T18:14:03.621Z,::1,GET,"normal visit | /events",auto
 2025-10-18T18:14:03.684Z,127.0.0.1,GET,"normal visit | /events",auto
+2025-10-18T18:20:43.945Z,127.0.0.1,GET,"normal visit | /events",auto
+2025-10-18T18:20:44.011Z,127.0.0.1,GET,"normal visit | /events",auto
+2025-10-18T18:20:44.018Z,127.0.0.1,GET,"normal visit | /events",auto
+2025-10-18T18:20:44.020Z,127.0.0.1,GET,"normal visit | /events",auto
+2025-10-18T18:20:44.208Z,127.0.0.1,GET,"normal visit | /events",auto
+2025-10-18T18:20:44.211Z,127.0.0.1,GET,"normal visit | /events",auto

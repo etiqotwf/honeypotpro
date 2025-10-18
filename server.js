@@ -244,6 +244,7 @@ app.listen(PORT, () => {
 });
 
 // ✅ تحليل رد ngrok + فتح الرابط تلقائياً في المتصفح
+// ✅ تحليل رد ngrok بدون فتح أي شيء تلقائيًا
 function processNgrokResponse(response) {
   try {
     const tunnels = JSON.parse(response);
@@ -252,15 +253,21 @@ function processNgrokResponse(response) {
       console.log(`✅ Server is available at: 🔗 ${serverUrl}`);
       fs.writeFileSync("serverUrl.json", JSON.stringify({ serverUrl }));
 
+      // ✅ رفع المشروع إلى GitHub
       pushToGitHub();
 
-      // ✅ بعد الحصول على ngrok URL — افتح صفحة التيرمينال الآن فقط
-      console.log("🖥️ Opening terminal page now...");
-      openInBrowser(`http://localhost:${PORT}/terminal.html`);
-      console.log("🧠 Terminal is ready — user can now open ngrok link manually.");
+      // ✅ لا تفتح ngrok تلقائيًا.. فقط افتح صفحة التيرمينال من public
+      const terminalPath = path.join(process.cwd(), "public", "terminal.html");
 
+      if (fs.existsSync(terminalPath)) {
+        console.log("🖥️ ngrok URL is ready — waiting for user action to open it from the terminal page.");
+        console.log("✅ Opening local terminal page...");
+        openInBrowser(`http://localhost:${PORT}/terminal.html`);
+      } else {
+        console.warn("⚠️ terminal.html not found in public folder!");
+      }
     } else {
-      console.log("⚠️ No ngrok URL found.");
+      console.log("⚠️ No ngrok URL found in response.");
     }
   } catch (e) {
     console.error("❌ Error parsing ngrok response:", e);
