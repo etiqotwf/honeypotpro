@@ -3,67 +3,188 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Live Terminal</title>
+<title>🧠 AI Honeypot Terminal</title>
 <style>
+  @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap');
   body {
-    background: #1e1e1e;
-    color: #c5c8c6;
-    font-family: monospace;
     margin: 0;
+    font-family: 'Share Tech Mono', monospace;
+    background: radial-gradient(circle at top left, #050505 0%, #000 70%);
+    color: #00ffcc;
+    height: 100vh;
+    overflow: hidden;
     display: flex;
     flex-direction: column;
-    height: 100vh;
   }
+
+  /* خلفية متحركة */
+  body::before {
+    content: "";
+    position: absolute;
+    width: 200%;
+    height: 200%;
+    background: repeating-linear-gradient(
+      45deg,
+      rgba(0,255,200,0.03),
+      rgba(0,255,200,0.03) 2px,
+      transparent 2px,
+      transparent 8px
+    );
+    animation: moveGrid 30s linear infinite;
+    z-index: 0;
+  }
+  @keyframes moveGrid {
+    from { transform: translate(0, 0); }
+    to { transform: translate(-50%, -50%); }
+  }
+
   header {
-    background: #111;
-    padding: 8px;
+    background: rgba(0,255,200,0.1);
+    border-bottom: 1px solid #00ffcc44;
+    padding: 10px 15px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    z-index: 2;
+  }
+
+  h1 {
+    font-size: 1.3em;
+    margin: 0;
+    color: #00ffee;
+    text-shadow: 0 0 10px #00ffeeaa;
+  }
+
+  #status {
+    font-size: 0.9em;
+    color: #00ffaa;
+  }
+
+  .status-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    display: inline-block;
+    margin-right: 6px;
+    background: #ff4444;
+    box-shadow: 0 0 8px #ff4444;
+    animation: pulse 1.5s infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 0.7; transform: scale(1); }
+    50% { opacity: 1; transform: scale(1.4); }
+  }
+
+  #controls {
     display: flex;
     gap: 8px;
   }
   button {
-    background: #444;
-    color: #fff;
-    border: none;
+    background: #00ffaa22;
+    border: 1px solid #00ffaa66;
+    color: #00ffaa;
     padding: 6px 12px;
     border-radius: 4px;
     cursor: pointer;
+    transition: 0.3s;
+    z-index: 2;
   }
-  button:hover { background: #666; }
+  button:hover {
+    background: #00ffaa55;
+    box-shadow: 0 0 8px #00ffaaaa;
+  }
+
   #logContainer {
     flex: 1;
     overflow-y: auto;
-    padding: 10px;
-    white-space: pre-wrap;
+    padding: 15px;
+    z-index: 1;
+    color: #d1fff5;
+    text-shadow: 0 0 5px #00ffee55;
+  }
+
+  /* أنواع السطور */
+  .normal { color: #aaffff; }
+  .info { color: #66ff99; }
+  .attack { color: #ff6666; font-weight: bold; }
+  .warn { color: #ffff66; }
+  .system { color: #66ccff; }
+
+  /* شريط جانبي خفيف */
+  #sideGlow {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 5px;
+    height: 100%;
+    background: linear-gradient(to bottom, #00ffcc55, transparent);
+    animation: glow 3s ease-in-out infinite;
+  }
+  @keyframes glow {
+    0%,100% { opacity: 0.3; }
+    50% { opacity: 1; }
+  }
+
+  footer {
+    background: rgba(0,255,200,0.05);
+    text-align: center;
+    padding: 5px;
+    font-size: 0.8em;
+    color: #00ffee;
+    z-index: 2;
   }
 </style>
 </head>
 <body>
+<div id="sideGlow"></div>
 <header>
-  <button id="startBtn">▶ Start</button>
-  <button id="stopBtn">⏸ Stop</button>
-  <button id="clearBtn">🗑 Clear</button>
-  <button id="copyBtn">📋 Copy</button>
+  <h1>🧠 AI Honeypot Command Center</h1>
+  <div id="status"><span class="status-dot"></span>Disconnected</div>
+  <div id="controls">
+    <button id="startBtn">▶ Start</button>
+    <button id="stopBtn">⏸ Stop</button>
+    <button id="clearBtn">🗑 Clear</button>
+    <button id="copyBtn">📋 Copy</button>
+  </div>
 </header>
+
 <div id="logContainer"></div>
+
+<footer>💻 Honeypot AI Terminal — Monitoring cyber threats in real-time</footer>
 
 <script>
 let eventSource = null;
 let running = false;
 const logContainer = document.getElementById('logContainer');
+const statusEl = document.getElementById('status');
+const dot = statusEl.querySelector('.status-dot');
 
 function appendLine(line) {
   const div = document.createElement('div');
   div.textContent = line;
+  div.className = classify(line);
   logContainer.appendChild(div);
   logContainer.scrollTop = logContainer.scrollHeight;
+}
+
+function classify(line) {
+  if (/attack|malware|threat|xss|sql/i.test(line)) return 'attack';
+  if (/starting|listening|connected/i.test(line)) return 'info';
+  if (/error|fail/i.test(line)) return 'warn';
+  if (/system|server/i.test(line)) return 'system';
+  return 'normal';
 }
 
 function startSSE() {
   if (running) return;
   eventSource = new EventSource('/events');
   running = true;
+  updateStatus(true);
+  appendLine('[SYSTEM] Connection established...');
   eventSource.addEventListener('line', e => appendLine(JSON.parse(e.data)));
   eventSource.onerror = () => {
+    appendLine('[WARN] Connection lost... reconnecting');
+    updateStatus(false);
     running = false;
     setTimeout(startSSE, 2000);
   };
@@ -72,6 +193,16 @@ function startSSE() {
 function stopSSE() {
   if (eventSource) eventSource.close();
   running = false;
+  updateStatus(false);
+  appendLine('[SYSTEM] Stream stopped.');
+}
+
+function updateStatus(connected) {
+  if (connected) {
+    statusEl.innerHTML = '<span class="status-dot" style="background:#00ff55;box-shadow:0 0 10px #00ff55;"></span>Connected';
+  } else {
+    statusEl.innerHTML = '<span class="status-dot"></span>Disconnected';
+  }
 }
 
 document.getElementById('startBtn').onclick = startSSE;
@@ -83,7 +214,7 @@ document.getElementById('copyBtn').onclick = async () => {
   alert('✅ Logs copied!');
 };
 
-// ابدأ تلقائيًا
+// auto start
 startSSE();
 </script>
 </body>
