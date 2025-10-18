@@ -67,3 +67,10 @@ Timestamp,IP,Method,ThreatType,Action,Attempts
 2025-10-18T19:08:18.433Z,156.203.206.74,GET,"normal visit | /events",auto
 2025-10-18T19:08:18.651Z,156.203.206.74,GET,"normal visit | /favicon.ico",auto
 2025-10-18T19:08:29.872Z,::1,POST,"post request | /api/open-ngrok",auto
+2025-10-18T19:15:55.198Z,::1,GET,"normal visit | /events",auto
+2025-10-18T19:15:55.204Z,::1,GET,"normal visit | /ngrok-url",auto
+2025-10-18T19:15:55.548Z,156.203.206.74,GET,"normal visit | /ngrok-url",auto
+2025-10-18T19:15:55.557Z,156.203.206.74,GET,"normal visit | /events",auto
+2025-10-18T19:15:55.883Z,156.203.206.74,GET,"normal visit | /favicon.ico",auto
+2025-10-18T19:18:36.430Z,::1,GET,"normal visit | /ngrok-url",auto
+2025-10-18T19:18:36.455Z,::1,GET,"normal visit | /events",auto
