@@ -215,19 +215,19 @@ console.error = (...args) => {
 // ✅ بدء الخادم و ngrok
 app.listen(PORT, () => {
   console.log(`🚀 Server running at http://localhost:${PORT}`);
-
-  // ✅ افتح صفحة التيرمينال فقط
-  openInBrowser(`http://localhost:${PORT}/terminal.html`);
-  console.log("🖥️ Opened terminal page — waiting for user action to start attack...");
+  console.log("⏳ Waiting for ngrok to start before opening terminal page...");
 
   syncModelToPublic();
 
+  // ✅ أوقف أي ngrok قديم
   exec("pgrep -f 'ngrok' && pkill -f 'ngrok'", () => {
+    // ✅ شغّل ngrok
     exec("ngrok.exe http 3000 --log=stdout", (err) => {
       if (err) return console.error("❌ Error starting ngrok:", err);
       console.log("✅ ngrok started successfully!");
     });
 
+    // ✅ بعد 5 ثواني حاول الحصول على الرابط العام
     setTimeout(() => {
       exec("curl -s http://127.0.0.1:4040/api/tunnels", (err, stdout) => {
         if (err || !stdout) {
@@ -243,7 +243,6 @@ app.listen(PORT, () => {
   });
 });
 
-
 // ✅ تحليل رد ngrok + فتح الرابط تلقائياً في المتصفح
 function processNgrokResponse(response) {
   try {
@@ -255,8 +254,11 @@ function processNgrokResponse(response) {
 
       pushToGitHub();
 
-      // ❌ لا تفتح المتصفح هنا أبداً
-      console.log("🖥️ ngrok URL is ready — waiting for user action to open it from the terminal page.");
+      // ✅ بعد الحصول على ngrok URL — افتح صفحة التيرمينال الآن فقط
+      console.log("🖥️ Opening terminal page now...");
+      openInBrowser(`http://localhost:${PORT}/terminal.html`);
+      console.log("🧠 Terminal is ready — user can now open ngrok link manually.");
+
     } else {
       console.log("⚠️ No ngrok URL found.");
     }
