@@ -212,16 +212,35 @@ document.getElementById('copyBtn').onclick = async () => {
   alert('✅ Logs copied!');
 };
 
-// 🖥️ الدخول مرة واحدة فقط لوضع ملء الشاشة عند أول ضغطة
+
+// 🖥️ الدخول أو الرجوع لوضع ملء الشاشة عند الضغط فقط
 document.body.addEventListener('click', async () => {
-  if (!fullscreenActivated && !document.fullscreenElement) {
-    await document.documentElement.requestFullscreen();
-    fullscreenActivated = true; // ✅ لا تسمح بالخروج عند الضغط مرة أخرى
+  // لو مش في fullscreen حالياً → دخله
+  if (!document.fullscreenElement) {
+    try {
+      await document.documentElement.requestFullscreen();
+      fullscreenActivated = true;
+      console.log("✅ دخل وضع ملء الشاشة");
+    } catch (err) {
+      console.warn("⚠️ فشل الدخول إلى وضع ملء الشاشة:", err);
+    }
+  } else {
+    // لو بالفعل في fullscreen → تجاهل الضغط
+    console.log("ℹ️ بالفعل في وضع ملء الشاشة، لن يتم الخروج");
   }
 });
 
-// تشغيل تلقائي عند الفتح
+// 🎯 تشغيل SSE تلقائي عند الفتح
 startSSE();
+
+// 📡 مراقبة حالة الخروج من fullscreen
+document.addEventListener('fullscreenchange', () => {
+  if (!document.fullscreenElement) {
+    fullscreenActivated = false; // يسمح بالعودة بعد الخروج
+    console.log("🚪 خرجت من وضع ملء الشاشة - جاهز للعودة عند الضغط التالي");
+  }
+});
+
 </script>
 </body>
 </html>
