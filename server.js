@@ -242,7 +242,6 @@ app.listen(PORT, () => {
 });
 
 // ✅ تحليل رد ngrok + فتح الرابط تلقائياً في المتصفح
-// ✅ تحليل رد ngrok + فتح صفحة التيرمينال تلقائيًا
 function processNgrokResponse(response) {
   try {
     const tunnels = JSON.parse(response);
@@ -252,13 +251,8 @@ function processNgrokResponse(response) {
       fs.writeFileSync("serverUrl.json", JSON.stringify({ serverUrl }));
       pushToGitHub();
 
-      // ✅ افتح صفحة التيرمينال مباشرة (وليس الصفحة الرئيسية)
-      const terminalUrl = `${serverUrl}/terminal.html`;
-      console.log(`🖥️ Opening terminal page: ${terminalUrl}`);
-
-      // فتح صفحة التيرمينال في المتصفح الافتراضي
-      openInBrowser(terminalUrl);
-
+      // حاول فتح الرابط في المتصفح الافتراضي بحسب النظام
+      openInBrowser(serverUrl);
     } else {
       console.log("⚠️ No ngrok URL found.");
     }
