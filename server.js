@@ -279,20 +279,6 @@ function processNgrokResponse(response) {
 }
 
 
-function openLocalTerminal() {
-  try {
-    const terminalUrl = `http://localhost:${PORT}/terminal.html`; // رابط محلي
-    const opened = openInBrowser(terminalUrl);
-    if (!opened) {
-      console.warn('⚠️ فشل فتح صفحة التيرمينال في المتصفح');
-    }
-  } catch (e) {
-    console.error('❌ خطأ أثناء فتح صفحة التيرمينال:', e);
-  }
-}
-
-// استدعاءها مباشرة بعد تشغيل السيرفر
-openLocalTerminal();
 
 
 
