@@ -253,15 +253,14 @@ function processNgrokResponse(response) {
       fs.writeFileSync("serverUrl.json", JSON.stringify({ serverUrl }));
       pushToGitHub();
 
-      // === افتح صفحة التيرمينال في المتصفح بعد تأخير بسيط ===
+      // ✅ تم تعطيل فتح المتصفح تلقائيًا
+      // إذا أردت إعادة تفعيله لاحقًا، أزل التعليق عن الكود التالي:
+      /*
       try {
-        // تشكيل رابط صفحة التيرمينال داخل الـ public
         const terminalUrl = `${serverUrl.replace(/\/$/, '')}/terminal.html`;
-        // تأخير بسيط ليضمن أن ngrok جاهز
         setTimeout(() => {
           const opened = openInBrowser(terminalUrl);
           if (!opened) {
-            // محاولة احتياطية لفتح صفحة التيرمينال محليًا
             console.warn('⚠️ openInBrowser فشلت — محاولة فتح localhost كحل احتياطي');
             openInBrowser(`http://localhost:${PORT}/terminal.html`);
           }
@@ -269,7 +268,7 @@ function processNgrokResponse(response) {
       } catch (e) {
         console.error('❌ Error while trying to open terminal page:', e);
       }
-
+      */
     } else {
       console.log("⚠️ No ngrok URL found.");
     }
