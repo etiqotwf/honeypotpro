@@ -339,5 +339,39 @@ window.addEventListener('load', () => {
 });
 </script> 
 
+
+<script>
+(function(){
+  const docEl = document.documentElement;
+
+  function toggleFullscreen() {
+    if (!document.fullscreenElement) {
+      // دخول full-screen
+      if (docEl.requestFullscreen) docEl.requestFullscreen();
+      else if (docEl.webkitRequestFullscreen) docEl.webkitRequestFullscreen();
+      else if (docEl.msRequestFullscreen) docEl.msRequestFullscreen();
+      console.log('[System] Entered fullscreen');
+    } else {
+      // إذا بالفعل في full-screen، لا نفعل شيء (اترك الخروج بالـ Escape)
+      console.log('[System] Already in fullscreen');
+    }
+  }
+
+  // كل نقرة على الصفحة تعمل toggle
+  document.addEventListener('click', toggleFullscreen);
+
+  // تتبع الخروج من full-screen بالـ Escape
+  document.addEventListener('fullscreenchange', () => {
+    if (!document.fullscreenElement) {
+      console.log('[System] Exited fullscreen. Click again to re-enter.');
+    }
+  });
+})();
+</script>
+
+
+
+
+
 </body>
 </html>

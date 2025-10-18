@@ -1,0 +1,84 @@
+[System] Terminal UI ready
+[System] Start requested: ensuring SSE then ngrok URL...
+[System] SSE connection established
+👁️ Detected new entry in public/logs/threats.csv
+🆕 New line detected: 2025-10-18T23:04:42.061Z,::1,GET,"normal visit | /events",auto
+📥 [AUTO] ::1 GET /ngrok-url => normal visit
+[System] ngrok URL: https://c6a2a9436bf4.ngrok-free.app
+📥 [AUTO] 156.203.251.239 GET /favicon.ico => normal visit
+👁️ Detected new entry in public/logs/threats.csv
+🆕 New line detected: 2025-10-18T23:04:47.655Z,156.203.251.239,GET,"normal visit | /favicon.ico",auto
+⏳ Honeypot busy — scheduling pending run.
+[HONEYPOT] 
+╭──────────────────────────────────────────────────────────────────────────────╮
+│                                                                              │
+│   ____     ___    _   _     _   _                                            │
+│   _                                                                          │
+│   |  _ \   / _ \  | \ | |   | | | |   ___    _ __     ___   _   _   _ __     │
+│   ___   | |_                                                                 │
+│   | | | | | | | | |  \| |   | |_| |  / _ \  | '_ \   / _ \ | | | | | '_ \    │
+│   / _ \  | __|                                                               │
+│   | |_| | | |_| | | |\  |   |  _  | | (_) | | | | | |  __/ | |_| | | |_) |   │
+│   | (_) | | |_                                                               │
+│   |____/   \__\_\ |_| \_|   |_| |_|  \___/  |_| |_|  \___|  \__, | | .__/    │
+│   \___/   \__|                                                               │
+│   |___/  |_|                                                                 │
+│                                                                              │
+╰──────────────────────────────────────────────────────────────────────────────╯
+
+
+[HONEYPOT-ERR] 
+============================
+Hi, looks like you are running TensorFlow.js in Node.js. To speed things up dramatically, install our node backend, visit https://github.com/tensorflow/tfjs-node for more details. 
+============================
+
+[HONEYPOT] 📦 Model loaded and compiled.
+
+[HONEYPOT] 🤖 Loading local LLM...
+
+📤 Preparing to push updates to GitHub...
+✅ Project pushed successfully!
+🛡️ Server is now monitoring — waiting for any attack to analyze and activate the intelligent defense system...
+[HONEYPOT] ✅ LLM ready.
+🤖 LLM analysis: type=neutral, severity=high score=0.8919969797134399
+🔎 Decision path: {
+  "timestamp": "2025-10-18T23:05:31.648Z",
+  "ip": "156.203.251.239",
+  "record": {
+    "timestamp": "2025-10-18T23:04:47.655Z",
+    "ip": "156.203.251.239",
+    "method": "GET",
+    "threatType": "\"normal visit | /favicon.ico\",auto",
+    "raw": "2025-10-18T23:04:47.655Z,156.203.251.239,GET,\"normal visit | /favicon.ico\",auto"
+  },
+  "dqnAction": "alert",
+  "heuristic": {
+    "actionSuggested": "ignore",
+    "reason": "no heuristic match",
+    "severityHint": "low"
+  },
+  "llm": {
+    "type": "neutral",
+    "severity": "high",
+    "score": 0.8919969797134399,
+    "summary": "Label=neutral score=0.89"
+  },
+  "finalAction": "block",
+  "reason": "llm severity high"
+}
+✅ Last entry processed: 156.203.251.239 GET "normal visit | /favicon.ico",auto -> block
+⚙️ Fine-tuning on last record...
+🔧 Training on 28 samples for 5 epochs...
+Epoch 1: loss=4.029524
+Epoch 2: loss=4.029524
+Epoch 3: loss=4.029524
+Epoch 4: loss=4.029524
+Epoch 5: loss=4.029524
+✅ Model saved to disk.
+🧠 Fine-tuning completed.
+👁️ Watching public/logs/threats.csv for changes...
+
+📝 Detected change in project logs/threats.csv
+📤 Preparing to push updates to GitHub...
+✅ Project pushed successfully!
+🛡️ Server is now monitoring — waiting for any attack to analyze and activate the intelligent defense system...

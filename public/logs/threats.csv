@@ -184,3 +184,8 @@ Timestamp,IP,Method,ThreatType,Action,Attempts
 2025-10-18T23:04:42.061Z,::1,GET,"normal visit | /events",auto
 2025-10-18T23:04:44.892Z,::1,GET,"normal visit | /ngrok-url",auto
 2025-10-18T23:04:47.655Z,156.203.251.239,GET,"normal visit | /favicon.ico",auto
+2025-10-18T23:14:31.503Z,::1,GET,"normal visit | /ngrok-url",auto
+2025-10-18T23:14:36.059Z,156.203.251.239,GET,"normal visit | /favicon.ico",auto
+2025-10-18T23:16:36.985Z,::1,GET,"normal visit | /events",auto
+2025-10-18T23:16:37.458Z,::1,GET,"normal visit | /ngrok-url",auto
+2025-10-18T23:16:40.601Z,156.203.251.239,GET,"normal visit | /favicon.ico",auto
