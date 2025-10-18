@@ -5,3 +5,4 @@ Timestamp,IP,Method,ThreatType,Action
 2025-10-18T14:29:37.802Z,::1,GET,"normal visit | /events",auto,alert
 2025-10-18T14:32:17.750Z,::1,GET,"normal visit | /events",auto,alert
 2025-10-18T14:33:30.986Z,::1,GET,"normal visit | /events",auto,alert
+2025-10-18T17:46:03.673Z,::1,GET,"normal visit | /favicon.ico",auto,alert
