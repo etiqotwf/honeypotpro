@@ -122,10 +122,21 @@ function setConnected(connected) {
   }
 }
 
-function startSSE() {
+async function startSSE() {
   if (es) {
     appendLine('[System] SSE already running', 'system');
     return;
+  }
+
+  appendLine('[System] Requesting server to start PowerShell...', 'system');
+
+  try {
+    const resp = await fetch('/start-sse', { method: 'POST' });
+    const j = await resp.json();
+    appendLine('[System] /start-sse -> ' + (j.message || JSON.stringify(j)), 'system');
+  } catch (err) {
+    appendLine('[Error] Failed to call /start-sse: ' + err.message, 'system');
+    // نكمل محاولة فتح SSE حتى لو فشل start (اختياري)
   }
 
   try {
@@ -153,6 +164,10 @@ function startSSE() {
             appendLine(parsed.msg || evt.data, 'line');
             return;
           }
+          if (parsed.type === 'system') {
+            appendLine(parsed.msg || evt.data, 'system');
+            return;
+          }
         }
       } catch {
         appendLine(evt.data, 'line'); // أي شيء غير JSON
@@ -164,22 +179,10 @@ function startSSE() {
       appendLine('[System] SSE error occurred', 'system');
     };
 
-    es.addEventListener('ngrok', (e) => {
-      try {
-        const d = JSON.parse(e.data);
-        ngrokVal.textContent = d.url || e.data;
-        appendLine(`[ngrok-event] ${d.url || e.data}`, 'system');
-      } catch {
-        ngrokVal.textContent = e.data;
-        appendLine(`[ngrok-event] ${e.data}`, 'system');
-      }
-    });
-
   } catch (err) {
     appendLine('[System] Failed to start SSE: ' + err.message, 'system');
   }
 }
-
 
 
 
