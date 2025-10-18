@@ -3,3 +3,8 @@ Timestamp,IP,Method,ThreatType,Action,Attempts
 2025-10-18T14:27:54.436Z,::1,GET,"normal visit | /events",auto
 2025-10-18T14:27:54.728Z,::1,GET,"normal visit | /favicon.ico",auto
 2025-10-18T14:28:18.021Z,::1,GET,"normal visit | /events",auto
+2025-10-18T14:29:36.137Z,127.0.0.1,GET,"normal visit | /events",auto
+2025-10-18T14:29:36.436Z,127.0.0.1,GET,"normal visit | /events",auto
+2025-10-18T14:29:36.693Z,::1,GET,"normal visit | /events",auto
+2025-10-18T14:29:37.414Z,::1,GET,"normal visit | /events",auto
+2025-10-18T14:29:37.802Z,::1,GET,"normal visit | /events",auto
