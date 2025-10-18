@@ -242,21 +242,17 @@ app.listen(PORT, () => {
 });
 
 // ✅ تحليل رد ngrok + فتح الرابط تلقائياً في المتصفح
-// ✅ تحليل رد ngrok + فتح صفحة التيرمينال المحلية بدل فتح رابط ngrok
 function processNgrokResponse(response) {
   try {
     const tunnels = JSON.parse(response);
     serverUrl = tunnels.tunnels[0]?.public_url;
     if (serverUrl) {
-      // سجل الـ ngrok URL لكن لا تفتحه مباشرة
-      console.log(`✅ ngrok is available (kept hidden): ${serverUrl}`);
+      console.log(`✅ Server is available at: 🔗 ${serverUrl}`);
       fs.writeFileSync("serverUrl.json", JSON.stringify({ serverUrl }));
       pushToGitHub();
 
-      // افتح صفحة التيرمينال المحلية ضمن public (SSE) بدل فتح رابط ngrok
-      const localTerminal = `http://localhost:${PORT}/terminal.html`;
-      openInBrowser(localTerminal);
-      console.log('✅ Opened local terminal page and waiting for activity...');
+      // حاول فتح الرابط في المتصفح الافتراضي بحسب النظام
+      openInBrowser(serverUrl);
     } else {
       console.log("⚠️ No ngrok URL found.");
     }
