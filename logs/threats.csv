@@ -22,3 +22,4 @@ Timestamp,IP,Method,ThreatType,Action
 2025-10-18T13:59:47.020Z,::1,GET,"normal visit | /events",auto,alert
 2025-10-18T14:01:12.292Z,::1,GET,"normal visit | /events",auto,alert
 2025-10-18T14:03:26.358Z,::1,GET,"normal visit | /events",auto,alert
+2025-10-18T14:05:51.601Z,::1,GET,"normal visit | /events",auto,alert
