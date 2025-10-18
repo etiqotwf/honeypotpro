@@ -537,40 +537,47 @@ if (fs.existsSync(publicLogPath)) {
       const lastLine = lines[lines.length - 1];
 
       if (lastLine && !lastLine.startsWith("Timestamp")) {
-        console.log(`🆕 New line detected: ${lastLine}`);
+    console.log(`🆕 New line detected: ${lastLine}`);
 
-        // جدولة تشغيل honeypot لكن امنع التداخل
-        const runHoneypot = () => {
-          if (honeypotProcessing) {
+    const runHoneypot = () => {
+        if (honeypotProcessing) {
             honeypotPending = true;
             console.log('⏳ Honeypot busy — scheduling pending run.');
             return;
-          }
-          honeypotProcessing = true;
-          // استخدم spawn بدلاً من exec لتجنب مشاكل الاقتباسات
-          const child = spawn(process.execPath, ['adaptive-honeypot.js', lastLine], { cwd: process.cwd() });
+        }
+        honeypotProcessing = true;
 
-          child.stdout.on('data', (data) => {
-            process.stdout.write(`[HONEYPOT] ${data.toString()}`);
-          });
-          child.stderr.on('data', (data) => {
-            process.stderr.write(`[HONEYPOT-ERR] ${data.toString()}`);
-          });
+        const child = spawn(process.execPath, ['adaptive-honeypot.js', lastLine], { cwd: process.cwd() });
 
-          child.on('close', (code) => {
-            console.log(`🤖 Honeypot process exited with code ${code}`);
+        // 🟢 هنا نرسل stdout مباشرة للـ clients
+        child.stdout.on('data', (data) => {
+            const text = data.toString();
+            sendToClients(`[HONEYPOT] ${text}`, 'line'); // يبث للواجهة
+            process.stdout.write(`[HONEYPOT] ${text}`);   // يبقى موجود في الكونسول كمان
+        });
+
+        // 🟢 نفس الشيء للـ stderr
+        child.stderr.on('data', (data) => {
+            const text = data.toString();
+            sendToClients(`[HONEYPOT-ERR] ${text}`, 'attack'); // لون مختلف للخطأ
+            process.stderr.write(`[HONEYPOT-ERR] ${text}`);
+        });
+
+        child.on('close', (code) => {
+            const msg = `🤖 Honeypot process exited with code ${code}`;
+            sendToClients(msg, 'system'); // رسالة انتهاء العملية للواجهة
+            console.log(msg);
+
             honeypotProcessing = false;
             if (honeypotPending) {
-              honeypotPending = false;
-              // تأخير بسيط قبل التشغيل التالي لتجميع أحداث إضافية
-              setTimeout(runHoneypot, 500);
+                honeypotPending = false;
+                setTimeout(runHoneypot, 500);
             }
-          });
-        };
+        });
+    };
 
-        // شغّل
-        runHoneypot();
-      }
+    runHoneypot();
+}
     }
   });
 } else {
