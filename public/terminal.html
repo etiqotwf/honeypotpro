@@ -15,9 +15,9 @@
     overflow: hidden;
     display: flex;
     flex-direction: column;
+    cursor: pointer;
   }
 
-  /* خلفية متحركة */
   body::before {
     content: "";
     position: absolute;
@@ -103,14 +103,12 @@
     text-shadow: 0 0 5px #00ffee55;
   }
 
-  /* أنواع السطور */
   .normal { color: #aaffff; }
   .info { color: #66ff99; }
   .attack { color: #ff6666; font-weight: bold; }
   .warn { color: #ffff66; }
   .system { color: #66ccff; }
 
-  /* شريط جانبي خفيف */
   #sideGlow {
     position: absolute;
     left: 0;
@@ -157,7 +155,6 @@ let eventSource = null;
 let running = false;
 const logContainer = document.getElementById('logContainer');
 const statusEl = document.getElementById('status');
-const dot = statusEl.querySelector('.status-dot');
 
 function appendLine(line) {
   const div = document.createElement('div');
@@ -214,7 +211,16 @@ document.getElementById('copyBtn').onclick = async () => {
   alert('✅ Logs copied!');
 };
 
-// auto start
+// 🖥️ وضع ملء الشاشة بالتبديل عند النقر في أي مكان
+document.body.addEventListener('click', async () => {
+  if (!document.fullscreenElement) {
+    await document.documentElement.requestFullscreen();
+  } else {
+    await document.exitFullscreen();
+  }
+});
+
+// تشغيل تلقائي عند الفتح
 startSSE();
 </script>
 </body>
