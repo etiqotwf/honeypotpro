@@ -125,77 +125,80 @@ function setConnected(connected) {
 function startSSE() {
   if (es) {
     appendLine('[System] SSE already running', 'system');
+    return Promise.resolve(); // رجع Promise لأننا سنستخدم await عليه
+  }
+
+  return new Promise((resolve, reject) => {
+    try {
+      es = new EventSource('/events');
+
+      es.onopen = () => {
+        setConnected(true);
+        appendLine('[System] SSE connection established', 'system');
+        resolve();
+      };
+
+      es.onmessage = (evt) => {
+        // نفس المعالجة الحالية
+        try {
+          const parsed = JSON.parse(evt.data);
+          if (parsed && parsed.type) {
+            if (parsed.type === 'ngrok' && parsed.url) {
+              ngrokVal.textContent = parsed.url;
+              appendLine(`[ngrok] ${parsed.url}`, 'system');
+              return;
+            }
+            if (parsed.type === 'attack') { appendLine(parsed.msg || evt.data, 'attack'); return; }
+            if (parsed.type === 'line') { appendLine(parsed.msg || evt.data, 'line'); return; }
+          }
+        } catch {
+          appendLine(evt.data, 'line');
+        }
+      };
+
+      es.onerror = (err) => {
+        setConnected(false);
+        appendLine('[System] SSE error occurred', 'system');
+        // لا نرفض هنا حتى لا نوقف الـ promise المفتوح بعد الانفتاح
+      };
+
+      es.addEventListener('ngrok', (e) => {
+        try {
+          const d = JSON.parse(e.data);
+          ngrokVal.textContent = d.url || e.data;
+          appendLine(`[ngrok-event] ${d.url || e.data}`, 'system');
+        } catch {
+          ngrokVal.textContent = e.data;
+          appendLine(`[ngrok-event] ${e.data}`, 'system');
+        }
+      });
+
+    } catch (err) {
+      appendLine('[System] Failed to start SSE: ' + err.message, 'system');
+      reject(err);
+    }
+  });
+}
+
+async function startSSEAndPS() {
+  try {
+    await startSSE(); // الآن نضمن أن SSE مفتوح
+  } catch (err) {
+    appendLine('[Error] Could not open SSE: ' + err.message, 'system');
     return;
   }
 
   try {
-    es = new EventSource('/events');
-
-    es.onopen = () => {
-      setConnected(true);
-      appendLine('[System] SSE connection established', 'system');
-    };
-
-    es.onmessage = (evt) => {
-      try {
-        const parsed = JSON.parse(evt.data);
-        if (parsed && parsed.type) {
-          if (parsed.type === 'ngrok' && parsed.url) {
-            ngrokVal.textContent = parsed.url;
-            appendLine(`[ngrok] ${parsed.url}`, 'system');
-            return;
-          }
-          if (parsed.type === 'attack') {
-            appendLine(parsed.msg || evt.data, 'attack');
-            return;
-          }
-          if (parsed.type === 'line') {
-            appendLine(parsed.msg || evt.data, 'line');
-            return;
-          }
-        }
-      } catch {
-        appendLine(evt.data, 'line'); // أي شيء غير JSON
-      }
-    };
-
-    es.onerror = () => {
-      setConnected(false);
-      appendLine('[System] SSE error occurred', 'system');
-    };
-
-    es.addEventListener('ngrok', (e) => {
-      try {
-        const d = JSON.parse(e.data);
-        ngrokVal.textContent = d.url || e.data;
-        appendLine(`[ngrok-event] ${d.url || e.data}`, 'system');
-      } catch {
-        ngrokVal.textContent = e.data;
-        appendLine(`[ngrok-event] ${e.data}`, 'system');
-      }
-    });
-
-  } catch (err) {
-    appendLine('[System] Failed to start SSE: ' + err.message, 'system');
-  }
-}
-
-
-async function startSSEAndPS() {
-  startSSE(); // بدء SSE
-
-  try {
-    await fetch('/start-powershell', { method: 'POST' });
+    const res = await fetch('/start-powershell', { method: 'POST' });
+    if (!res.ok) throw new Error('Server response not OK: ' + res.status);
     appendLine('[System] PowerShell started', 'system');
   } catch (err) {
     appendLine('[Error] Failed to start PowerShell: ' + err.message, 'system');
   }
 }
 
-// --- ربط الزر بالدالة الجديدة ---
 startBtn.removeEventListener('click', startSSE);
 startBtn.addEventListener('click', startSSEAndPS);
-
 
 
 function stopSSE() {
