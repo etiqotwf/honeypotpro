@@ -242,62 +242,100 @@ app.listen(PORT, () => {
     });
 });
 
-// ✅ تحليل رد ngrok + فتح الرابط تلقائياً في المتصفح
-// ✅ تحليل رد ngrok + فتح الرابط تلقائياً في المتصفح
-// ✅ تحليل رد ngrok + فتح صفحة التيرمينال محليًا فقط (بدون openInBrowser)
+
 function processNgrokResponse(response) {
   try {
     const tunnels = JSON.parse(response);
-    serverUrl = tunnels.tunnels[0]?.public_url;
+    const serverUrl = tunnels.tunnels[0]?.public_url;
+    console.log(`✅ Server URL (ngrok) is: ${serverUrl || 'not used'}`);
+    fs.writeFileSync("serverUrl.json", JSON.stringify({ serverUrl }));
 
-    if (serverUrl) {
-      console.log(`✅ Server is available at: 🔗 ${serverUrl}`);
-      fs.writeFileSync("serverUrl.json", JSON.stringify({ serverUrl }));
-      pushToGitHub();
+    const terminalUrl = `http://localhost:${PORT}/terminal.html`;
 
-      // فتح صفحة التيرمينال محليًا فقط بعد تأخير صغير
-      setTimeout(() => {
-        try {
-          const localTerminal = `http://localhost:${PORT}/terminal.html`;
-          console.log(`✅ Attempting to open local terminal: ${localTerminal}`);
-
-          // حاول فتح المتصفح بواسطة أوامر النظام مباشرة (بدون الاعتماد على openInBrowser)
-          if (process.platform === 'win32') {
-            // start "" "url"
-            exec(`start "" "${localTerminal}"`, { shell: true }, (err) => {
-              if (err) console.error('❌ Failed to open terminal (start):', err);
-            });
-          } else if (process.platform === 'darwin') {
-            exec(`open "${localTerminal}"`, (err) => {
-              if (err) console.error('❌ Failed to open terminal (open):', err);
-            });
-          } else {
-            // Linux
-            exec(`xdg-open "${localTerminal}"`, (err) => {
-              if (err) {
-                console.error('❌ Failed to open terminal (xdg-open):', err);
-                // محاولة بديلة باستخدام sensible-browser أو nohup
-                try {
-                  exec(`sensible-browser "${localTerminal}"`, (e2) => {
-                    if (e2) console.error('❌ fallback sensible-browser failed:', e2);
-                  });
-                } catch (e) { /* ignore */ }
-              }
-            });
-          }
-
-        } catch (e) {
-          console.error('❌ Error while trying to open terminal page:', e);
-        }
-      }, 800); // تأخير 800ms
-    } else {
-      console.log("⚠️ No ngrok URL found.");
-    }
-
+    setTimeout(() => {
+      try {
+        openTerminal(terminalUrl);
+      } catch (e) {
+        console.error('❌ Error while trying to open terminal page:', e);
+      }
+    }, 1500);
   } catch (e) {
     console.error("❌ Error parsing ngrok response:", e);
   }
 }
+
+function openTerminal(url) {
+  const platform = process.platform;
+
+  // Helper: فتح detached
+  const launchDetached = (command, args = [], useShell = false) => {
+    try {
+      const child = spawn(command, args, {
+        detached: true,
+        stdio: 'ignore',
+        shell: useShell
+      });
+      child.unref();
+      return true;
+    } catch {
+      return false;
+    }
+  };
+
+  if (platform === 'win32') {
+    // محاولة فتح Chrome مباشرة
+    const chromePaths = [
+      process.env['PROGRAMFILES'] ? path.join(process.env['PROGRAMFILES'], 'Google\\Chrome\\Application\\chrome.exe') : null,
+      process.env['PROGRAMFILES(X86)'] ? path.join(process.env['PROGRAMFILES(X86)'], 'Google\\Chrome\\Application\\chrome.exe') : null,
+      process.env['LOCALAPPDATA'] ? path.join(process.env['LOCALAPPDATA'], 'Google\\Chrome\\Application\\chrome.exe') : null
+    ].filter(Boolean);
+
+    for (const p of chromePaths) {
+      if (fs.existsSync(p)) {
+        if (launchDetached(p, ['--new-window', url])) {
+          console.log('✅ Terminal opened in Google Chrome (detached).');
+          return;
+        }
+      }
+    }
+
+    // Fallback: المتصفح الافتراضي
+    exec(`start "" "${url}"`, (err) => {
+      if (err) console.error('❌ Failed to open terminal (fallback):', err);
+      else console.log('✅ Terminal opened in default browser (fallback).');
+    });
+    return;
+  }
+
+  if (platform === 'darwin') {
+    if (!launchDetached('open', ['-g', '-a', 'Google Chrome', url])) {
+      exec(`open "${url}"`, (err) => {
+        if (err) console.error('❌ Failed to open terminal on macOS:', err);
+        else console.log('✅ Terminal opened on macOS.');
+      });
+    } else {
+      console.log('✅ Terminal opened in Chrome on macOS.');
+    }
+    return;
+  }
+
+  // Linux / Unix-like
+  const linuxCommands = ['google-chrome', 'google-chrome-stable', 'chromium-browser', 'chromium', 'firefox', 'xdg-open'];
+  for (const cmd of linuxCommands) {
+    if (launchDetached(cmd, [url])) {
+      console.log(`✅ Terminal opened on Linux using ${cmd}.`);
+      return;
+    }
+  }
+
+  // آخر حل: fallback xdg-open
+  exec(`xdg-open "${url}"`, (err) => {
+    if (err) console.error('❌ Failed to open terminal on Linux:', err);
+    else console.log('✅ Terminal opened on Linux (fallback).');
+  });
+}
+
+
 
 
 // ✅ رفع الملفات إلى GitHub تلقائيًا (مع git add و commit قبل push)
