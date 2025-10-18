@@ -246,16 +246,19 @@ function processNgrokResponse(response) {
   try {
     const tunnels = JSON.parse(response);
     serverUrl = tunnels.tunnels[0]?.public_url;
+
     if (serverUrl) {
       console.log(`✅ Server is available at: 🔗 ${serverUrl}`);
       fs.writeFileSync("serverUrl.json", JSON.stringify({ serverUrl }));
       pushToGitHub();
 
-      // حاول فتح الرابط في المتصفح الافتراضي بحسب النظام
-      openInBrowser(serverUrl);
+      // 🚫 لا تفتح الرابط نهائيًا
+      // تم حذف أي استدعاء للدالة openInBrowser(serverUrl);
+
     } else {
       console.log("⚠️ No ngrok URL found.");
     }
+
   } catch (e) {
     console.error("❌ Error parsing ngrok response:", e);
   }
