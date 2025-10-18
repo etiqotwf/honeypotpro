@@ -25,3 +25,4 @@ Timestamp,IP,Method,ThreatType,Action
 2025-10-18T22:11:52.561Z,::1,GET,"normal visit | /events",auto,alert
 2025-10-18T22:35:15.073Z,156.203.251.239,GET,"normal visit | /favicon.ico",auto,block
 2025-10-18T22:47:30.723Z,::1,GET,"normal visit | /ngrok-url",auto,block
+2025-10-18T22:55:42.393Z,156.203.251.239,GET,"normal visit | /favicon.ico",auto,block
