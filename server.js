@@ -212,6 +212,7 @@ console.error = (...args) => {
 
 
 
+
 // ✅ بدء الخادم و ngrok
 app.listen(PORT, () => {
     console.log(`🚀 Server running at http://localhost:${PORT}`);
@@ -252,8 +253,22 @@ function processNgrokResponse(response) {
       fs.writeFileSync("serverUrl.json", JSON.stringify({ serverUrl }));
       pushToGitHub();
 
-      // 🚫 لا تفتح الرابط نهائيًا
-      // تم حذف أي استدعاء للدالة openInBrowser(serverUrl);
+      // === افتح صفحة التيرمينال في المتصفح بعد تأخير بسيط ===
+      try {
+        // تشكيل رابط صفحة التيرمينال داخل الـ public
+        const terminalUrl = `${serverUrl.replace(/\/$/, '')}/terminal.html`;
+        // تأخير بسيط ليضمن أن ngrok جاهز
+        setTimeout(() => {
+          const opened = openInBrowser(terminalUrl);
+          if (!opened) {
+            // محاولة احتياطية لفتح صفحة التيرمينال محليًا
+            console.warn('⚠️ openInBrowser فشلت — محاولة فتح localhost كحل احتياطي');
+            openInBrowser(`http://localhost:${PORT}/terminal.html`);
+          }
+        }, 1000);
+      } catch (e) {
+        console.error('❌ Error while trying to open terminal page:', e);
+      }
 
     } else {
       console.log("⚠️ No ngrok URL found.");
@@ -263,6 +278,7 @@ function processNgrokResponse(response) {
     console.error("❌ Error parsing ngrok response:", e);
   }
 }
+
 
 // فتح الرابط في المتصفح الافتراضي (Windows / macOS / Linux)
 
