@@ -74,3 +74,5 @@ Timestamp,IP,Method,ThreatType,Action,Attempts
 2025-10-18T19:15:55.883Z,156.203.206.74,GET,"normal visit | /favicon.ico",auto
 2025-10-18T19:18:36.430Z,::1,GET,"normal visit | /ngrok-url",auto
 2025-10-18T19:18:36.455Z,::1,GET,"normal visit | /events",auto
+2025-10-18T19:19:32.359Z,::1,GET,"normal visit | /ngrok-url",auto
+2025-10-18T19:19:32.391Z,::1,GET,"normal visit | /events",auto
