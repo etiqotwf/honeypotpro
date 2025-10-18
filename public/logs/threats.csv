@@ -130,3 +130,6 @@ Timestamp,IP,Method,ThreatType,Action,Attempts
 2025-10-18T21:21:14.550Z,::1,POST,"post request | /start-ngrok",auto
 2025-10-18T21:21:15.238Z,::1,POST,"post request | /start-ngrok",auto
 2025-10-18T21:21:24.100Z,::1,POST,"post request | /start-sse",auto
+2025-10-18T21:24:29.484Z,::1,POST,"post request | /start-sse",auto
+2025-10-18T21:24:31.811Z,::1,GET,"normal visit | /events",auto
+2025-10-18T21:24:44.818Z,::1,POST,"post request | /start-ngrok",auto
