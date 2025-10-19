@@ -232,3 +232,9 @@ Timestamp,IP,Method,ThreatType,Action,Attempts
 2025-10-19T08:15:16.153Z,::1,GET,"normal visit | /events",auto
 2025-10-19T08:15:16.637Z,::1,GET,"normal visit | /ngrok-url",auto
 2025-10-19T08:15:18.911Z,156.203.251.239,GET,"normal visit | /favicon.ico",auto
+2025-10-19T08:21:00.845Z,::1,GET,"normal visit | /events",auto
+2025-10-19T08:21:02.133Z,::1,GET,"normal visit | /ngrok-url",auto
+2025-10-19T08:21:05.920Z,156.203.251.239,GET,"normal visit | /favicon.ico",auto
+2025-10-19T08:22:01.830Z,::1,GET,"normal visit | /events",auto
+2025-10-19T08:22:04.830Z,::1,GET,"normal visit | /ngrok-url",auto
+2025-10-19T08:22:06.573Z,156.203.251.239,GET,"normal visit | /favicon.ico",auto
