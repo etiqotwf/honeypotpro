@@ -68,12 +68,13 @@
   </div>
 
   <div id="controls">
-    <!-- زر Start SSE أُلغي هنا (لم يعد موجودًا) -->
     <button id="stopBtn">⏸ Stop SSE</button>
     <button id="clearBtn">🗑 Clear Log</button>
     <button id="copyBtn">📋 Copy Log</button>
     <button id="startAttack">🚀 Start ngrok & Attack</button>
-  </div>
+    <button id="openInterface">🖥 Open Program Interface</button>
+</div>
+
 </header>
 
 <div id="logContainer" aria-live="polite"></div>
@@ -367,6 +368,24 @@ window.addEventListener('load', () => {
     }
   });
 })();
+
+
+
+
+
+const openInterfaceBtn = document.getElementById('openInterface');
+
+openInterfaceBtn.addEventListener('click', () => {
+  // نفتح index.html في تاب جديد
+  const url = window.location.origin + '/index.html'; // عدّل لو المسار مختلف
+  const win = window.open(url, '_blank');
+  if (win) {
+    appendLine('[System] Program interface opened', 'system');
+  } else {
+    appendLine('[Warning] Failed to open program interface — popup blocked?', 'system');
+  }
+});
+
 </script>
 
 
