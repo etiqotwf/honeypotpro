@@ -294,13 +294,21 @@ async function startNgrokAndOpen() {
     }
 
     if (url) {
-      ngrokVal.textContent = url;
-      appendLine(`[System] ngrok URL: ${url}`, 'system');
-      // only the front-end opens the URL (server won't auto-open)
-      window.open(url, '_blank');
-    } else {
-      appendLine('[Error] ngrok URL not available after retries', 'system');
-    }
+  ngrokVal.textContent = url;
+  appendLine(`[System] ngrok URL: ${url}`, 'system');
+
+  // فتح ngrok في تاب جديد
+  window.open(url, '_blank');
+
+  // فتح الصفحة المحلية index.html بعد ثانية واحدة تقريبًا
+  setTimeout(() => {
+    window.open('index.html', '_blank'); // لو موجودة في public
+    appendLine('[System] Local index.html opened', 'system');
+  }, 1000);
+} else {
+  appendLine('[Error] ngrok URL not available after retries', 'system');
+}
+
 
   } finally {
     startAttackBtn.disabled = false;
