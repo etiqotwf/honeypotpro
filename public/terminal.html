@@ -255,23 +255,35 @@ async function copyLog() {
 }
 
 // New unified action: start SSE (if needed) then request ngrok URL and open it.
-// It will NOT trigger PowerShell. It only ensures SSE + ngrok open.
 async function startNgrokAndOpen() {
   appendLine('[System] Start requested: ensuring SSE then ngrok URL...', 'system');
   startAttackBtn.disabled = true;
   const prevText = startAttackBtn.textContent;
   startAttackBtn.textContent = 'Starting...';
 
+  // === مهم: نفتح نوافذ فارغة الآن (داخل الclick) عشان المتصفحات ما تمنعها ===
+  let winNgrok = null;
+  let winLocal = null;
   try {
-    // 1) ensure SSE is open
+    winNgrok = window.open('about:blank', '_blank');
+    winLocal = window.open('about:blank', '_blank');
+  } catch (e) {
+    // لو الفتح فشل (نادراً) سيظهر تحذير لاحقاً
+  }
+  if (!winNgrok && !winLocal) {
+    appendLine('[Warning] Popups blocked: browser prevented opening windows.', 'system');
+  }
+
+  try {
+    // 1) ensure SSE is open (محاولة فتح، لكن لو فشلت نكمل)
     try {
       await startSSE();
     } catch (err) {
       appendLine('[Error] Failed to open SSE: ' + err.message, 'system');
-      // proceed to ngrok check anyway (optional) or return; here we continue
+      // نكمل لنجرب ngrok
     }
 
-    // 2) poll /ngrok-url up to MAX_TRIES
+    // 2) poll /ngrok-url
     const MAX_TRIES = 12;
     const INTERVAL_MS = 1000;
     let tries = 0;
@@ -287,34 +299,68 @@ async function startNgrokAndOpen() {
           if (url) break;
         }
       } catch (e) {
-        // ignore fetch errors, will retry
+        // ignore
       }
       appendLine(`[System] ngrok not ready — retry ${tries}/${MAX_TRIES}`, 'system');
       await new Promise(r => setTimeout(r, INTERVAL_MS));
     }
 
     if (url) {
-  ngrokVal.textContent = url;
-  appendLine(`[System] ngrok URL: ${url}`, 'system');
+      ngrokVal.textContent = url;
+      appendLine(`[System] ngrok URL: ${url}`, 'system');
 
-  // فتح ngrok في تاب جديد
-  window.open(url, '_blank');
+      // لو النافذة الفارغة اتفتحت، نوجهها للـ ngrok؛ وإلا نحاول فتح جديدة (قد يُمنع)
+      if (winNgrok) {
+        try { winNgrok.location.href = url; } catch (e) { winNgrok = window.open(url, '_blank'); }
+      } else {
+        const opened = window.open(url, '_blank');
+        if (!opened) appendLine('[Warning] Browser blocked opening ngrok URL', 'system');
+      }
 
-  // فتح الصفحة المحلية index.html بعد ثانية واحدة تقريبًا
-  setTimeout(() => {
-    window.open('index.html', '_blank'); // لو موجودة في public
-    appendLine('[System] Local index.html opened', 'system');
-  }, 1000);
-} else {
-  appendLine('[Error] ngrok URL not available after retries', 'system');
-}
+      // 3) فتح الصفحة المحلية (index) — نحاول مسارات متوقعة
+      const localCandidates = [
+        window.location.origin + '/index.html',
+        window.location.origin + '/',
+        window.location.origin + '/terminal.html',
+        window.location.origin + '/public/index.html'
+      ];
 
+      // نختار أول مسار يعمل (لاختبار، سنجرب بالتسلسل)
+      let openedLocal = false;
+      for (const candidate of localCandidates) {
+        try {
+          if (winLocal) {
+            // نغير location للنافذة الفارغة
+            winLocal.location.href = candidate;
+            appendLine(`[System] Attempting to open local page: ${candidate}`, 'system');
+            openedLocal = true;
+            break;
+          } else {
+            const w = window.open(candidate, '_blank');
+            if (w) { appendLine(`[System] Local page opened: ${candidate}`, 'system'); openedLocal = true; break; }
+          }
+        } catch (e) {
+          // محاولة فشلت؛ نجرب التالية
+        }
+      }
+
+      if (!openedLocal) {
+        appendLine('[Warning] Failed to open local index page — browser may have blocked popups or path is wrong.', 'system');
+        appendLine('[System] Try opening the local page manually or check server static routes.', 'system');
+      } else {
+        appendLine('[System] Local index open attempted.', 'system');
+      }
+
+    } else {
+      appendLine('[Error] ngrok URL not available after retries', 'system');
+    }
 
   } finally {
     startAttackBtn.disabled = false;
     startAttackBtn.textContent = prevText;
   }
 }
+
 
 stopBtn.addEventListener('click', stopSSE);
 clearBtn.addEventListener('click', clearLog);
