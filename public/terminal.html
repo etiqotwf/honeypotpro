@@ -55,6 +55,82 @@
     #controls { flex-wrap:wrap; justify-content:flex-start; }
     #ngrokUrl { max-width:220px; }
   }
+
+
+#openConsole {
+  background: #aa0066;      /* لون مميز بنفس قوة زر ngrok */
+  border-color: #880044;
+  color: #fff;
+  font-weight: bold;
+  box-shadow: 0 0 8px #aa006655;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+#openConsole:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 0 12px #ff66aa55;
+}
+
+
+
+button {
+  background: rgba(0,255,170,0.07);
+  border: 1px solid rgba(0,255,170,0.18);
+  color: var(--accent);
+  padding: 12px 18px;      /* زيادة البادينج */
+  border-radius: 8px;       /* أكبر شوي */
+  cursor: pointer;
+  font-size: 1.1rem;       /* تكبير حجم الكتابة في الأزرار */
+  font-weight: 600;
+}
+
+button:hover { 
+  box-shadow: 0 0 10px rgba(0,255,170,0.08); /* زيادة تأثير hover */
+  transform: translateY(-1px); 
+}
+
+/* أزرار خاصة (مثل Start Attack و Open Console) */
+#startAttack, #openConsole {
+  font-size: 1.15rem;
+  padding: 12px 22px;
+}
+
+
+
+#logContainer {
+  flex: 1;
+  overflow: auto;
+  padding: 20px;            /* زيادة المسافة */
+  color: #d1fff5;
+  text-shadow: 0 0 6px #00ffee55;
+  font-size: 1.1rem;        /* تكبير الكتابة في اللوج */
+  line-height: 1.5;         /* زيادة المسافة بين الأسطر */
+}
+
+
+h1 {
+  font-size: 1.5rem; /* أكبر */
+}
+
+#status {
+  font-size: 1.1rem;
+}
+
+#ngrokUrl {
+  font-size: 1rem;
+  max-width: 480px;
+}
+
+
+@media (max-width:640px){
+  header { flex-direction: column; align-items: stretch; gap: 10px; }
+  #controls { flex-wrap: wrap; justify-content: flex-start; }
+  #ngrokUrl { max-width: 260px; }
+  button { padding: 14px 20px; font-size: 1.2rem; }
+  #logContainer { font-size: 1.15rem; padding: 18px; }
+}
+
+
 </style>
 </head>
 <body>
@@ -68,11 +144,11 @@
   </div>
 
   <div id="controls">
+    <button id="startAttack">🚀 Start ngrok & Attack</button>
     <button id="stopBtn">⏸ Stop SSE</button>
     <button id="clearBtn">🗑 Clear Log</button>
     <button id="copyBtn">📋 Copy Log</button>
-    <button id="startAttack">🚀 Start ngrok & Attack</button>
-    <button id="openInterface">🖥 Open Program Interface</button>
+    <button id="openConsole">🖥 openConsole </button>
 </div>
 
 </header>
@@ -373,16 +449,16 @@ window.addEventListener('load', () => {
 
 
 
-const openInterfaceBtn = document.getElementById('openInterface');
+const openConsoleBtn = document.getElementById('openConsole');
 
-openInterfaceBtn.addEventListener('click', () => {
-  // نفتح index.html في تاب جديد
+openConsoleBtn.addEventListener('click', () => {
+  // نفتح index.html في نافذة جديدة
   const url = window.location.origin + '/index.html'; // عدّل لو المسار مختلف
   const win = window.open(url, '_blank');
   if (win) {
-    appendLine('[System] Program interface opened', 'system');
+    appendLine('[System] Program console opened', 'system');
   } else {
-    appendLine('[Warning] Failed to open program interface — popup blocked?', 'system');
+    appendLine('[Warning] Failed to open program console — popup blocked?', 'system');
   }
 });
 
