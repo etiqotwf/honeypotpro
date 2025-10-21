@@ -240,34 +240,67 @@ console.error = (...args) => {
 
 
 // ✅ بدء الخادم و ngrok
-app.listen(PORT, () => {
-    console.log(`🚀 Server running at http://localhost:${PORT}`);
-    
+// ===== وظيفة startNgrokWithPolling =====
+function startNgrokWithPolling() {
+  // cross-platform kill previous ngrok
+  const killCmd = process.platform === 'win32'
+    ? 'taskkill /im ngrok.exe /f'
+    : "pgrep -f 'ngrok' && pkill -f 'ngrok'";
 
-  // 🟢 نسخ أولي عند تشغيل السيرفر
-    syncModelToPublic();
-
-    exec("pgrep -f 'ngrok' && pkill -f 'ngrok'", () => {
-        exec("ngrok.exe http 3000 --log=stdout", (err) => {
-            if (err) return console.error("❌ Error starting ngrok:", err);
-            console.log("✅ ngrok started successfully!");
-        });
-
-        setTimeout(() => {
-            exec("curl -s http://127.0.0.1:4040/api/tunnels", (err, stdout) => {
-                if (err || !stdout) {
-                    exec("powershell -Command \"(Invoke-WebRequest -Uri 'http://127.0.0.1:4040/api/tunnels' -UseBasicParsing).Content\"", (psErr, psStdout) => {
-                        if (psErr || !psStdout) return console.error("❌ Error fetching ngrok URL:", psErr);
-                        processNgrokResponse(psStdout);
-                    });
-                } else {
-                    processNgrokResponse(stdout);
-                }
-            });
-        }, 5000);
+  exec(killCmd, () => {
+    // محاولة تشغيل ngrok (سيتم تشغيلها مرة واحدة هنا؛ الـ polling يتأكد من أن الواجهة المحلية جاهزة)
+    // ملاحظة: لو ngrok مش في PATH استبدل "ngrok.exe" بالمسار الكامل
+    exec("ngrok.exe http 3000 --log=stdout", (err) => {
+      if (err) console.error("❌ Error starting ngrok (start command):", err.message || err);
+      else console.log("✅ ngrok start command issued (process may take a moment).");
     });
-});
 
+    const pollInterval = 5000; // كل 5 ثواني نجرب
+    const poller = setInterval(() => {
+      exec("curl -s http://127.0.0.1:4040/api/tunnels", (err, stdout) => {
+        if (err || !stdout) {
+          // محاولة fallback على Windows باستخدام PowerShell
+          if (process.platform === 'win32') {
+            exec("powershell -Command \"(Invoke-WebRequest -Uri 'http://127.0.0.1:4040/api/tunnels' -UseBasicParsing).Content\"", (psErr, psStdout) => {
+              if (psErr || !psStdout) {
+                console.log("🔁 ngrok not ready yet — retrying...");
+                return;
+              }
+              try {
+                processNgrokResponse(psStdout);
+                clearInterval(poller);
+              } catch (e) {
+                console.error("❌ Error parsing ngrok response (ps fallback):", e.message || e);
+              }
+            });
+            return;
+          }
+
+          // على الأنظمة الأخرى ننتظر الدورة القادمة
+          console.log("🔁 ngrok not ready yet — retrying...");
+          return;
+        }
+
+        // لو نجح curl
+        try {
+          processNgrokResponse(stdout);
+          clearInterval(poller);
+        } catch (e) {
+          console.error("❌ Error parsing ngrok response:", e.message || e);
+        }
+      });
+    }, pollInterval);
+  });
+}
+
+// ===== استبدال app.listen السابق بهذا =====
+app.listen(PORT, () => {
+  console.log(`🚀 Server running at http://localhost:${PORT}`);
+  // Sync مبدئي للنماذج
+  syncModelToPublic();
+  // ابدأ ngrok مع polling حتى نجد public_url
+  startNgrokWithPolling();
+});
 
 function processNgrokResponse(response) {
   try {
