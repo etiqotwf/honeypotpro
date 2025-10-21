@@ -243,3 +243,16 @@ Timestamp,IP,Method,ThreatType,Action,Attempts
 2025-10-21T22:22:02.117Z,::1,GET,"normal visit | /ngrok-url",auto
 2025-10-21T22:35:06.110Z,::1,GET,"normal visit | /ngrok-url",auto
 2025-10-21T22:42:53.315Z,127.0.0.1,GET,"normal visit | /events",auto
+2025-10-21T22:44:34.482Z,::1,GET,"normal visit | /events",auto
+2025-10-21T22:44:34.699Z,::1,GET,"normal visit | /ngrok-url",auto
+2025-10-21T22:44:36.146Z,::1,GET,"normal visit | /ngrok-url",auto
+2025-10-21T22:44:37.162Z,::1,GET,"normal visit | /ngrok-url",auto
+2025-10-21T22:44:38.190Z,::1,GET,"normal visit | /ngrok-url",auto
+2025-10-21T22:44:39.220Z,::1,GET,"normal visit | /ngrok-url",auto
+2025-10-21T22:44:40.406Z,::1,GET,"normal visit | /ngrok-url",auto
+2025-10-21T22:44:41.441Z,::1,GET,"normal visit | /ngrok-url",auto
+2025-10-21T22:44:42.457Z,::1,GET,"normal visit | /ngrok-url",auto
+2025-10-21T22:44:43.479Z,::1,GET,"normal visit | /ngrok-url",auto
+2025-10-21T22:44:44.498Z,::1,GET,"normal visit | /ngrok-url",auto
+2025-10-21T22:44:45.530Z,::1,GET,"normal visit | /ngrok-url",auto
+2025-10-21T22:44:46.553Z,::1,GET,"normal visit | /ngrok-url",auto
