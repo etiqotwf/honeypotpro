@@ -823,5 +823,30 @@
     },
     "finalAction": "block",
     "reason": "llm severity high"
+  },
+  {
+    "timestamp": "2025-10-21T22:24:10.493Z",
+    "ip": "::1",
+    "record": {
+      "timestamp": "2025-10-21T22:22:02.117Z",
+      "ip": "::1",
+      "method": "GET",
+      "threatType": "\"normal visit | /ngrok-url\",auto",
+      "raw": "2025-10-21T22:22:02.117Z,::1,GET,\"normal visit | /ngrok-url\",auto"
+    },
+    "dqnAction": "alert",
+    "heuristic": {
+      "actionSuggested": "ignore",
+      "reason": "no heuristic match",
+      "severityHint": "low"
+    },
+    "llm": {
+      "type": "neutral",
+      "severity": "high",
+      "score": 0.8613393902778625,
+      "summary": "Label=neutral score=0.86"
+    },
+    "finalAction": "block",
+    "reason": "llm severity high"
   }
 ]
