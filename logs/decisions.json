@@ -923,5 +923,30 @@
     },
     "finalAction": "alert",
     "reason": "trusted dqn output"
+  },
+  {
+    "timestamp": "2025-10-25T18:31:44.449Z",
+    "ip": "156.203.241.36",
+    "record": {
+      "timestamp": "2025-10-25T18:31:20.860Z",
+      "ip": "156.203.241.36",
+      "method": "GET",
+      "threatType": "\"normal visit | /favicon.ico\",auto",
+      "raw": "2025-10-25T18:31:20.860Z,156.203.241.36,GET,\"normal visit | /favicon.ico\",auto"
+    },
+    "dqnAction": "alert",
+    "heuristic": {
+      "actionSuggested": "ignore",
+      "reason": "no heuristic match",
+      "severityHint": "low"
+    },
+    "llm": {
+      "type": "neutral",
+      "severity": "high",
+      "score": 0.8739784359931946,
+      "summary": "Label=neutral score=0.87"
+    },
+    "finalAction": "block",
+    "reason": "llm severity high"
   }
 ]
