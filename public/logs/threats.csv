@@ -288,3 +288,6 @@ Timestamp,IP,Method,ThreatType,Action,Attempts
 2025-11-02T18:49:11.795Z,::1,GET,"normal visit | /ngrok-url",auto
 2025-11-02T18:49:15.938Z,::1,GET,"normal visit | /favicon.ico",auto
 2025-11-02T18:51:41.060Z,::1,GET,"normal visit | /favicon.ico",auto
+2025-11-02T18:52:47.159Z,::1,GET,"normal visit | /favicon.ico",auto
+2025-11-02T18:52:52.481Z,::1,GET,"normal visit | /events",auto
+2025-11-02T18:52:53.101Z,::1,GET,"normal visit | /ngrok-url",auto
