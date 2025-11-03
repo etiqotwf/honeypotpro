@@ -16,3 +16,6 @@ Timestamp,IP,Method,ThreatType,Action
 2025-11-03T03:12:37.434Z,::1,GET,"normal visit | /api/threats?_=1762139557420",auto,block
 2025-11-03T03:12:41.486Z,::1,GET,"normal visit | /api/threats?_=1762139557420",auto,BLOCKED by AI (llm severity high)
 2025-11-03T03:12:41.489Z,::1,GET,"normal visit | /api/threats?_=1762139557420",auto,BLOCKED by AI (llm severity high)
+2025-11-03T03:12:42.440Z,::1,GET,"normal visit | /api/threats?_=1762139562433",auto,block
+2025-11-03T03:12:45.832Z,::1,GET,"normal visit | /api/threats?_=1762139562433",auto,BLOCKED by AI (llm severity high)
+2025-11-03T03:12:45.840Z,::1,GET,"normal visit | /api/threats?_=1762139562433",auto,BLOCKED by AI (llm severity high)
