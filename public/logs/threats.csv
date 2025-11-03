@@ -14,3 +14,7 @@ Timestamp,IP,Method,ThreatType,Action,Attempts
 2025-11-03T03:13:09.941Z,::1,GET,"normal visit | /api/threats?_=1762139578263",auto
 2025-11-03T03:13:25.356Z,::1,GET,"normal visit | /api/threats?_=1762139588265",auto
 2025-11-03T03:13:25.374Z,::1,GET,"normal visit | /api/threats?_=1762139583259",auto
+2025-11-03T03:13:30.369Z,::1,GET,"normal visit | /api/threats?_=1762139593269",auto
+2025-11-03T03:13:30.372Z,::1,GET,"normal visit | /api/threats?_=1762139598266",auto
+2025-11-03T03:13:30.376Z,::1,GET,"normal visit | /api/threats?_=1762139603258",auto
+2025-11-03T03:13:30.385Z,::1,GET,"normal visit | /api/threats?_=1762139608257",auto
