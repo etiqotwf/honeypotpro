@@ -6,3 +6,7 @@ Timestamp,IP,Method,ThreatType,Action
 2025-11-03T03:12:18.044Z,::1,GET,"normal visit | /api/threats?_=1762139536901",auto,BLOCKED by AI (trusted dqn output)
 2025-11-03T03:12:16.905Z,::1,GET,"normal visit | /api/threats?_=1762139536901",auto,block
 2025-11-03T03:12:18.046Z,::1,GET,"normal visit | /api/threats?_=1762139536901",auto,BLOCKED by AI (trusted dqn output)
+2025-11-03T03:12:23.219Z,::1,GET,"normal visit | /api/threats?_=1762139541902",auto,alert
+2025-11-03T03:12:26.920Z,::1,GET,"normal visit | /api/threats?_=1762139546909",auto,block
+2025-11-03T03:12:28.055Z,::1,GET,"normal visit | /api/threats?_=1762139546909",auto,BLOCKED by AI (trusted dqn output)
+2025-11-03T03:12:28.058Z,::1,GET,"normal visit | /api/threats?_=1762139546909",auto,BLOCKED by AI (trusted dqn output)
