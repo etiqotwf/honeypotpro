@@ -5,3 +5,6 @@ Timestamp,IP,Method,ThreatType,Action,Attempts
 2025-11-03T03:12:16.905Z,::1,GET,"normal visit | /api/threats?_=1762139536901",auto
 2025-11-03T03:12:23.219Z,::1,GET,"normal visit | /api/threats?_=1762139541902",auto
 2025-11-03T03:12:26.920Z,::1,GET,"normal visit | /api/threats?_=1762139546909",auto
+2025-11-03T03:12:32.358Z,::1,GET,"normal visit | /api/threats?_=1762139551902",auto
+2025-11-03T03:12:32.423Z,::1,GET,"normal visit | /api/threats?_=1762139552419",auto
+2025-11-03T03:12:37.434Z,::1,GET,"normal visit | /api/threats?_=1762139557420",auto
