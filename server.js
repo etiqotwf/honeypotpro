@@ -133,17 +133,12 @@ app.get('/api/logs', (req, res) => {
     res.json(logs.reverse());
 });
 
-// ✅ API لعرض ملف CSV من GitHub
 app.get('/api/threats', (req, res) => {
-    const githubUrl = 'https://raw.githubusercontent.com/etiqotwf/honeypotpro/main/public/logs/threats.csv';
-    https.get(githubUrl, (githubRes) => {
-        let data = '';
-        githubRes.on('data', chunk => data += chunk);
-        githubRes.on('end', () => res.send(data));
-    }).on('error', (err) => {
-        console.error('❌ Error fetching CSV from GitHub:', err.message);
-        res.status(500).send('Error fetching data');
-    });
+    const rootLogPath = path.join(process.cwd(), 'logs', 'threats.csv');
+    if (!fs.existsSync(rootLogPath)) return res.status(404).send('File not found');
+
+    const data = fs.readFileSync(rootLogPath, 'utf8');
+    res.type('text/csv').send(data);
 });
 
 // ✅ تحميل CSV

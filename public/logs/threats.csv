@@ -1,2 +1,2 @@
-2025-11-03T02:24:49.246Z,::1,GET,"normal visit | /events",auto
-2025-11-03T02:24:49.987Z,::1,GET,"normal visit | /ngrok-url",auto
+Timestamp,IP,Method,ThreatType,Action,Attempts
+2025-11-03T03:07:20.402Z,::1,GET,"normal visit | /events",auto

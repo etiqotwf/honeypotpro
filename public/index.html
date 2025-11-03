@@ -175,38 +175,77 @@ td {
     let allLogs = [];
     let chartRef = null;
 
-    async function fetchCSVFromGitHub() {
-      const baseUrl = 'https://corsproxy.io/?https://raw.githubusercontent.com/etiqotwf/honeypotpro/main/logs/threats.csv';
-      const nocacheUrl = `${baseUrl}?_=${Date.now()}`;
-      try {
-        const response = await fetch(nocacheUrl, { cache: "no-store" });
-        const text = await response.text();
+    // استبدل الدالة القديمة بها
+async function fetchCSVFromGitHub() {
+  try {
+    // نجيب الملف من السيرفر مباشرة (الـ endpoint اللي عملناه)
+    const url = `/api/threats?_=${Date.now()}`;
+    const res = await fetch(url, { cache: "no-store" });
+    if (!res.ok) {
+      console.error('Failed to fetch /api/threats', res.status);
+      return [];
+    }
+    const text = await res.text();
 
-        if (text.includes('<html') || text.includes('There isn\'t a GitHub Pages site')) return [];
+    if (!text || text.trim().length === 0) return [];
 
-        const rows = text.trim().split('\n').slice(1);
-       return rows
-  .map(row => row.split(','))
-  .filter(parts => parts.length >= 4)  // تأكد من وجود القيم المطلوبة
-  .map(parts => {
-    const [timestamp, ip, method, threatType, action = ''] = parts;
-    return { timestamp, ip, method, threatType, action };
-  });
-
-      } catch (error) {
-        console.error('❌ Error loading CSV:', error);
-        return [];
+    // بسيط لكن صلب: parser يحترم الحقول المقتبسة التي تحتوي على فواصل
+    function parseCSV(text) {
+      const lines = text.split(/\r?\n/).filter(Boolean);
+      if (lines.length <= 1) return [];
+      const rows = [];
+      // تجاهل الهيدر
+      for (let i = 1; i < lines.length; i++) {
+        const line = lines[i];
+        const cols = [];
+        let cur = '';
+        let inQuotes = false;
+        for (let j = 0; j < line.length; j++) {
+          const ch = line[j];
+          if (ch === '"' ) {
+            // toggle quote unless it's an escaped double-quote ""
+            if (line[j+1] === '"') {
+              cur += '"';
+              j++; // skip escaped quote
+            } else {
+              inQuotes = !inQuotes;
+            }
+            continue;
+          }
+          if (ch === ',' && !inQuotes) {
+            cols.push(cur);
+            cur = '';
+            continue;
+          }
+          cur += ch;
+        }
+        cols.push(cur);
+        rows.push(cols);
       }
+      return rows;
     }
 
-    function filterLogs(logs) {
-      const ipFilter = document.getElementById('filterIP').value.trim();
-      const typeFilter = document.getElementById('filterType').value;
-      return logs.filter(log =>
-        (!ipFilter || log.ip.includes(ipFilter)) &&
-        (!typeFilter || log.threatType === typeFilter)
-      );
-    }
+    const rows = parseCSV(text);
+
+    // نعيد مصفوفة من الكائنات مع التأكد من وجود القيم الأساسية
+    return rows
+      .map(parts => {
+        // بعض الصفوف قد تحتوي أعمدة إضافية أو أقل؛ نتعامل بحذر
+        const timestamp = (parts[0] || '').trim();
+        const ip = (parts[1] || '').trim();
+        const method = (parts[2] || '').trim();
+        // threatType قد يكون في أجزاء متعددة إذا لم تُغلق الاقتباسات بشكل صحيح، لذلك نجمع كل ما بين العمود 3 وعمود قبل الأخير
+        const threatType = (parts[3] || '').trim();
+        // action قد يكون العمود الرابع أو الخامس حسب الهيدر، نحاول أخذ العمود الأخير كـ action إن وُجد
+        const action = (parts.length >= 5 ? parts[4] : '') || '';
+        return { timestamp, ip, method, threatType, action };
+      })
+      .filter(r => r.ip && r.method); // نتخلص من السطور الفارغة
+  } catch (error) {
+    console.error('❌ Error loading CSV from /api/threats:', error);
+    return [];
+  }
+}
 
     function renderTable(logs) {
   const tbody = document.getElementById('logTableBody');
@@ -317,6 +356,9 @@ td {
     });
 
     updateDashboard();
+    // تحديث تلقائي كل 5 ثواني (5000 مللي ثانية)
+setInterval(updateDashboard, 5000);
+
 
 
 document.addEventListener('click', () => {
