@@ -492,6 +492,57 @@ app.post('/api/add-threat', (req, res) => {
 });
 
 
+
+// ... pushToGitHub() هنا بتنتهي
+
+
+
+// لو محتاج __dirname في ES Module
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
+// المسارات
+const aiDecisionPath = path.join(__dirname, 'logs', 'decisions.json');
+const threatLogPath = path.join(__dirname, 'logs', 'threats.csv');
+
+// 🧠 مراقبة قرارات الذكاء الاصطناعي وتطبيقها على السيرفر
+if (fs.existsSync(aiDecisionPath)) {
+  fs.watch(aiDecisionPath, async (eventType) => {
+    if (eventType === 'change') {
+      try {
+        const content = fs.readFileSync(aiDecisionPath, 'utf8');
+        const decisions = JSON.parse(content);
+
+        if (Array.isArray(decisions) && decisions.length) {
+          const last = decisions[decisions.length - 1];
+          const { ip, record, finalAction, reason } = last;
+
+          // تنفيذ القرار الفعلي على السيرفر
+          if (finalAction === 'block') {
+            fs.appendFileSync(
+              threatLogPath,
+              `${new Date().toISOString()},${ip},${record?.method || 'N/A'},${record?.threatType || 'N/A'},BLOCKED by AI (${reason})\n`
+            );
+
+            console.log(`🚫 [AI Decision] Blocked IP ${ip} — ${reason}`);
+
+            // بث القرار لواجهة المراقبة
+            sendToClients({ type: 'ai-decision', action: finalAction, ip, reason });
+          }
+        }
+      } catch (err) {
+        console.error('⚠️ Error reading AI decision file:', err.message);
+      }
+    }
+  });
+
+  console.log('👁️ Watching logs/decisions.json for AI decisions...');
+}
+
+
+
 // ========== Sync Model to Public (only if changed) ==========
 function copyIfChanged(src, dest) {
   if (!fs.existsSync(src)) return;
