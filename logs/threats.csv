@@ -3,3 +3,6 @@ Timestamp,IP,Method,ThreatType,Action
 2025-11-03T03:10:18.028Z,::1,GET,"normal visit | /ngrok-url",auto,block
 2025-11-03T03:10:53.039Z,::1,GET,"normal visit | /ngrok-url",auto,BLOCKED by AI (llm severity high)
 2025-11-03T03:10:53.041Z,::1,GET,"normal visit | /ngrok-url",auto,BLOCKED by AI (llm severity high)
+2025-11-03T03:12:18.044Z,::1,GET,"normal visit | /api/threats?_=1762139536901",auto,BLOCKED by AI (trusted dqn output)
+2025-11-03T03:12:16.905Z,::1,GET,"normal visit | /api/threats?_=1762139536901",auto,block
+2025-11-03T03:12:18.046Z,::1,GET,"normal visit | /api/threats?_=1762139536901",auto,BLOCKED by AI (trusted dqn output)
