@@ -1,2 +1,5 @@
 Timestamp,IP,Method,ThreatType,Action
 2025-11-03T03:07:20.402Z,::1,GET,"normal visit | /events",auto,alert
+2025-11-03T03:10:18.028Z,::1,GET,"normal visit | /ngrok-url",auto,block
+2025-11-03T03:10:53.039Z,::1,GET,"normal visit | /ngrok-url",auto,BLOCKED by AI (llm severity high)
+2025-11-03T03:10:53.041Z,::1,GET,"normal visit | /ngrok-url",auto,BLOCKED by AI (llm severity high)
