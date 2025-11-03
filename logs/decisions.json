@@ -148,5 +148,30 @@
     },
     "finalAction": "block",
     "reason": "llm severity high"
+  },
+  {
+    "timestamp": "2025-11-03T03:12:38.516Z",
+    "ip": "::1",
+    "record": {
+      "timestamp": "2025-11-03T03:12:37.434Z",
+      "ip": "::1",
+      "method": "GET",
+      "threatType": "\"normal visit | /api/threats?_=1762139557420\",auto",
+      "raw": "2025-11-03T03:12:37.434Z,::1,GET,\"normal visit | /api/threats?_=1762139557420\",auto"
+    },
+    "dqnAction": "block",
+    "heuristic": {
+      "actionSuggested": "ignore",
+      "reason": "no heuristic match",
+      "severityHint": "low"
+    },
+    "llm": {
+      "type": "neutral",
+      "severity": "high",
+      "score": 0.9416958689689636,
+      "summary": "Label=neutral score=0.94"
+    },
+    "finalAction": "block",
+    "reason": "llm severity high"
   }
 ]
