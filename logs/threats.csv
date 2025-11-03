@@ -37,3 +37,8 @@ Timestamp,IP,Method,ThreatType,Action
 2025-11-03T03:13:34.261Z,::1,GET,"normal visit | /api/threats?_=1762139613345",auto,block
 2025-11-03T03:13:39.529Z,::1,GET,"normal visit | /api/threats?_=1762139613345",auto,BLOCKED by AI (llm severity high)
 2025-11-03T03:13:39.556Z,::1,GET,"normal visit | /api/threats?_=1762139613345",auto,BLOCKED by AI (llm severity high)
+2025-11-03T03:13:39.553Z,::1,GET,"normal visit | /api/threats?_=1762139618267",auto,block
+2025-11-03T03:13:43.115Z,::1,GET,"normal visit | /api/threats?_=1762139618267",auto,BLOCKED by AI (trusted dqn output)
+2025-11-03T03:13:43.120Z,::1,GET,"normal visit | /api/threats?_=1762139618267",auto,BLOCKED by AI (trusted dqn output)
+2025-11-03T03:13:43.271Z,::1,GET,"normal visit | /api/threats?_=1762139623269",auto,block
+2025-11-03T03:13:44.303Z,::1,GET,"normal visit | /api/threats?_=1762139623269",auto,BLOCKED by AI (llm severity high)

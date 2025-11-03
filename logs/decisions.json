@@ -348,5 +348,55 @@
     },
     "finalAction": "block",
     "reason": "llm severity high"
+  },
+  {
+    "timestamp": "2025-11-03T03:13:40.652Z",
+    "ip": "::1",
+    "record": {
+      "timestamp": "2025-11-03T03:13:39.553Z",
+      "ip": "::1",
+      "method": "GET",
+      "threatType": "\"normal visit | /api/threats?_=1762139618267\",auto",
+      "raw": "2025-11-03T03:13:39.553Z,::1,GET,\"normal visit | /api/threats?_=1762139618267\",auto"
+    },
+    "dqnAction": "block",
+    "heuristic": {
+      "actionSuggested": "ignore",
+      "reason": "no heuristic match",
+      "severityHint": "low"
+    },
+    "llm": {
+      "type": "neutral",
+      "severity": "medium",
+      "score": 0.828239917755127,
+      "summary": "Label=neutral score=0.83"
+    },
+    "finalAction": "block",
+    "reason": "trusted dqn output"
+  },
+  {
+    "timestamp": "2025-11-03T03:13:44.293Z",
+    "ip": "::1",
+    "record": {
+      "timestamp": "2025-11-03T03:13:43.271Z",
+      "ip": "::1",
+      "method": "GET",
+      "threatType": "\"normal visit | /api/threats?_=1762139623269\",auto",
+      "raw": "2025-11-03T03:13:43.271Z,::1,GET,\"normal visit | /api/threats?_=1762139623269\",auto"
+    },
+    "dqnAction": "block",
+    "heuristic": {
+      "actionSuggested": "ignore",
+      "reason": "no heuristic match",
+      "severityHint": "low"
+    },
+    "llm": {
+      "type": "neutral",
+      "severity": "high",
+      "score": 0.8826045989990234,
+      "summary": "Label=neutral score=0.88"
+    },
+    "finalAction": "block",
+    "reason": "llm severity high"
   }
 ]
