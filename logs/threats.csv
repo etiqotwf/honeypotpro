@@ -22,3 +22,5 @@ Timestamp,IP,Method,ThreatType,Action
 2025-11-03T03:12:48.265Z,::1,GET,"normal visit | /api/threats?_=1762139568262",auto,block
 2025-11-03T03:12:53.770Z,::1,GET,"normal visit | /api/threats?_=1762139568262",auto,BLOCKED by AI (trusted dqn output)
 2025-11-03T03:13:00.356Z,::1,GET,"normal visit | /api/threats?_=1762139568262",auto,BLOCKED by AI (trusted dqn output)
+2025-11-03T03:13:00.358Z,::1,GET,"normal visit | /api/threats?_=1762139573257",auto,block
+2025-11-03T03:13:09.949Z,::1,GET,"normal visit | /api/threats?_=1762139573257",auto,BLOCKED by AI (llm severity high)
