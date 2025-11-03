@@ -1048,5 +1048,30 @@
     },
     "finalAction": "alert",
     "reason": "trusted dqn output"
+  },
+  {
+    "timestamp": "2025-11-03T02:25:46.878Z",
+    "ip": "::1",
+    "record": {
+      "timestamp": "2025-11-03T02:24:49.987Z",
+      "ip": "::1",
+      "method": "GET",
+      "threatType": "\"normal visit | /ngrok-url\",auto",
+      "raw": "2025-11-03T02:24:49.987Z,::1,GET,\"normal visit | /ngrok-url\",auto"
+    },
+    "dqnAction": "alert",
+    "heuristic": {
+      "actionSuggested": "ignore",
+      "reason": "no heuristic match",
+      "severityHint": "low"
+    },
+    "llm": {
+      "type": "neutral",
+      "severity": "high",
+      "score": 0.8613393902778625,
+      "summary": "Label=neutral score=0.86"
+    },
+    "finalAction": "block",
+    "reason": "llm severity high"
   }
 ]
