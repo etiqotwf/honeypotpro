@@ -5,18 +5,27 @@ import fs from 'fs';
 import path from 'path';
 import https from 'https';
 import { exec, spawn } from 'child_process';
+
+// لو محتاج __dirname في ES Module
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
+const blockedFile = path.join(__dirname, 'blocked.json');
+
+
+
 import { fork } from 'child_process';
-import { execSync } from "child_process"; // ✅ أضف هذا السطر هنا
-// ✅ منع تحذير LF → CRLF في Git
+import { execSync } from "child_process"; // ✅ ممكن نحتفظ بالاستدعاء لو احتجناه لاحقًا
+
+// NOTE: تم تعطيل أي تفاعل مع GitHub — "local only mode"
+// منع تحذير LF → CRLF في Git (اختياري، لا يؤثر على رفع أي شيء)
 exec('git config core.autocrlf false', (error) => {
   if (error) {
     console.warn('⚠️ Warning: Failed to set Git config for autocrlf');
-  } else {
-   // console.log('✅ Git line ending config set (LF preserved)');
   }
 });
-
-
 
 const app = express();
 const PORT = 3000;
@@ -24,14 +33,11 @@ const PORT = 3000;
 let serverUrl = "";
 const logDir = './public/logs';
 const logPath = path.join(logDir, 'threats.csv');
-const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
-
-if (!GITHUB_TOKEN) {
-    console.error("❌ GitHub token not found in environment variables!");
-    process.exit(1);
-}
 
 
+// === ملاحظة هامة ===
+// تم إزالة فحص GITHUB_TOKEN وإيقاف أي push أو interactions مع GitHub.
+// إذا حبيت ترجّع الرفع لاحقًا، أقدر أرجعها لكن بنمط آمن (اختياري).
 
 // ===== Concurrency / scheduling helpers =====
 let honeypotProcessing = false;
@@ -39,14 +45,90 @@ let honeypotPending = false;
 let pushTimer = null;
 const PUSH_DEBOUNCE_MS = 15 * 1000; // اجمع push واحد كل 15 ثانية كحد أدنى
 
-
-
-
 app.use(bodyParser.urlencoded({ extended: true }));
-
-
 app.use(cors({ origin: "*" }));
 app.use(bodyParser.json());
+
+
+// ===== Blocklist / Firewall helpers =====
+let blockedSet = new Set();
+
+// Load persisted blocked IPs on startup
+try {
+  if (fs.existsSync(blockedFile)) {
+  const arr = JSON.parse(fs.readFileSync(blockedFile, 'utf8') || '[]');
+  // trim لكل قيمة عشان لا توجد فراغات أو محارف مخفية
+  blockedSet = new Set(Array.isArray(arr) ? arr.map(s => s.toString().trim()) : []);
+  console.log(`🔒 Loaded ${blockedSet.size} blocked IP(s) from blocked.json`);
+}
+
+} catch (e) {
+  console.error('⚠️ Failed to load blocked.json:', e.message);
+}
+
+
+// Middleware لتحسين التسجيل وفحص الحظر المبكر
+app.use((req, res, next) => {
+  try {
+    let ip = getClientIp(req);           // استخرج IP من request
+    let normIp = normalizeIp(ip);        // تطبيع IP (::ffff:127.0.0.1 → 127.0.0.1)
+
+    // Debug log لكل request
+    console.log('DEBUG: Incoming request', { ip, normIp });
+
+    // ----- فحص الحظر المبكر -----
+    if (blockedSet.has(normIp)) {
+      console.log(`⛔ BLOCKED (blockedSet): request from ${normIp}`);
+      try {
+        fs.appendFileSync(logPath, `${new Date().toISOString()},${normIp},${req.method},"blocked (early)",auto\n`);
+      } catch (e) {
+        console.error('⚠️ Failed to append early-block log:', e.message);
+      }
+      return res.status(403).send('⛔ Access Denied (blockedSet)');
+    }
+
+    // ----- فحص localhost -----
+    if (isLocalhost(normIp)) {
+      console.log(`🟢 Localhost request allowed: ${normIp}`);
+      return next();  // السماح دائمًا للـ localhost
+    }
+
+    // ----- فحص IP محظور مؤقتًا في الذاكرة -----
+    if (blockedIPs.has(normIp)) {
+      console.log(`⛔ BLOCKED (in-memory): request from ${normIp}`);
+      return res.status(403).send('⛔ Access Denied (in-memory)');
+    }
+
+    // ----- تسجيل الطلبات العادية -----
+    const method = req.method;
+    const originalUrl = req.originalUrl || req.url || "";
+    const bodyData = Object.keys(req.body || {}).length ? JSON.stringify(req.body) : "";
+    const combined = `${originalUrl} ${bodyData}`.trim();
+    const lowerData = combined.toLowerCase();
+
+    // 🧠 تحليل مبدئي (Heuristic)
+    let threatType = "normal visit";
+    if (/(malware|\.exe|virus|exploit)/i.test(lowerData)) threatType = "malware detected";
+    else if (/(nmap|scan|banner grab|sqlmap)/i.test(lowerData)) threatType = "scan attempt";
+    else if (/union\s+select|drop\s+table|\bor\b\s+['"]?1['"]?\s*=\s*['"]?1|or 1=1/i.test(lowerData)) threatType = "sql injection attempt";
+    else if (/(<script\b|onerror=|javascript:)/i.test(lowerData)) threatType = "xss attempt";
+    else if (/(login attempt|password guess|brute force)/i.test(lowerData)) threatType = "brute force attempt";
+    else if (/post/i.test(method)) threatType = "post request";
+
+    const timestamp = new Date().toISOString();
+    const safeOriginal = originalUrl.replace(/,/g, ";").replace(/\"/g, '\\"');
+    const logLine = `${timestamp},${normIp},${method},"${threatType} | ${safeOriginal}",auto\n`;
+
+    fs.appendFileSync(logPath, logLine);
+    console.log(`📥 [AUTO] ${normIp} ${method} ${originalUrl} => ${threatType}`);
+
+  } catch (err) {
+    console.error("❌ Middleware error writing to threats.csv:", err);
+  }
+
+  next();
+});
+
 // استجابة خاصة للروت الرئيسي
 app.get('/', (req, res) => {
   res.sendFile(path.join(process.cwd(), 'public', 'fake_login.html'));
@@ -62,48 +144,56 @@ if (!fs.existsSync(logPath)) {
 }
 
 
-// Middleware القديم اللي كان يسجل كل زيارة تلقائيًا أصبح معلق
-// ---- Enhanced logging middleware (replace existing middleware) ----
-app.use((req, res, next) => {
+
+
+
+
+// Reload blocked.json automatically when changed on disk (helps when you edit the file manually)
+fs.watchFile(blockedFile, { interval: 2000 }, () => {
   try {
-    const ip = req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.socket.remoteAddress?.replace('::ffff:', '') || 'unknown';
-    const method = req.method;
-    const originalUrl = req.originalUrl || req.url || '';
-    const bodyData = Object.keys(req.body || {}).length ? JSON.stringify(req.body) : '';
-    const combined = `${originalUrl} ${bodyData}`.trim();
-    const lowerData = combined.toLowerCase();
-
-    // heuristic simple improved
-    let threatType = "normal visit";
-    if (/(malware|\.exe|virus|exploit)/i.test(lowerData)) threatType = "malware detected";
-    else if (/(nmap|scan|banner grab|sqlmap)/i.test(lowerData)) threatType = "scan attempt";
-    else if (/union\s+select|drop\s+table|\bor\b\s+['"]?1['"]?\s*=\s*['"]?1|or 1=1/i.test(lowerData)) threatType = "sql injection attempt";
-    else if (/(<script\b|onerror=|javascript:)/i.test(lowerData)) threatType = "xss attempt";
-    else if (/(login attempt|password guess|brute force)/i.test(lowerData)) threatType = "brute force attempt";
-    else if (/post/i.test(method)) threatType = "post request";
-
-    const timestamp = new Date().toISOString();
-    // احفظ originalUrl مع نوع التهديد (نستبدل الفاصلة علشان لا تكسر CSV)
-    const safeOriginal = originalUrl.replace(/,/g, ';').replace(/"/g, '\\"');
-    const logLine = `${timestamp},${ip},${method},"${threatType} | ${safeOriginal}",auto\n`;
-    fs.appendFileSync(logPath, logLine);
-    console.log(`📥 [AUTO] ${ip} ${method} ${originalUrl} => ${threatType}`);
-
-    // جدولة push جماعي بعد debounce بدل كل request
-    if (pushTimer) clearTimeout(pushTimer);
-    pushTimer = setTimeout(() => {
-      try {
-        pushToGitHub();
-      } catch (e) {
-        console.error('Push scheduled failed:', e.message);
-      }
-    }, PUSH_DEBOUNCE_MS);
-
-  } catch (err) {
-    console.error("❌ Middleware error writing to threats.csv:", err);
+    const arr = JSON.parse(fs.readFileSync(blockedFile, 'utf8') || '[]');
+    blockedSet = new Set(Array.isArray(arr) ? arr.map(s => s.toString().trim()) : []);
+    console.log(`🔁 Reloaded blocked.json — ${blockedSet.size} entries`);
+  } catch (ex) {
+    console.error('⚠️ Failed to reload blocked.json:', ex.message);
   }
-  next();
 });
+
+
+// Save blockedSet to disk
+function persistBlocked() {
+  try {
+    fs.writeFileSync(blockedFile, JSON.stringify([...blockedSet], null, 2), 'utf8');
+    console.log(`💾 Saved ${blockedSet.size} blocked IP(s) to ${blockedFile}`);
+  } catch (e) {
+    console.error('⚠️ Failed to persist blocked.json:', e.message);
+  }
+}
+
+// Helper to detect localhost-like IPs and normalize
+function normalizeIp(raw) {
+  if (!raw) return 'unknown';
+  return raw.replace(/^::ffff:/, '');
+}
+function isLocalhost(rawIp) {
+  const ip = normalizeIp(rawIp || '').trim();
+  return ip === '::1' || ip === '127.0.0.1' || ip === 'localhost' || ip === '0:0:0:0:0:0:0:1';
+}
+
+
+
+// Middleware لتحسين التسجيل — لا يقوم بأي push إلى GitHub الآن
+// مؤقت: تخزين محلي لعناوين محظورة (يُستخدم لأغراض وقتية داخل الذاكرة)
+const blockedIPs = new Set();
+
+// Helper to get client IP reliably (prefers X-Forwarded-For)
+function getClientIp(req) {
+  const xff = req.headers['x-forwarded-for'] || req.headers['X-Forwarded-For'];
+  if (xff && typeof xff === 'string' && xff.trim()) return xff.split(',')[0].trim();
+  if (req.socket && req.socket.remoteAddress) return req.socket.remoteAddress.replace(/^::ffff:/, '').trim();
+  return 'unknown';
+}
+
 
 
 // ✅ تسجيل التهديدات من الهونى بوت فقط
@@ -114,13 +204,6 @@ app.post('/api/logs', (req, res) => {
     console.log(`📥 [BOT] ${ip} ${method} => ${threatType}`);
     res.status(200).json({ message: '✅ Threat logged (manual)' });
 });
-
-
-
-
-
-
-
 
 // ✅ API لعرض التهديدات
 app.get('/api/logs', (req, res) => {
@@ -160,9 +243,7 @@ app.get("/ngrok-url", (req, res) => {
     else res.status(500).json({ message: "ngrok has not started yet!" });
 });
 
-
-
-// ✅ بث مباشر للتيرمينال في المتصفح
+// بث مباشر للتيرمينال في المتصفح
 let clients = [];
 
 app.get('/events', (req, res) => {
@@ -177,7 +258,6 @@ app.get('/events', (req, res) => {
   });
 });
 
-// دالة لإرسال رسالة لكل الـ clients
 function sendToClients(data, type = 'line') {
   clients.forEach(res => {
     res.write(`data: ${JSON.stringify({ type, msg: data })}\n\n`);
@@ -203,9 +283,7 @@ app.post('/start-powershell', (req, res) => {
   res.json({ status: 'started' });
 });
 
-
-
-// ✅ دالة تبث أى سطر يظهر في التيرمينال
+// دالة تبث أى سطر يظهر في التيرمينال
 function broadcastLine(line) {
   for (const c of clients) {
     c.write(`event: line\n`);
@@ -213,7 +291,7 @@ function broadcastLine(line) {
   }
 }
 
-// ✅ تعديل console.log و console.error ليبثوا للواجهة
+// تعديل console.log و console.error ليبثوا للواجهة
 const origLog = console.log;
 const origErr = console.error;
 
@@ -229,22 +307,13 @@ console.error = (...args) => {
   origErr.apply(console, args);
 };
 
-
-
-
-
-
-// ✅ بدء الخادم و ngrok
-// ===== وظيفة startNgrokWithPolling =====
+// بدء الخادم و ngrok
 function startNgrokWithPolling() {
-  // cross-platform kill previous ngrok
   const killCmd = process.platform === 'win32'
     ? 'taskkill /im ngrok.exe /f'
     : "pgrep -f 'ngrok' && pkill -f 'ngrok'";
 
   exec(killCmd, () => {
-    // محاولة تشغيل ngrok (سيتم تشغيلها مرة واحدة هنا؛ الـ polling يتأكد من أن الواجهة المحلية جاهزة)
-    // ملاحظة: لو ngrok مش في PATH استبدل "ngrok.exe" بالمسار الكامل
     exec("ngrok.exe http 3000 --log=stdout", (err) => {
       if (err) console.error("❌ Error starting ngrok (start command):", err.message || err);
       else console.log("✅ ngrok start command issued (process may take a moment).");
@@ -254,7 +323,6 @@ function startNgrokWithPolling() {
     const poller = setInterval(() => {
       exec("curl -s http://127.0.0.1:4040/api/tunnels", (err, stdout) => {
         if (err || !stdout) {
-          // محاولة fallback على Windows باستخدام PowerShell
           if (process.platform === 'win32') {
             exec("powershell -Command \"(Invoke-WebRequest -Uri 'http://127.0.0.1:4040/api/tunnels' -UseBasicParsing).Content\"", (psErr, psStdout) => {
               if (psErr || !psStdout) {
@@ -271,12 +339,10 @@ function startNgrokWithPolling() {
             return;
           }
 
-          // على الأنظمة الأخرى ننتظر الدورة القادمة
           console.log("🔁 ngrok not ready yet — retrying...");
           return;
         }
 
-        // لو نجح curl
         try {
           processNgrokResponse(stdout);
           clearInterval(poller);
@@ -288,19 +354,16 @@ function startNgrokWithPolling() {
   });
 }
 
-// ===== استبدال app.listen السابق بهذا =====
 app.listen(PORT, () => {
   console.log(`🚀 Server running at http://localhost:${PORT}`);
   // Sync مبدئي للنماذج
   syncModelToPublic();
-  // ابدأ ngrok مع polling حتى نجد public_url
   startNgrokWithPolling();
 });
 
 function processNgrokResponse(response) {
   try {
     const tunnels = JSON.parse(response);
-    // assign to the top-level variable (not a new const)
     serverUrl = tunnels.tunnels[0]?.public_url || null;
     console.log(`✅ Server URL (ngrok) is: ${serverUrl || 'not used'}`);
 
@@ -322,8 +385,6 @@ function processNgrokResponse(response) {
 
 function openTerminal(url) {
   const platform = process.platform;
-
-  // Helper: فتح detached
   const launchDetached = (command, args = [], useShell = false) => {
     try {
       const child = spawn(command, args, {
@@ -339,7 +400,6 @@ function openTerminal(url) {
   };
 
   if (platform === 'win32') {
-    // محاولة فتح Chrome مباشرة
     const chromePaths = [
       process.env['PROGRAMFILES'] ? path.join(process.env['PROGRAMFILES'], 'Google\\Chrome\\Application\\chrome.exe') : null,
       process.env['PROGRAMFILES(X86)'] ? path.join(process.env['PROGRAMFILES(X86)'], 'Google\\Chrome\\Application\\chrome.exe') : null,
@@ -355,7 +415,6 @@ function openTerminal(url) {
       }
     }
 
-    // Fallback: المتصفح الافتراضي
     exec(`start "" "${url}"`, (err) => {
       if (err) console.error('❌ Failed to open terminal (fallback):', err);
       else console.log('✅ Terminal opened in default browser (fallback).');
@@ -375,7 +434,6 @@ function openTerminal(url) {
     return;
   }
 
-  // Linux / Unix-like
   const linuxCommands = ['google-chrome', 'google-chrome-stable', 'chromium-browser', 'chromium', 'firefox', 'xdg-open'];
   for (const cmd of linuxCommands) {
     if (launchDetached(cmd, [url])) {
@@ -384,92 +442,19 @@ function openTerminal(url) {
     }
   }
 
-  // آخر حل: fallback xdg-open
   exec(`xdg-open "${url}"`, (err) => {
     if (err) console.error('❌ Failed to open terminal on Linux:', err);
     else console.log('✅ Terminal opened on Linux (fallback).');
   });
 }
 
-
-
-
-// فتح الرابط في المتصفح الافتراضي (Windows / macOS / Linux)
-// ✅ رفع الملفات إلى GitHub تلقائيًا (مع git add و commit قبل push)
+// تم تعديل pushToGitHub ليصبح no-op: لا يقوم بأي عمليات Git أو Push
 function pushToGitHub() {
-  console.log("📤 Preparing to push updates to GitHub...");
-
-  // ✅ استبعاد node_modules من الرفع
-  const gitignorePath = ".gitignore";
-  if (!fs.existsSync(gitignorePath)) {
-    fs.writeFileSync(gitignorePath, "node_modules/\n", "utf8");
-    console.log("🧩 Created .gitignore and excluded node_modules/");
-  } else {
-    const content = fs.readFileSync(gitignorePath, "utf8");
-    if (!content.includes("node_modules/")) {
-      fs.appendFileSync(gitignorePath, "\nnode_modules/\n", "utf8");
-      console.log("🧩 Updated .gitignore to exclude node_modules/");
-    }
-  }
-
-  // ✅ إنشاء README.md أو تحديثه
-  const readmePath = "README.md";
-  const setupInstructions = `
-# 🧠 Honeypot AI Project
-
-This project uses Node.js and AI model integration (Hugging Face + TensorFlow.js).
-
-## 🚀 Setup Instructions
-After cloning this repository, run the following commands:
-
-\`\`\`bash
-npm install
-node server.js
-\`\`\`
-
-✅ The server will start at: http://localhost:3000
-`;
-  if (!fs.existsSync(readmePath)) {
-    fs.writeFileSync(readmePath, setupInstructions, "utf8");
-    console.log("📝 Created README.md");
-  }
-
-  try {
-    // ✅ إضافة الملفات والتأكد من وجود تغييرات
-    execSync("git add -A");
-    const changes = execSync("git status --porcelain").toString().trim();
-
-    if (!changes) {
-      console.log("🟡 No changes detected — skipping push.");
-      return;
-    }
-
-    // ✅ عمل commit قبل الـ push
-    execSync(`git commit -m "Auto commit before push: ${new Date().toISOString()}"`);
-    // console.log("✅ Auto commit created.");
-
-    // ✅ سحب آخر التحديثات مع تجاهل التعارضات
-    try {
-      execSync("git pull --rebase origin main", { stdio: "pipe" });
-    } catch (e) {
-      console.warn("⚠️ Warning during git pull (ignored).");
-    }
-
-    // ✅ تنفيذ الـ push
-    execSync(
-      `git push https://etiqotwf:${process.env.GITHUB_TOKEN}@github.com/etiqotwf/honeypotpro.git main`,
-      { stdio: "pipe" }
-    );
-
-    console.log("✅ Project pushed successfully!");
-    console.log("🛡️ Server is now monitoring — waiting for any attack to analyze and activate the intelligent defense system...");
-  } catch (err) {
-    console.error("❌ Error pushing to GitHub:", err.message);
-  }
+  console.log('🚫 GitHub push disabled — running in local-only mode.');
+  // لو عايز في المستقبل تفعّل ربط آمن، أرجع نضيف هنا منطق مصادقة آمنة وإرسال فقط ملفات اللوج.
 }
 
-
-// ✅ API لإضافة تهديد يدويًا
+// API لإضافة تهديد يدويًا — الآن لا يدفع لGitHub
 app.post('/api/add-threat', (req, res) => {
     const { ip, method, threatType } = req.body;
     if (!ip || !method || !threatType) return res.status(400).json({ message: '❌ Missing threat data' });
@@ -478,8 +463,8 @@ app.post('/api/add-threat', (req, res) => {
     try {
         fs.appendFileSync(logPath, newLine);
         console.log(`✅ Threat added: ${ip}, ${method}, ${threatType}`);
-        pushToGitHub();
-        res.status(200).json({ message: '✅ Threat added and pushed to GitHub' });
+        // مُعطّل: pushToGitHub();
+        res.status(200).json({ message: '✅ Threat added (local only)'});
     } catch (err) {
         console.error("❌ Failed to write threat:", err);
         res.status(500).json({ message: '❌ Failed to write threat' });
@@ -488,66 +473,75 @@ app.post('/api/add-threat', (req, res) => {
 
 
 
-// ... pushToGitHub() هنا بتنتهي
-
-
-
-// لو محتاج __dirname في ES Module
-import { fileURLToPath } from 'url';
-import { dirname } from 'path';
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
-
+// المسارات
 // المسارات
 const aiDecisionPath = path.join(__dirname, 'logs', 'decisions.json');
 const threatLogPath = path.join(__dirname, 'logs', 'threats.csv');
 
-// 🧠 مراقبة قرارات الذكاء الاصطناعي وتطبيقها على السيرفر
-if (fs.existsSync(aiDecisionPath)) {
-  fs.watch(aiDecisionPath, async (eventType) => {
-    if (eventType === 'change') {
-      try {
-        const content = fs.readFileSync(aiDecisionPath, 'utf8');
-        const decisions = JSON.parse(content);
+// ✅ إنشاء المجلد logs إذا مش موجود
+const logsDir = path.join(__dirname, 'logs');
+if (!fs.existsSync(logsDir)) fs.mkdirSync(logsDir, { recursive: true });
 
-        if (Array.isArray(decisions) && decisions.length) {
-          const last = decisions[decisions.length - 1];
-          const { ip, record, finalAction, reason } = last;
-
-          // تنفيذ القرار الفعلي على السيرفر
-          if (finalAction === 'block') {
-            fs.appendFileSync(
-              threatLogPath,
-              `${new Date().toISOString()},${ip},${record?.method || 'N/A'},${record?.threatType || 'N/A'},BLOCKED by AI (${reason})\n`
-            );
-
-            console.log(`🚫 [AI Decision] Blocked IP ${ip} — ${reason}`);
-
-            // بث القرار لواجهة المراقبة
-            sendToClients({ type: 'ai-decision', action: finalAction, ip, reason });
-          }
-        }
-      } catch (err) {
-        console.error('⚠️ Error reading AI decision file:', err.message);
-      }
-    }
-  });
-
-  console.log('👁️ Watching logs/decisions.json for AI decisions...');
+// ✅ إنشاء ملف فارغ decisions.json إذا غير موجود
+if (!fs.existsSync(aiDecisionPath)) {
+  fs.writeFileSync(aiDecisionPath, '[]');
 }
 
 
+fs.watch(aiDecisionPath, async (eventType) => {
+  if (eventType === 'change') {
+    try {
+      const content = fs.readFileSync(aiDecisionPath, 'utf8');
+      const decisions = JSON.parse(content);
 
-// ========== Sync Model to Public (only if changed) ==========
+      if (Array.isArray(decisions) && decisions.length) {
+        const last = decisions[decisions.length - 1];
+        const { ip, record, finalAction, reason } = last;
+
+        if (finalAction === 'block') {
+          // ✳️ Skip blocking localhost to avoid self-blocking during local testing
+          if (isLocalhost(ip)) {
+            console.log(`🟢 Localhost detected (${ip}) — skipping block by AI decision (${reason})`);
+
+            // Log the decision but do NOT persist to blocked.json
+            fs.appendFileSync(
+              threatLogPath,
+              `${new Date().toISOString()},${ip},${record?.method || 'N/A'},${record?.threatType || 'N/A'},IGNORED-BLOCK (localhost)\n`
+            );
+
+            sendToClients({ type: 'ai-decision', action: 'ignored-block-local', ip, reason });
+            return;
+          }
+
+          blockedSet.add(ip);
+          persistBlocked(); // ✅ هي دي اللي بتنشئ blocked.json فعليًا
+
+          fs.appendFileSync(
+            threatLogPath,
+            `${new Date().toISOString()},${ip},${record?.method || 'N/A'},${record?.threatType || 'N/A'},BLOCKED by AI (${reason})\n`
+          );
+
+          console.log(`🚫 [AI Decision] Blocked IP ${ip} — ${reason}`);
+          sendToClients({ type: 'ai-decision', action: finalAction, ip, reason });
+        }
+      }
+    } catch (err) {
+      console.error('⚠️ Error reading AI decision file:', err.message);
+    }
+  }
+});
+
+console.log('👁️ Watching logs/decisions.json for AI decisions...');
+
+
+// Sync Model to Public (only if changed)
 function copyIfChanged(src, dest) {
   if (!fs.existsSync(src)) return;
   const srcStat = fs.statSync(src);
   const destStat = fs.existsSync(dest) ? fs.statSync(dest) : null;
 
-  // ✅ انسخ فقط إذا الملف مختلف في الحجم أو تاريخ التعديل
   if (!destStat || srcStat.mtimeMs !== destStat.mtimeMs || srcStat.size !== destStat.size) {
     fs.copyFileSync(src, dest);
-    // console.log(`📝 File updated and copied: ${path.basename(src)}`);
   }
 }
 
@@ -569,7 +563,7 @@ function syncModelToPublic() {
   }
 }
 
-// ========== Watch for model/weights changes ==========
+// Watch for model/weights changes
 const modelPath = path.join(process.cwd(), 'model.json');
 const weightsPath = path.join(process.cwd(), 'weights.bin');
 
@@ -583,26 +577,21 @@ const weightsPath = path.join(process.cwd(), 'weights.bin');
   }
 });
 
-
-
-
-// ✅ مراقبة ملف threats.csv في مجلد logs (جذر المشروع)
+// مراقبة ملف threats.csv في مجلد logs (جذر المشروع)
 const projectLogPath = path.join(process.cwd(), 'logs', 'threats.csv');
 
 if (fs.existsSync(projectLogPath)) {
     fs.watchFile(projectLogPath, { interval: 5000 }, (curr, prev) => {
         if (curr.mtime !== prev.mtime) {
             console.log("📝 Detected change in project logs/threats.csv");
-            pushToGitHub();
+            // معطّل: pushToGitHub();
         }
     });
 } else {
     console.warn("⚠️ Project logs/threats.csv not found, skipping watch...");
 }
 
-
-
-// ✅ مراقبة ملف public/logs/threats.csv وتشغيل الـ Adaptive Honeypot على آخر سطر
+// مراقبة public/logs/threats.csv وتشغيل الـ Adaptive Honeypot على آخر سطر
 const publicLogPath = path.join(process.cwd(), 'public', 'logs', 'threats.csv');
 
 if (fs.existsSync(publicLogPath)) {
@@ -610,7 +599,6 @@ if (fs.existsSync(publicLogPath)) {
     if (curr.mtime !== prev.mtime) {
       console.log("👁️ Detected new entry in public/logs/threats.csv");
 
-      // اقرأ آخر سطر بشكل آمن
       const content = fs.readFileSync(publicLogPath, 'utf8').trim();
       const lines = content.split(/\r?\n/);
       const lastLine = lines[lines.length - 1];
@@ -628,23 +616,21 @@ if (fs.existsSync(publicLogPath)) {
 
         const child = spawn(process.execPath, ['adaptive-honeypot.js', lastLine], { cwd: process.cwd() });
 
-        // 🟢 هنا نرسل stdout مباشرة للـ clients
         child.stdout.on('data', (data) => {
             const text = data.toString();
-            sendToClients(`[HONEYPOT] ${text}`, 'line'); // يبث للواجهة
-            process.stdout.write(`[HONEYPOT] ${text}`);   // يبقى موجود في الكونسول كمان
+            sendToClients(`[HONEYPOT] ${text}`, 'line');
+            process.stdout.write(`[HONEYPOT] ${text}`);
         });
 
-        // 🟢 نفس الشيء للـ stderr
         child.stderr.on('data', (data) => {
             const text = data.toString();
-            sendToClients(`[HONEYPOT-ERR] ${text}`, 'attack'); // لون مختلف للخطأ
+            sendToClients(`[HONEYPOT-ERR] ${text}`, 'attack');
             process.stderr.write(`[HONEYPOT-ERR] ${text}`);
         });
 
         child.on('close', (code) => {
             const msg = `🤖 Honeypot process exited with code ${code}`;
-            sendToClients(msg, 'system'); // رسالة انتهاء العملية للواجهة
+            sendToClients(msg, 'system');
             console.log(msg);
 
             honeypotProcessing = false;
@@ -663,14 +649,8 @@ if (fs.existsSync(publicLogPath)) {
   console.warn("⚠️ public/logs/threats.csv not found, skipping watch...");
 }
 
-
-
-
-
-
-// ✅ أي طلب غير static و API يرجع صفحة الفيك
+// أي طلب غير static و API يرجع صفحة الفيك
 app.get('*', (req, res) => {
-  // استثناء ملفات static و api
   if (
     req.path.startsWith('/api') ||
     req.path.match(/\.(js|css|png|jpg|jpeg|gif|svg|ico|json)$/)

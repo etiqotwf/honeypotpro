@@ -1,2 +1,25 @@
 Timestamp,IP,Method,ThreatType,Action,Attempts
-2025-11-07T15:37:38.572Z,::1,GET,"normal visit | /favicon.ico",auto
+2025-11-08T19:22:40.958Z,::1,GET,"normal visit | /events",auto
+2025-11-08T19:22:42.204Z,::1,GET,"normal visit | /ngrok-url",auto
+2025-11-08T19:27:40.064Z,156.203.235.39,GET,"normal visit | /favicon.ico",auto
+2025-11-08T19:31:22.952Z,156.203.235.39,GET,"normal visit | /favicon.ico",auto
+2025-11-08T20:43:49.533Z,::1,GET,"normal visit | /favicon.ico",auto
+2025-11-08T20:55:34.704Z,::1,GET,"normal visit | /events",auto
+2025-11-08T20:55:37.286Z,::1,GET,"normal visit | /ngrok-url",auto
+2025-11-08T21:09:52.099Z,::1,GET,"normal visit | /events",auto
+2025-11-08T21:09:55.100Z,::1,GET,"normal visit | /ngrok-url",auto
+2025-11-08T21:27:16.442Z,::1,GET,"normal visit | /events",auto
+2025-11-08T21:27:18.973Z,::1,GET,"normal visit | /ngrok-url",auto
+2025-11-08T21:37:43.406Z,::1,GET,"normal visit | /events",auto
+2025-11-08T22:18:34.482Z,156.203.235.39,GET,"blocked (early)",auto
+2025-11-08T22:22:22.333Z,156.203.235.39,GET,"blocked (early)",auto
+2025-11-08T22:23:23.040Z,156.203.235.39,GET,"blocked (early)",auto
+2025-11-08T22:27:01.149Z,156.203.235.39,GET,"blocked (early)",auto
+2025-11-08T22:34:51.223Z,156.203.235.39,GET,"blocked (early)",auto
+2025-11-08T22:34:58.874Z,156.203.235.39,GET,"blocked (early)",auto
+2025-11-08T22:53:18.592Z,156.203.235.39,GET,"blocked (early)",auto
+2025-11-08T22:53:26.943Z,156.203.235.39,GET,"blocked (early)",auto
+2025-11-08T22:53:28.686Z,156.203.235.39,GET,"blocked (early)",auto
+2025-11-08T22:53:29.048Z,156.203.235.39,GET,"blocked (early)",auto
+2025-11-08T22:54:58.633Z,156.203.235.39,GET,"blocked (early)",auto
+2025-11-08T22:55:00.637Z,156.203.235.39,GET,"blocked (early)",auto
