@@ -1,0 +1,13 @@
+Timestamp,IP,Method,ThreatType,Action
+2025-11-08T19:22:42.204Z,::1,GET,"normal visit | /ngrok-url",auto,block
+2025-11-08T19:22:58.793Z,::1,GET,"normal visit | /ngrok-url",auto,IGNORED-BLOCK (localhost)
+2025-11-08T19:22:58.796Z,::1,GET,"normal visit | /ngrok-url",auto,IGNORED-BLOCK (localhost)
+2025-11-08T19:27:40.064Z,156.203.235.39,GET,"normal visit | /favicon.ico",auto,block
+2025-11-08T19:27:41.608Z,156.203.235.39,GET,"normal visit | /favicon.ico",auto,BLOCKED by AI (llm severity high)
+2025-11-08T19:27:41.619Z,156.203.235.39,GET,"normal visit | /favicon.ico",auto,BLOCKED by AI (llm severity high)
+2025-11-08T19:31:22.952Z,156.203.235.39,GET,"normal visit | /favicon.ico",auto,block
+2025-11-08T19:31:24.422Z,156.203.235.39,GET,"normal visit | /favicon.ico",auto,BLOCKED by AI (llm severity high)
+2025-11-08T19:31:24.509Z,156.203.235.39,GET,"normal visit | /favicon.ico",auto,BLOCKED by AI (llm severity high)
+2025-11-08T20:43:49.533Z,::1,GET,"normal visit | /favicon.ico",auto,block
+2025-11-08T20:44:31.886Z,::1,GET,"normal visit | /favicon.ico",auto,IGNORED-BLOCK (localhost)
+2025-11-08T20:44:31.893Z,::1,GET,"normal visit | /favicon.ico",auto,IGNORED-BLOCK (localhost)

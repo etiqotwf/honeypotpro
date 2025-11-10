@@ -176,63 +176,33 @@ td {
     let chartRef = null;
 
     async function fetchCSVFromGitHub() {
-      const baseUrl = 'https://corsproxy.io/?https://raw.githubusercontent.com/etiqotwf/honeypotpro/main/logs/threats.csv';
-      const nocacheUrl = `${baseUrl}?_=${Date.now()}`;
-      try {
-        const response = await fetch(nocacheUrl, { cache: "no-store" });
-        const text = await response.text();
-
-        if (text.includes('<html') || text.includes('There isn\'t a GitHub Pages site')) return [];
-
-        const rows = text.trim().split('\n').slice(1);
-       return rows
-  .map(row => row.split(','))
-  .filter(parts => parts.length >= 4)  // تأكد من وجود القيم المطلوبة
-  .map(parts => {
-    const [timestamp, ip, method, threatType, action = ''] = parts;
-    return { timestamp, ip, method, threatType, action };
-  });
-
-      } catch (error) {
-        console.error('❌ Error loading CSV:', error);
-        return [];
-      }
+  const nocacheUrl = `threats.csv?_=${Date.now()}`; // ملف threats.csv في public
+  try {
+    const response = await fetch(nocacheUrl, { cache: "no-store" });
+    if (!response.ok) {
+      console.error('❌ Failed to fetch threats.csv', response.status);
+      return [];
     }
 
-    function filterLogs(logs) {
-      const ipFilter = document.getElementById('filterIP').value.trim();
-      const typeFilter = document.getElementById('filterType').value;
-      return logs.filter(log =>
-        (!ipFilter || log.ip.includes(ipFilter)) &&
-        (!typeFilter || log.threatType === typeFilter)
-      );
-    }
+    const text = await response.text();
+    if (!text || text.trim().length === 0) return [];
 
-    function renderTable(logs) {
-  const tbody = document.getElementById('logTableBody');
-  tbody.innerHTML = '';
-
-  // ترتيب logs حسب التاريخ تنازلي (أحدث تاريخ أولاً)
-  logs.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
-
-  logs.forEach(log => {
-    const actionDisplay = log.action || 'N/A';
-    let color = 'gray';
-    if (actionDisplay === 'block') color = 'red';
-    else if (actionDisplay === 'alert') color = 'gold';
-
-    tbody.innerHTML += `
-      <tr>
-        <td>${log.timestamp}</td>
-        <td>${log.ip}</td>
-        <td>${log.method}</td>
-        <td>${log.threatType}</td>
-        <td style="font-weight:bold;">
-          ${actionIcon(log.action)}
-        </td>
-      </tr>
-    `;
-  });
+    const rows = text.trim().split('\n').slice(1); // تجاهل العنوان
+    return rows
+      .map(row => {
+        // التعامل مع القيم المقتبسة إذا وجدت
+        const parts = row.match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g)?.map(p => p.replace(/^"|"$/g, '')) || [];
+        return parts;
+      })
+      .filter(parts => parts.length >= 4) // تأكد من وجود القيم المطلوبة
+      .map(parts => {
+        const [timestamp, ip, method, threatType, action = ''] = parts;
+        return { timestamp, ip, method, threatType, action };
+      });
+  } catch (error) {
+    console.error('❌ Error loading threats.csv:', error);
+    return [];
+  }
 }
 
     function drawThreatChart(logs) {

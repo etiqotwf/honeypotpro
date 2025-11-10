@@ -178,23 +178,19 @@ td {
     // استبدل الدالة القديمة بها
 async function fetchCSVFromGitHub() {
   try {
-    // نجيب الملف من السيرفر مباشرة (الـ endpoint اللي عملناه)
-    const url = `/api/threats?_=${Date.now()}`;
-    const res = await fetch(url, { cache: "no-store" });
+    const res = await fetch(`threats.csv?_=${Date.now()}`, { cache: "no-store" });
     if (!res.ok) {
-      console.error('Failed to fetch /api/threats', res.status);
+      console.error('Failed to fetch threats.csv', res.status);
       return [];
     }
     const text = await res.text();
-
     if (!text || text.trim().length === 0) return [];
 
-    // بسيط لكن صلب: parser يحترم الحقول المقتبسة التي تحتوي على فواصل
+    // parser يحترم الحقول المقتبسة
     function parseCSV(text) {
       const lines = text.split(/\r?\n/).filter(Boolean);
       if (lines.length <= 1) return [];
       const rows = [];
-      // تجاهل الهيدر
       for (let i = 1; i < lines.length; i++) {
         const line = lines[i];
         const cols = [];
@@ -202,21 +198,12 @@ async function fetchCSVFromGitHub() {
         let inQuotes = false;
         for (let j = 0; j < line.length; j++) {
           const ch = line[j];
-          if (ch === '"' ) {
-            // toggle quote unless it's an escaped double-quote ""
-            if (line[j+1] === '"') {
-              cur += '"';
-              j++; // skip escaped quote
-            } else {
-              inQuotes = !inQuotes;
-            }
+          if (ch === '"') {
+            if (line[j+1] === '"') { cur += '"'; j++; } 
+            else { inQuotes = !inQuotes; }
             continue;
           }
-          if (ch === ',' && !inQuotes) {
-            cols.push(cur);
-            cur = '';
-            continue;
-          }
+          if (ch === ',' && !inQuotes) { cols.push(cur); cur=''; continue; }
           cur += ch;
         }
         cols.push(cur);
@@ -226,53 +213,44 @@ async function fetchCSVFromGitHub() {
     }
 
     const rows = parseCSV(text);
-
-    // نعيد مصفوفة من الكائنات مع التأكد من وجود القيم الأساسية
     return rows
       .map(parts => {
-        // بعض الصفوف قد تحتوي أعمدة إضافية أو أقل؛ نتعامل بحذر
         const timestamp = (parts[0] || '').trim();
         const ip = (parts[1] || '').trim();
         const method = (parts[2] || '').trim();
-        // threatType قد يكون في أجزاء متعددة إذا لم تُغلق الاقتباسات بشكل صحيح، لذلك نجمع كل ما بين العمود 3 وعمود قبل الأخير
         const threatType = (parts[3] || '').trim();
-        // action قد يكون العمود الرابع أو الخامس حسب الهيدر، نحاول أخذ العمود الأخير كـ action إن وُجد
         const action = (parts.length >= 5 ? parts[4] : '') || '';
         return { timestamp, ip, method, threatType, action };
       })
-      .filter(r => r.ip && r.method); // نتخلص من السطور الفارغة
+      .filter(r => r.ip && r.method);
   } catch (error) {
-    console.error('❌ Error loading CSV from /api/threats:', error);
+    console.error('Error loading threats.csv:', error);
     return [];
   }
 }
 
-    function renderTable(logs) {
+// دالة عرض الجدول
+function renderTable(logs) {
   const tbody = document.getElementById('logTableBody');
   tbody.innerHTML = '';
 
-  // ترتيب logs حسب التاريخ تنازلي (أحدث تاريخ أولاً)
+  // ترتيب حسب التاريخ تنازلي
   logs.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
 
   logs.forEach(log => {
     const actionDisplay = log.action || 'N/A';
-    let color = 'gray';
-    if (actionDisplay === 'block') color = 'red';
-    else if (actionDisplay === 'alert') color = 'gold';
-
     tbody.innerHTML += `
       <tr>
         <td>${log.timestamp}</td>
         <td>${log.ip}</td>
         <td>${log.method}</td>
         <td>${log.threatType}</td>
-        <td style="font-weight:bold;">
-          ${actionIcon(log.action)}
-        </td>
+        <td style="font-weight:bold;">${actionDisplay}</td>
       </tr>
     `;
   });
 }
+
 
     function drawThreatChart(logs) {
       const filtered = filterLogs(logs);

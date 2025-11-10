@@ -423,5 +423,305 @@
     },
     "finalAction": "block",
     "reason": "trusted dqn output"
+  },
+  {
+    "timestamp": "2025-11-08T23:19:00.123Z",
+    "ip": "156.203.235.39",
+    "record": {
+      "timestamp": "2025-11-08T23:18:07.103Z",
+      "ip": "156.203.235.39",
+      "method": "GET",
+      "threatType": "\"blocked (early)\",auto",
+      "raw": "2025-11-08T23:18:07.103Z,156.203.235.39,GET,\"blocked (early)\",auto"
+    },
+    "dqnAction": "block",
+    "heuristic": {
+      "actionSuggested": "ignore",
+      "reason": "no heuristic match",
+      "severityHint": "low"
+    },
+    "llm": {
+      "type": "neutral",
+      "severity": "medium",
+      "score": 0.7915167808532715,
+      "summary": "Label=neutral score=0.79"
+    },
+    "finalAction": "block",
+    "reason": "trusted dqn output"
+  },
+  {
+    "timestamp": "2025-11-10T20:42:42.644Z",
+    "ip": "156.203.235.39",
+    "record": {
+      "timestamp": "2025-11-10T20:41:29.133Z",
+      "ip": "156.203.235.39",
+      "method": "GET",
+      "threatType": "\"blocked (early)\",auto",
+      "raw": "2025-11-10T20:41:29.133Z,156.203.235.39,GET,\"blocked (early)\",auto"
+    },
+    "dqnAction": "block",
+    "heuristic": {
+      "actionSuggested": "ignore",
+      "reason": "no heuristic match",
+      "severityHint": "low"
+    },
+    "llm": {
+      "type": "neutral",
+      "severity": "medium",
+      "score": 0.7915167808532715,
+      "summary": "Label=neutral score=0.79"
+    },
+    "finalAction": "block",
+    "reason": "trusted dqn output"
+  },
+  {
+    "timestamp": "2025-11-10T20:45:53.966Z",
+    "ip": "156.203.235.39",
+    "record": {
+      "timestamp": "2025-11-10T20:45:22.739Z",
+      "ip": "156.203.235.39",
+      "method": "GET",
+      "threatType": "\"normal visit | /favicon.ico\",auto",
+      "raw": "2025-11-10T20:45:22.739Z,156.203.235.39,GET,\"normal visit | /favicon.ico\",auto"
+    },
+    "dqnAction": "block",
+    "heuristic": {
+      "actionSuggested": "ignore",
+      "reason": "no heuristic match",
+      "severityHint": "low"
+    },
+    "llm": {
+      "type": "neutral",
+      "severity": "high",
+      "score": 0.856532096862793,
+      "summary": "Label=neutral score=0.86"
+    },
+    "finalAction": "block",
+    "reason": "llm severity high"
+  },
+  {
+    "timestamp": "2025-11-10T20:46:18.776Z",
+    "ip": "156.203.235.39",
+    "record": {
+      "timestamp": "2025-11-10T20:46:17.720Z",
+      "ip": "156.203.235.39",
+      "method": "GET",
+      "threatType": "\"blocked (early)\",auto",
+      "raw": "2025-11-10T20:46:17.720Z,156.203.235.39,GET,\"blocked (early)\",auto"
+    },
+    "dqnAction": "block",
+    "heuristic": {
+      "actionSuggested": "ignore",
+      "reason": "no heuristic match",
+      "severityHint": "low"
+    },
+    "llm": {
+      "type": "neutral",
+      "severity": "medium",
+      "score": 0.7915167808532715,
+      "summary": "Label=neutral score=0.79"
+    },
+    "finalAction": "block",
+    "reason": "trusted dqn output"
+  },
+  {
+    "timestamp": "2025-11-10T21:21:06.460Z",
+    "ip": "156.203.235.39",
+    "record": {
+      "timestamp": "2025-11-10T21:20:21.625Z",
+      "ip": "156.203.235.39",
+      "method": "GET",
+      "threatType": "\"blocked (early)\",auto",
+      "raw": "2025-11-10T21:20:21.625Z,156.203.235.39,GET,\"blocked (early)\",auto"
+    },
+    "dqnAction": "block",
+    "heuristic": {
+      "actionSuggested": "ignore",
+      "reason": "no heuristic match",
+      "severityHint": "low"
+    },
+    "llm": {
+      "type": "neutral",
+      "severity": "medium",
+      "score": 0.7915167808532715,
+      "summary": "Label=neutral score=0.79"
+    },
+    "finalAction": "block",
+    "reason": "trusted dqn output"
+  },
+  {
+    "timestamp": "2025-11-10T22:02:37.045Z",
+    "ip": "156.203.235.39",
+    "record": {
+      "timestamp": "2025-11-10T22:01:13.550Z",
+      "ip": "156.203.235.39",
+      "method": "GET",
+      "threatType": "\"blocked (early)\",auto",
+      "raw": "2025-11-10T22:01:13.550Z,156.203.235.39,GET,\"blocked (early)\",auto"
+    },
+    "dqnAction": "block",
+    "heuristic": {
+      "actionSuggested": "ignore",
+      "reason": "no heuristic match",
+      "severityHint": "low"
+    },
+    "llm": {
+      "type": "neutral",
+      "severity": "medium",
+      "score": 0.7915167808532715,
+      "summary": "Label=neutral score=0.79"
+    },
+    "finalAction": "block",
+    "reason": "trusted dqn output"
+  },
+  {
+    "timestamp": "2025-11-10T22:06:29.320Z",
+    "ip": "156.203.235.39",
+    "record": {
+      "timestamp": "2025-11-10T22:05:32.132Z",
+      "ip": "156.203.235.39",
+      "method": "GET",
+      "threatType": "\"blocked (early)\",auto",
+      "raw": "2025-11-10T22:05:32.132Z,156.203.235.39,GET,\"blocked (early)\",auto"
+    },
+    "dqnAction": "block",
+    "heuristic": {
+      "actionSuggested": "ignore",
+      "reason": "no heuristic match",
+      "severityHint": "low"
+    },
+    "llm": {
+      "type": "neutral",
+      "severity": "medium",
+      "score": 0.7915167808532715,
+      "summary": "Label=neutral score=0.79"
+    },
+    "finalAction": "block",
+    "reason": "trusted dqn output"
+  },
+  {
+    "timestamp": "2025-11-10T22:10:02.187Z",
+    "ip": "156.203.235.39",
+    "record": {
+      "timestamp": "2025-11-10T22:09:29.304Z",
+      "ip": "156.203.235.39",
+      "method": "GET",
+      "threatType": "\"blocked (early)\",auto",
+      "raw": "2025-11-10T22:09:29.304Z,156.203.235.39,GET,\"blocked (early)\",auto"
+    },
+    "dqnAction": "block",
+    "heuristic": {
+      "actionSuggested": "ignore",
+      "reason": "no heuristic match",
+      "severityHint": "low"
+    },
+    "llm": {
+      "type": "neutral",
+      "severity": "medium",
+      "score": 0.7915167808532715,
+      "summary": "Label=neutral score=0.79"
+    },
+    "finalAction": "block",
+    "reason": "trusted dqn output"
+  },
+  {
+    "timestamp": "2025-11-10T22:39:43.944Z",
+    "ip": "::1",
+    "record": {
+      "timestamp": "2025-11-10T22:39:01.129Z",
+      "ip": "::1",
+      "method": "GET",
+      "threatType": "simulated-attack,manual,1",
+      "raw": "2025-11-10T22:39:01.129Z,::1,GET,simulated-attack,manual,1"
+    },
+    "dqnAction": "block",
+    "heuristic": {
+      "actionSuggested": "block",
+      "reason": "malware/attack keyword",
+      "severityHint": "high"
+    },
+    "llm": {
+      "type": "neutral",
+      "severity": "medium",
+      "score": 0.793193519115448,
+      "summary": "Label=neutral score=0.79"
+    },
+    "finalAction": "block",
+    "reason": "heuristic override (high confidence)"
+  },
+  {
+    "timestamp": "2025-11-10T22:47:27.358Z",
+    "ip": "156.203.235.39",
+    "record": {
+      "timestamp": "2025-11-10T22:46:47.943Z",
+      "ip": "156.203.235.39",
+      "method": "GET",
+      "threatType": "\"blocked (early)\",auto",
+      "raw": "2025-11-10T22:46:47.943Z,156.203.235.39,GET,\"blocked (early)\",auto"
+    },
+    "dqnAction": "block",
+    "heuristic": {
+      "actionSuggested": "ignore",
+      "reason": "no heuristic match",
+      "severityHint": "low"
+    },
+    "llm": {
+      "type": "neutral",
+      "severity": "medium",
+      "score": 0.7915167808532715,
+      "summary": "Label=neutral score=0.79"
+    },
+    "finalAction": "block",
+    "reason": "trusted dqn output"
+  },
+  {
+    "timestamp": "2025-11-10T23:02:30.700Z",
+    "ip": "156.203.235.39",
+    "record": {
+      "timestamp": "2025-11-10T23:01:43.357Z",
+      "ip": "156.203.235.39",
+      "method": "GET",
+      "threatType": "\"blocked (early)\",auto",
+      "raw": "2025-11-10T23:01:43.357Z,156.203.235.39,GET,\"blocked (early)\",auto"
+    },
+    "dqnAction": "block",
+    "heuristic": {
+      "actionSuggested": "ignore",
+      "reason": "no heuristic match",
+      "severityHint": "low"
+    },
+    "llm": {
+      "type": "neutral",
+      "severity": "medium",
+      "score": 0.7915167808532715,
+      "summary": "Label=neutral score=0.79"
+    },
+    "finalAction": "block",
+    "reason": "trusted dqn output"
+  },
+  {
+    "timestamp": "2025-11-10T23:08:06.899Z",
+    "ip": "156.203.235.39",
+    "record": {
+      "timestamp": "2025-11-10T23:06:58.381Z",
+      "ip": "156.203.235.39",
+      "method": "GET",
+      "threatType": "\"blocked (early)\",auto",
+      "raw": "2025-11-10T23:06:58.381Z,156.203.235.39,GET,\"blocked (early)\",auto"
+    },
+    "dqnAction": "block",
+    "heuristic": {
+      "actionSuggested": "ignore",
+      "reason": "no heuristic match",
+      "severityHint": "low"
+    },
+    "llm": {
+      "type": "neutral",
+      "severity": "medium",
+      "score": 0.7915167808532715,
+      "summary": "Label=neutral score=0.79"
+    },
+    "finalAction": "block",
+    "reason": "trusted dqn output"
   }
 ]

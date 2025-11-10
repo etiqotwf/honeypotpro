@@ -74,7 +74,6 @@ app.use((req, res, next) => {
     let normIp = normalizeIp(ip);        // تطبيع IP (::ffff:127.0.0.1 → 127.0.0.1)
 
     // Debug log لكل request
-    console.log('DEBUG: Incoming request', { ip, normIp });
 
     // ----- فحص الحظر المبكر -----
     if (blockedSet.has(normIp)) {
@@ -89,7 +88,6 @@ app.use((req, res, next) => {
 
     // ----- فحص localhost -----
     if (isLocalhost(normIp)) {
-      console.log(`🟢 Localhost request allowed: ${normIp}`);
       return next();  // السماح دائمًا للـ localhost
     }
 
@@ -247,16 +245,40 @@ app.get("/ngrok-url", (req, res) => {
 let clients = [];
 
 app.get('/events', (req, res) => {
-  res.setHeader('Content-Type', 'text/event-stream');
-  res.setHeader('Cache-Control', 'no-cache');
+  // ضروري: نرسل headers ثم نبقي الاتصال مفتوحاً
+  res.setHeader('Content-Type', 'text/event-stream; charset=utf-8');
+  res.setHeader('Cache-Control', 'no-cache, no-transform');
   res.setHeader('Connection', 'keep-alive');
+  // CORS معمول global لكن نضيف هنا للتأكيد
+  res.setHeader('Access-Control-Allow-Origin', '*');
 
+  // إرسال ترويسة فورية لضمان فتح الاتصال في المتصفح
+  if (res.flushHeaders) res.flushHeaders();
+  // رسالة افتتاحية (event: system) والبيانات بصيغة JSON
+  res.write(`event: system\n`);
+  res.write(`data: ${JSON.stringify({ msg: 'SSE connected', ts: new Date().toISOString() })}\n\n`);
+
+  // احتفظ بالعميل في المصفوفة
   clients.push(res);
 
+  // إرسال نبضة كل 15 ثانية للحفاظ على الاتصال حيًّا (تجنّب timeouts / proxies)
+  const keepAlive = setInterval(() => {
+    try {
+      // تعليق بسيط (SSE comment) — لا ينتج حدث افتراضي لكنه يحافظ على الاتصال
+      res.write(`: keep-alive ${Date.now()}\n\n`);
+    } catch (e) {
+      // إذا الكتابة فشلت، نصفي العميل
+      clearInterval(keepAlive);
+    }
+  }, 15000);
+
+  // تنظيف عند إغلاق الطلب
   req.on('close', () => {
+    clearInterval(keepAlive);
     clients = clients.filter(c => c !== res);
   });
 });
+
 
 function sendToClients(data, type = 'line') {
   clients.forEach(res => {
@@ -366,8 +388,12 @@ function processNgrokResponse(response) {
     const tunnels = JSON.parse(response);
     serverUrl = tunnels.tunnels[0]?.public_url || null;
     console.log(`✅ Server URL (ngrok) is: ${serverUrl || 'not used'}`);
-
     fs.writeFileSync("serverUrl.json", JSON.stringify({ serverUrl }));
+
+    // أرسل حدث ngrok لجميع عملاء الSSE فوراً
+    if (serverUrl) {
+      sendToClients(serverUrl, 'ngrok'); // سيُستقبل في الواجهة كـ ngrok event
+    }
 
     const terminalUrl = `http://localhost:${PORT}/terminal.html`;
 
@@ -473,7 +499,34 @@ app.post('/api/add-threat', (req, res) => {
 
 
 
-// المسارات
+// محاكاة هجوم/دخول: يكتب سطر في public/logs/threats.csv لتشغيل الـ watchers والـ AI
+app.post('/simulate-attack', (req, res) => {
+  try {
+    const ip = getClientIp(req) || '127.0.0.1';
+    const timestamp = new Date().toISOString();
+
+    // تأكد أن logPath معرف ويشير إلى ./public/logs/threats.csv
+    // تنسيق الأعمدة: Timestamp,IP,Method,ThreatType,Action,Attempts
+    const newLine = `${timestamp},${ip},GET,simulated-attack,manual,1\n`;
+
+    fs.appendFileSync(logPath, newLine, 'utf8');
+
+    // أخبر عملاء SSE عن الحدث (اختياري لكن مفيد)
+    try {
+      sendToClients({ type: 'simulate-attack', msg: `Simulated attack logged: ${ip}` }, 'system');
+    } catch (e) { /* لا تقاطع التنفيذ لو فشل البث */ }
+
+    console.log(`✅ Simulated attack logged: ${ip}`);
+    return res.json({ ok: true, message: 'Simulated attack logged' });
+  } catch (err) {
+    console.error('❌ /simulate-attack error:', err);
+    return res.status(500).json({ ok: false, error: String(err) });
+  }
+});
+
+
+
+
 // المسارات
 const aiDecisionPath = path.join(__dirname, 'logs', 'decisions.json');
 const threatLogPath = path.join(__dirname, 'logs', 'threats.csv');

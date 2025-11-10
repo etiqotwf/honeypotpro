@@ -37,110 +37,48 @@
     background: rgba(0,255,170,0.07);
     border: 1px solid rgba(0,255,170,0.18);
     color: var(--accent);
-    padding: 8px 12px;
-    border-radius:6px;
-    cursor:pointer;
+    padding: 12px 18px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1.1rem;
+    font-weight: 600;
   }
-  button:hover { box-shadow:0 0 8px rgba(0,255,170,0.06); transform:translateY(-1px); }
-  #startAttack { background:#00aa66; border-color:#008844; color:#fff; }
-  #logContainer { flex:1; overflow:auto; padding:14px; color:#d1fff5; text-shadow:0 0 5px #00ffee55; font-size:0.95rem; }
-  .line { margin:4px 0; white-space:pre-wrap; }
-  .attack { color:#ff8888; font-weight:600; }
-  .system { color:#66ccff; }
-  footer { background: rgba(0,255,200,0.03); text-align:center; padding:6px; font-size:0.86rem; color:#00ffee; }
-  #infoBar { display:flex; gap:10px; align-items:center; color:#cffff0; }
-  #ngrokUrl { font-size:0.85rem; color:#ffdca3; overflow:hidden; text-overflow:ellipsis; max-width:420px; direction:ltr; }
+  button:hover { 
+    box-shadow: 0 0 10px rgba(0,255,170,0.08); 
+    transform: translateY(-1px); 
+  }
+  #startAttack, #openConsole {
+    font-size: 1.15rem;
+    padding: 12px 22px;
+  }
+  #openConsole {
+    background: #aa0066;
+    border-color: #880044;
+    color: #fff;
+    font-weight: bold;
+    box-shadow: 0 0 8px #aa006655;
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+  #openConsole:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 0 12px #ff66aa55;
+  }
+  #logContainer {
+    flex: 1;
+    overflow: auto;
+    padding: 20px;
+    color: #d1fff5;
+    text-shadow: 0 0 6px #00ffee55;
+    font-size: 1.5rem;
+    line-height: 1.5;
+  }
+  #ngrokUrl { font-size:1rem; color:#ffdca3; overflow:hidden; text-overflow:ellipsis; max-width:420px; direction:ltr; }
   @media (max-width:640px){
     header { flex-direction:column; align-items:stretch; gap:8px; }
     #controls { flex-wrap:wrap; justify-content:flex-start; }
     #ngrokUrl { max-width:220px; }
   }
-
-
-#openConsole {
-  background: #aa0066;      /* لون مميز بنفس قوة زر ngrok */
-  border-color: #880044;
-  color: #fff;
-  font-weight: bold;
-  box-shadow: 0 0 8px #aa006655;
-  transition: transform 0.2s, box-shadow 0.2s;
-}
-
-#openConsole:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 0 12px #ff66aa55;
-}
-
-
-
-button {
-  background: rgba(0,255,170,0.07);
-  border: 1px solid rgba(0,255,170,0.18);
-  color: var(--accent);
-  padding: 12px 18px;      /* زيادة البادينج */
-  border-radius: 8px;       /* أكبر شوي */
-  cursor: pointer;
-  font-size: 1.1rem;       /* تكبير حجم الكتابة في الأزرار */
-  font-weight: 600;
-}
-
-button:hover { 
-  box-shadow: 0 0 10px rgba(0,255,170,0.08); /* زيادة تأثير hover */
-  transform: translateY(-1px); 
-}
-
-/* أزرار خاصة (مثل Start Attack و Open Console) */
-#startAttack, #openConsole {
-  font-size: 1.15rem;
-  padding: 12px 22px;
-}
-
-
-
-#logContainer {
-  flex: 1;
-  overflow: auto;
-  padding: 20px;            /* زيادة المسافة */
-  color: #d1fff5;
-  text-shadow: 0 0 6px #00ffee55;
-  font-size: 1.5rem;        /* تكبير الكتابة في اللوج */
-  line-height: 1.5;         /* زيادة المسافة بين الأسطر */
-}
-
-
-h1 {
-  font-size: 1.5rem; /* أكبر */
-}
-
-#status {
-  font-size: 1.1rem;
-}
-
-#ngrokUrl {
-  font-size: 1rem;
-  max-width: 480px;
-}
-
-
-@media (max-width:640px){
-  header { flex-direction: column; align-items: stretch; gap: 10px; }
-  #controls { flex-wrap: wrap; justify-content: flex-start; }
-  #ngrokUrl { max-width: 260px; }
-  button { padding: 14px 20px; font-size: 1.2rem; }
-  #logContainer { font-size: 1.15rem; padding: 18px; }
-}
-
-
-footer {
-  background: rgba(0,255,200,0.03);
-  text-align: center;
-  padding: 10px 6px;       /* زيادة البادينج عمودي */
-  font-size: 1.7rem;       /* تكبير حجم النص */
-  font-weight: 600;        /* زيادة سمك النص */
-  color: #00ffee;
-}
-
-
+  footer { background: rgba(0,255,200,0.03); text-align:center; padding:10px 6px; font-size:1.7rem; font-weight:600; color:#00ffee; }
 </style>
 </head>
 <body>
@@ -152,52 +90,43 @@ footer {
       <div id="ngrokUrl">ngrok: <span id="ngrokVal">waiting...</span></div>
     </div>
   </div>
-
   <div id="controls">
-    <button id="startAttack">🚀 Start ngrok & Attack</button>
+    <button id="startAttack">🚀 Start Connection</button>
     <button id="stopBtn">⏸ Stop SSE</button>
     <button id="clearBtn">🗑 Clear Log</button>
     <button id="copyBtn">📋 Copy Log</button>
-    <button id="openConsole">🖥 openConsole </button>
-</div>
-
+    <button id="openNgrok">🌐 Star Attack</button>
+    <button id="openConsole">🖥 Open Console</button>
+  </div>
 </header>
 
 <div id="logContainer" aria-live="polite"></div>
-
 <footer>💻 Honeypot AI Terminal — Monitoring cyber threats in real-time</footer>
 
 <script>
-/* -------------------------------------------
-   JavaScript for SSE and UI buttons
-   Now: Start ngrok & Attack does both:
-        - start SSE (if not started)
-        - request ngrok URL and open it
-------------------------------------------- */
 const stopBtn = document.getElementById('stopBtn');
 const clearBtn = document.getElementById('clearBtn');
 const copyBtn = document.getElementById('copyBtn');
 const startAttackBtn = document.getElementById('startAttack');
-
 const logContainer = document.getElementById('logContainer');
 const statusText = document.getElementById('statusText');
 const dot = document.getElementById('dot');
 const ngrokVal = document.getElementById('ngrokVal');
+const openNgrokBtn = document.getElementById('openNgrok');
 
 let es = null;
 let isAutoScroll = true;
 const MAX_LINES = 5000;
+let currentNgrokUrl = null;
 
 function appendLine(text, cls = '') {
   const el = document.createElement('div');
   el.className = 'line ' + cls;
   el.textContent = text;
   logContainer.appendChild(el);
-
   while (logContainer.children.length > MAX_LINES) {
     logContainer.removeChild(logContainer.firstChild);
   }
-
   if (isAutoScroll) logContainer.scrollTop = logContainer.scrollHeight;
 }
 
@@ -210,273 +139,165 @@ function setConnected(connected) {
     dot.classList.remove('connected');
   }
 }
-// startSSE now returns Promise that resolves on open
+
 function startSSE() {
   if (es) {
     appendLine('[System] SSE already running', 'system');
     return Promise.resolve();
   }
-
   return new Promise((resolve, reject) => {
     try {
       es = new EventSource('/events');
 
-      // ---- مستمعون للأحداث المخصصة التي يرسلها السيرفر ----
-      es.addEventListener('line', (e) => {
+      // Helper: parse أي رسالة SSE إلى نص عادي
+      function parseSSEData(raw){
+        if(!raw && raw!=='') return String(raw);
         try {
-          const parsed = JSON.parse(e.data);
-          const msg = parsed && (parsed.msg || parsed.message) ? (parsed.msg || parsed.message) : parsed;
-          appendLine(String(msg), 'line');
-        } catch {
-          appendLine(e.data, 'line');
+          const parsed = JSON.parse(raw);
+          if(typeof parsed==='string') return parsed;
+          if(parsed && (parsed.msg || parsed.message)) return String(parsed.msg||parsed.message);
+          return typeof parsed==='object'? JSON.stringify(parsed,null,2):String(parsed);
+        } catch(e){
+          return String(raw);
         }
+      }
+
+      // كل حدث line/system/attack/ngrok
+      ['line','system','attack','ngrok'].forEach(type=>{
+        es.addEventListener(type, e=>{
+          const text = parseSSEData(e.data);
+          if(type==='ngrok'){
+            currentNgrokUrl = text;
+            ngrokVal.textContent = text;
+            appendLine(`[ngrok-event] ${text}`, 'system');
+          } else {
+            appendLine(text, type);
+          }
+        });
       });
 
-      es.addEventListener('system', (e) => {
-        try {
-          const parsed = JSON.parse(e.data);
-          const msg = parsed && (parsed.msg || parsed.message) ? (parsed.msg || parsed.message) : parsed;
-          appendLine(String(msg), 'system');
-        } catch {
-          appendLine(e.data, 'system');
-        }
-      });
-
-      es.addEventListener('attack', (e) => {
-        try {
-          const parsed = JSON.parse(e.data);
-          const msg = parsed && (parsed.msg || parsed.message) ? (parsed.msg || parsed.message) : parsed;
-          appendLine(String(msg), 'attack');
-        } catch {
-          appendLine(e.data, 'attack');
-        }
-      });
-
-      es.addEventListener('ngrok', (e) => {
-        try {
-          const parsed = JSON.parse(e.data);
-          const url = parsed?.url || parsed?.serverUrl || e.data;
-          ngrokVal.textContent = String(url);
-          appendLine(`[ngrok-event] ${url}`, 'system');
-        } catch {
-          ngrokVal.textContent = e.data;
-          appendLine(`[ngrok-event] ${e.data}`, 'system');
-        }
-      });
-
-      // ---- الرسائل الافتراضية عبر data: ----
-      es.onmessage = (evt) => {
-        // evt.data قد يكون JSON-stringified object { type, msg } أو مجرد نص
-        try {
+      // onmessage generic
+      es.onmessage = evt=>{
+        try{
           const parsed = JSON.parse(evt.data);
-
-          if (parsed && parsed.type) {
-            // لو السيرفر يستخدم الصيغة الموحدة { type, msg }
-            if (parsed.type === 'ngrok' && parsed.url) {
-              ngrokVal.textContent = parsed.url;
-              appendLine(`[ngrok] ${parsed.url}`, 'system');
-              return;
-            }
-            if (parsed.type === 'attack') { appendLine(parsed.msg || evt.data, 'attack'); return; }
-            if (parsed.type === 'line') { appendLine(parsed.msg || evt.data, 'line'); return; }
-            if (parsed.type === 'system') { appendLine(parsed.msg || evt.data, 'system'); return; }
-            // fallback: لو نوع غير معروف اعرض الرسالة كاملة
-            appendLine(JSON.stringify(parsed), 'line');
+          if(parsed && parsed.type){
+            const t = parsed.type, m = parsed.msg||parsed.message||'';
+            if(t==='ngrok'){ currentNgrokUrl=m; ngrokVal.textContent=m; appendLine(`[ngrok] ${m}`,'system'); return; }
+            if(t==='attack') appendLine(m,'attack');
+            else if(t==='line') appendLine(m,'line');
+            else if(t==='system') appendLine(m,'system');
+            else appendLine(JSON.stringify(parsed,null,2),'line');
             return;
           }
-
-          // لو مش في حقل type، افترض أن evt.data هو نص عادي
-          appendLine(evt.data, 'line');
-        } catch (err) {
-          // لو JSON.parse فشل: عرض النص كما هو
-          appendLine(evt.data, 'line');
-        }
+          appendLine(parseSSEData(evt.data),'line');
+        }catch{ appendLine(evt.data,'line'); }
       };
 
-      es.onopen = () => {
-        setConnected(true);
-        appendLine('[System] SSE connection established', 'system');
-        resolve();
-      };
-
-      es.onerror = (err) => {
-        setConnected(false);
-        appendLine('[System] SSE error occurred', 'system');
-        // لا نرفض هنا لأن بعض الأخطاء تظهر بعد فتح الاتصال
-      };
-
-    } catch (err) {
-      appendLine('[System] Failed to start SSE: ' + err.message, 'system');
-      // تأكد من إفراغ es لو فشل الإنشاء
-      try { if (es) { es.close(); es = null; } } catch (_) {}
-      reject(err);
-    }
+      es.onopen = () => { setConnected(true); appendLine('[System] SSE connection established','system'); resolve(); };
+      es.onerror = () => { setConnected(false); appendLine('[System] SSE error occurred','system'); };
+    } catch(err){ appendLine('[System] Failed to start SSE: '+err.message,'system'); reject(err); }
   });
 }
 
 function stopSSE() {
-  if (!es) {
-    appendLine('[System] No active SSE', 'system');
-    setConnected(false);
-    return;
-  }
-  try { es.close(); } catch {}
-  es = null;
-  setConnected(false);
-  appendLine('[System] SSE stopped', 'system');
+  if(!es){ appendLine('[System] No active SSE','system'); setConnected(false); return; }
+  try { es.close(); } catch{}
+  es = null; setConnected(false); appendLine('[System] SSE stopped','system');
 }
 
-function clearLog() {
-  logContainer.innerHTML = '';
-  appendLine('[System] Log cleared', 'system');
-}
+function clearLog() { logContainer.innerHTML=''; appendLine('[System] Log cleared','system'); }
 
 async function copyLog() {
   try {
-    let text = Array.from(logContainer.children).map(n => n.textContent).join('\n');
+    let text = Array.from(logContainer.children).map(n=>n.textContent).join('\n');
     await navigator.clipboard.writeText(text);
-    appendLine('[System] Log copied to clipboard', 'system');
-  } catch (err) {
-    appendLine('[Error] Failed to copy log: ' + err.message, 'system');
-  }
+    appendLine('[System] Log copied to clipboard','system');
+  } catch(err){ appendLine('[Error] Failed to copy log: ' + err.message,'system'); }
 }
 
-// New unified action: start SSE (if needed) then request ngrok URL and open it.
-// It will NOT trigger PowerShell. It only ensures SSE + ngrok open.
 async function startNgrokAndOpen() {
   appendLine('[System] Start requested: ensuring SSE then ngrok URL...', 'system');
   startAttackBtn.disabled = true;
   const prevText = startAttackBtn.textContent;
   startAttackBtn.textContent = 'Starting...';
-
   try {
-    // 1) ensure SSE is open
-    try {
-      await startSSE();
-    } catch (err) {
-      appendLine('[Error] Failed to open SSE: ' + err.message, 'system');
-      // proceed to ngrok check anyway (optional) or return; here we continue
-    }
-
-    // 2) poll /ngrok-url up to MAX_TRIES
-    const MAX_TRIES = 12;
-    const INTERVAL_MS = 1000;
-    let tries = 0;
-    let url = null;
-
-    while (tries < MAX_TRIES && !url) {
+    await startSSE();
+    const MAX_TRIES=12, INTERVAL_MS=1000;
+    let tries=0, url=null;
+    while(tries<MAX_TRIES && !url){
       tries++;
       try {
         const res = await fetch('/ngrok-url');
-        if (res.ok) {
-          const data = await res.json();
-          url = data?.serverUrl || data?.url || null;
-          if (url) break;
-        }
-      } catch (e) {
-        // ignore fetch errors, will retry
-      }
-      appendLine(`[System] ngrok not ready — retry ${tries}/${MAX_TRIES}`, 'system');
-      await new Promise(r => setTimeout(r, INTERVAL_MS));
+        if(res.ok){ const data=await res.json(); url=data?.serverUrl||data?.url||null; if(url) break; }
+      } catch{}
+      appendLine(`[System] ngrok not ready — retry ${tries}/${MAX_TRIES}`,'system');
+      await new Promise(r=>setTimeout(r,INTERVAL_MS));
     }
-
-    if (url) {
-      ngrokVal.textContent = url;
-      appendLine(`[System] ngrok URL: ${url}`, 'system');
-      // only the front-end opens the URL (server won't auto-open)
-      window.open(url, '_blank');
-    } else {
-      appendLine('[Error] ngrok URL not available after retries', 'system');
-    }
-
-  } finally {
-    startAttackBtn.disabled = false;
-    startAttackBtn.textContent = prevText;
+    if(url){
+      ngrokVal.textContent=url;
+      currentNgrokUrl=url;
+      appendLine(`[System] ngrok URL ready: ${url}`,'system');
+    } else appendLine('[Error] ngrok URL not available after retries','system');
+  } finally{
+    startAttackBtn.disabled=false;
+    startAttackBtn.textContent=prevText;
   }
 }
 
-stopBtn.addEventListener('click', stopSSE);
-clearBtn.addEventListener('click', clearLog);
-copyBtn.addEventListener('click', copyLog);
-startAttackBtn.addEventListener('click', startNgrokAndOpen);
+stopBtn.addEventListener('click',stopSSE);
+clearBtn.addEventListener('click',clearLog);
+copyBtn.addEventListener('click',copyLog);
+startAttackBtn.addEventListener('click',startNgrokAndOpen);
 
-let userScrolling = false;
-logContainer.addEventListener('wheel', () => { userScrolling = true; });
-logContainer.addEventListener('scroll', () => {
-  const atBottom = (logContainer.scrollHeight - logContainer.scrollTop - logContainer.clientHeight) < 10;
-  if (atBottom) { userScrolling = false; isAutoScroll = true; }
-  else if (!userScrolling) { isAutoScroll = false; }
-});
+openNgrokBtn.addEventListener('click', async () => {
+  const localhostUrl = window.location.origin;
+  const url = currentNgrokUrl || ngrokVal.textContent;
 
-window.addEventListener('keydown', (e) => {
-  if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'l') {
-    e.preventDefault();
-    clearLog();
-  }
-  if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'c') {
-    if (e.shiftKey) {
-      e.preventDefault();
-      copyLog();
+  // لو لا يوجد url جاهز، نفّعل المحاكاة فورًا ونفتح localhost
+  if (!url || url === 'waiting...' || url.trim() === '') {
+    appendLine('[System] ngrok URL not ready — pinging server and opening localhost', 'system');
+    try {
+      await fetch('/simulate-attack', { method: 'POST' });
+      appendLine('[System] Server pinged for AI analysis (simulate-attack)', 'system');
+    } catch (err) {
+      appendLine('[Warning] Failed to ping server: ' + err.message, 'system');
     }
+    window.open(localhostUrl, '_blank');
+    return;
   }
-});
 
-window.addEventListener('load', () => {
-  appendLine('[System] Terminal UI ready', 'system');
-});
-</script> 
+  // نجرب الوصول إلى ngrok (HEAD) مع timeout قصير
+  const controller = new AbortController();
+  const timeoutMs = 2000; // 2s
+  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
 
-
-<script>
-(function(){
-  const docEl = document.documentElement;
-
-  function toggleFullscreen() {
-    if (!document.fullscreenElement) {
-      // دخول full-screen
-      if (docEl.requestFullscreen) docEl.requestFullscreen();
-      else if (docEl.webkitRequestFullscreen) docEl.webkitRequestFullscreen();
-      else if (docEl.msRequestFullscreen) docEl.msRequestFullscreen();
-      console.log('[System] Entered fullscreen');
-    } else {
-      // إذا بالفعل في full-screen، لا نفعل شيء (اترك الخروج بالـ Escape)
-      console.log('[System] Already in fullscreen');
+  try {
+    await fetch(url, { method: 'HEAD', signal: controller.signal });
+    clearTimeout(timeoutId);
+    window.open(url, '_blank');
+    appendLine('[System] ngrok URL opened successfully', 'system');
+  } catch (err) {
+    clearTimeout(timeoutId);
+    appendLine('[System] Cannot reach ngrok (timeout/error) — will ping server and open localhost', 'system');
+    try {
+      await fetch('/simulate-attack', { method: 'POST' });
+      appendLine('[System] Server pinged for AI analysis (simulate-attack)', 'system');
+    } catch (err2) {
+      appendLine('[Warning] Failed to ping server: ' + err2.message, 'system');
     }
-  }
-
-  // كل نقرة على الصفحة تعمل toggle
-  document.addEventListener('click', toggleFullscreen);
-
-  // تتبع الخروج من full-screen بالـ Escape
-  document.addEventListener('fullscreenchange', () => {
-    if (!document.fullscreenElement) {
-      console.log('[System] Exited fullscreen. Click again to re-enter.');
-    }
-  });
-})();
-
-
-
-
-
-const openConsoleBtn = document.getElementById('openConsole');
-
-openConsoleBtn.addEventListener('click', () => {
-  // نفتح index.html في نافذة جديدة
-  const url = window.location.origin + '/index.html'; // عدّل لو المسار مختلف
-  const win = window.open(url, '_blank');
-  if (win) {
-    appendLine('[System] Program console opened', 'system');
-  } else {
-    appendLine('[Warning] Failed to open program console — popup blocked?', 'system');
+    window.open(localhostUrl, '_blank');
   }
 });
 
+const openConsoleBtn=document.getElementById('openConsole');
+openConsoleBtn.addEventListener('click', ()=>{
+  const url=window.location.origin+'/index.html';
+  const win=window.open(url,'_blank');
+  if(win) appendLine('[System] Program console opened','system');
+  else appendLine('[Warning] Failed to open program console — popup blocked?','system');
+});
+
+window.addEventListener('load',()=>appendLine('[System] Terminal UI ready','system'));
 </script>
-
-
-
-
-
 </body>
 </html>
