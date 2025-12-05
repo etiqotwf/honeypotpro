@@ -298,6 +298,17 @@ openConsoleBtn.addEventListener('click', ()=>{
 });
 
 window.addEventListener('load',()=>appendLine('[System] Terminal UI ready','system'));
+
+
+
+document.addEventListener('click', () => {
+  if (!document.fullscreenElement) {
+    document.documentElement.requestFullscreen().catch(err => {
+      console.error(`Error attempting fullscreen: ${err.message}`);
+    });
+  }
+});
+
 </script>
 </body>
 </html>

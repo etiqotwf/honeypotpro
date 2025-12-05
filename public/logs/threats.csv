@@ -1,50 +1,7 @@
 Timestamp,IP,Method,ThreatType,Action,Attempts
-2025-11-08T19:22:40.958Z,::1,GET,"normal visit | /events",auto
-2025-11-08T19:22:42.204Z,::1,GET,"normal visit | /ngrok-url",auto
-2025-11-08T19:27:40.064Z,156.203.235.39,GET,"normal visit | /favicon.ico",auto
-2025-11-08T19:31:22.952Z,156.203.235.39,GET,"normal visit | /favicon.ico",auto
-2025-11-08T20:43:49.533Z,::1,GET,"normal visit | /favicon.ico",auto
-2025-11-08T20:55:34.704Z,::1,GET,"normal visit | /events",auto
-2025-11-08T20:55:37.286Z,::1,GET,"normal visit | /ngrok-url",auto
-2025-11-08T21:09:52.099Z,::1,GET,"normal visit | /events",auto
-2025-11-08T21:09:55.100Z,::1,GET,"normal visit | /ngrok-url",auto
-2025-11-08T21:27:16.442Z,::1,GET,"normal visit | /events",auto
-2025-11-08T21:27:18.973Z,::1,GET,"normal visit | /ngrok-url",auto
-2025-11-08T21:37:43.406Z,::1,GET,"normal visit | /events",auto
-2025-11-08T22:18:34.482Z,156.203.235.39,GET,"blocked (early)",auto
-2025-11-08T22:22:22.333Z,156.203.235.39,GET,"blocked (early)",auto
-2025-11-08T22:23:23.040Z,156.203.235.39,GET,"blocked (early)",auto
-2025-11-08T22:27:01.149Z,156.203.235.39,GET,"blocked (early)",auto
-2025-11-08T22:34:51.223Z,156.203.235.39,GET,"blocked (early)",auto
-2025-11-08T22:34:58.874Z,156.203.235.39,GET,"blocked (early)",auto
-2025-11-08T22:53:18.592Z,156.203.235.39,GET,"blocked (early)",auto
-2025-11-08T22:53:26.943Z,156.203.235.39,GET,"blocked (early)",auto
-2025-11-08T22:53:28.686Z,156.203.235.39,GET,"blocked (early)",auto
-2025-11-08T22:53:29.048Z,156.203.235.39,GET,"blocked (early)",auto
-2025-11-08T22:54:58.633Z,156.203.235.39,GET,"blocked (early)",auto
-2025-11-08T22:55:00.637Z,156.203.235.39,GET,"blocked (early)",auto
-2025-11-08T23:18:06.525Z,156.203.235.39,GET,"blocked (early)",auto
-2025-11-08T23:18:07.103Z,156.203.235.39,GET,"blocked (early)",auto
-2025-11-10T20:41:28.534Z,156.203.235.39,GET,"blocked (early)",auto
-2025-11-10T20:41:29.133Z,156.203.235.39,GET,"blocked (early)",auto
-2025-11-10T20:45:21.529Z,156.203.235.39,GET,"normal visit | /",auto
-2025-11-10T20:45:22.739Z,156.203.235.39,GET,"normal visit | /favicon.ico",auto
-2025-11-10T20:46:17.720Z,156.203.235.39,GET,"blocked (early)",auto
-2025-11-10T21:20:20.990Z,156.203.235.39,GET,"blocked (early)",auto
-2025-11-10T21:20:21.625Z,156.203.235.39,GET,"blocked (early)",auto
-2025-11-10T22:01:13.058Z,156.203.235.39,GET,"blocked (early)",auto
-2025-11-10T22:01:13.550Z,156.203.235.39,GET,"blocked (early)",auto
-2025-11-10T22:05:31.645Z,156.203.235.39,GET,"blocked (early)",auto
-2025-11-10T22:05:32.132Z,156.203.235.39,GET,"blocked (early)",auto
-2025-11-10T22:09:28.859Z,156.203.235.39,GET,"blocked (early)",auto
-2025-11-10T22:09:29.304Z,156.203.235.39,GET,"blocked (early)",auto
-2025-11-10T22:39:01.129Z,::1,GET,simulated-attack,manual,1
-2025-11-10T22:46:45.017Z,156.203.235.39,HEAD,"blocked (early)",auto
-2025-11-10T22:46:45.674Z,156.203.235.39,GET,"blocked (early)",auto
-2025-11-10T22:46:47.943Z,156.203.235.39,GET,"blocked (early)",auto
-2025-11-10T23:01:42.485Z,156.203.235.39,HEAD,"blocked (early)",auto
-2025-11-10T23:01:42.991Z,156.203.235.39,GET,"blocked (early)",auto
-2025-11-10T23:01:43.357Z,156.203.235.39,GET,"blocked (early)",auto
-2025-11-10T23:06:57.350Z,156.203.235.39,HEAD,"blocked (early)",auto
-2025-11-10T23:06:57.831Z,156.203.235.39,GET,"blocked (early)",auto
-2025-11-10T23:06:58.381Z,156.203.235.39,GET,"blocked (early)",auto
+2025-12-05T15:01:14.229Z,::1,GET,simulated-attack,manual,1
+2025-12-05T15:24:35.774Z,156.203.239.117,HEAD,"normal visit | /",auto
+2025-12-05T15:24:36.321Z,156.203.239.117,GET,"normal visit | /",auto
+2025-12-05T15:24:37.989Z,156.203.239.117,GET,"normal visit | /favicon.ico",auto
+2025-12-05T15:26:55.640Z,156.203.239.117,GET,"normal visit | /",auto
+2025-12-05T15:27:01.262Z,156.203.239.117,GET,"blocked (early)",auto
