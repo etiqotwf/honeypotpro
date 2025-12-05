@@ -1,10 +1,22 @@
 Timestamp,IP,Method,ThreatType,Action
-2025-12-05T15:01:14.229Z,::1,GET,simulated-attack,manual,1,block
-2025-12-05T15:01:49.368Z,::1,GET,simulated-attack,manual,1,IGNORED-BLOCK (localhost)
-2025-12-05T15:01:49.423Z,::1,GET,simulated-attack,manual,1,IGNORED-BLOCK (localhost)
-2025-12-05T15:24:37.989Z,156.203.239.117,GET,"normal visit | /favicon.ico",auto,alert
-2025-12-05T15:26:55.640Z,156.203.239.117,GET,"normal visit | /",auto,block
-2025-12-05T15:26:56.664Z,156.203.239.117,GET,"normal visit | /",auto,BLOCKED by AI (llm severity high)
-2025-12-05T15:26:56.673Z,156.203.239.117,GET,"normal visit | /",auto,BLOCKED by AI (llm severity high)
-2025-12-05T15:26:56.677Z,156.203.239.117,GET,"normal visit | /",auto,BLOCKED by AI (llm severity high)
-2025-12-05T15:27:01.262Z,156.203.239.117,GET,"blocked (early)",auto,alert
+"2025-12-05T17:48:55.040Z","124.113.172.20","GET","attack vector","added",block
+2025-12-05T17:49:19.651Z,"124.113.172.20","GET","attack vector","added",BLOCKED by AI (heuristic override (high confidence))
+2025-12-05T17:49:19.656Z,"124.113.172.20","GET","attack vector","added",BLOCKED by AI (heuristic override (high confidence))
+2025-12-05T17:57:30.837Z,::1,GET,simulated-attack,manual,1,block
+2025-12-05T17:57:31.864Z,::1,GET,simulated-attack,manual,1,IGNORED-BLOCK (localhost)
+2025-12-05T17:57:31.866Z,::1,GET,simulated-attack,manual,1,IGNORED-BLOCK (localhost)
+2025-12-05T17:58:57.030Z,156.203.239.117,HEAD,"normal visit | /",auto,BLOCKED by AI (llm severity high)
+2025-12-05T17:58:55.949Z,156.203.239.117,HEAD,"normal visit | /",auto,block
+2025-12-05T17:58:57.042Z,156.203.239.117,HEAD,"normal visit | /",auto,BLOCKED by AI (llm severity high)
+2025-12-05T17:58:57.377Z,156.203.239.117,GET,"blocked (early)",auto,block
+2025-12-05T17:58:58.392Z,156.203.239.117,GET,"blocked (early)",auto,BLOCKED by AI (trusted dqn output)
+2025-12-05T17:58:58.395Z,156.203.239.117,GET,"blocked (early)",auto,BLOCKED by AI (trusted dqn output)
+2025-12-05T17:58:57.892Z,156.203.239.117,GET,"blocked (early)",auto,block
+2025-12-05T17:58:59.482Z,156.203.239.117,GET,"blocked (early)",auto,BLOCKED by AI (trusted dqn output)
+2025-12-05T17:58:59.486Z,156.203.239.117,GET,"blocked (early)",auto,BLOCKED by AI (trusted dqn output)
+2025-12-05T17:58:57.892Z,156.203.239.117,GET,"blocked (early)",auto,block
+2025-12-05T18:00:10.429Z,156.203.239.117,GET,"blocked (early)",auto,BLOCKED by AI (trusted dqn output)
+2025-12-05T18:00:10.437Z,156.203.239.117,GET,"blocked (early)",auto,BLOCKED by AI (trusted dqn output)
+"2025-12-05T18:06:14.341Z","86.170.128.87","POST","scan attempt","added",block
+2025-12-05T18:07:57.285Z,"86.170.128.87","POST","scan attempt","added",BLOCKED by AI (trusted dqn output)
+2025-12-05T18:07:58.059Z,"86.170.128.87","POST","scan attempt","added",BLOCKED by AI (trusted dqn output)

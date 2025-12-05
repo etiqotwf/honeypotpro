@@ -67,6 +67,28 @@ try {
 }
 
 
+
+app.use(express.json());
+
+app.post("/add-threat", (req, res) => {
+  const { timestamp, ip, method, threatType, action } = req.body;
+
+  const filePath = path.join(__dirname, "public", "logs", "threats.csv");
+
+  const line = `"${timestamp}","${ip}","${method}","${threatType}","${action}"\n`;
+
+  fs.appendFile(filePath, line, (err) => {
+    if (err) {
+      console.error("Error writing to CSV:", err);
+      return res.status(500).send("Error saving threat log");
+    }
+    res.send("Threat added to CSV");
+  });
+});
+
+
+
+
 // Middleware لتحسين التسجيل وفحص الحظر المبكر
 app.use((req, res, next) => {
   try {

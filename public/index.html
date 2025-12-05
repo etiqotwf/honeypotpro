@@ -7,10 +7,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Poppins&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
-  <!-- النسخة الكاملة -->
-<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.4.0/dist/tf.min.js"></script>
-
-
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.4.0/dist/tf.min.js"></script>
 
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -20,104 +17,26 @@
       color: #c9d1d9;
       padding: 20px;
     }
-   h1 {
-  color: #ffd700; /* ذهبي لامع */
-  margin-bottom: 20px;
-  font-size: 28px;
-}
-
-#threatChart {
-  height: 250px; /* أو أي قيمة تناسبك مثل 150px أو 250px */
-  max-height: 250px;
-}
-
-
-    .filters {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      margin-bottom: 20px;
-    }
-    input, select, button {
-      background: #161b22;
-      color: #ffffff;
-      border: 1px solid #30363d;
-      border-radius: 6px;
-      padding: 8px 12px;
-      font-size: 14px;
-    }
-    .table-container {
-      max-height: 300px;
-      overflow-y: auto;
-      border: 1px solid #30363d;
-      border-radius: 6px;
-      margin-bottom: 30px;
-    }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-    }
-    th, td {
-      padding: 12px;
-      text-align: left;
-      border-bottom: 1px solid #30363d;
-    }
-   th {
-  background-color: #222;       /* غامق أكثر ليبرز الذهب */
-  color: #ffd700;               /* لون ذهبي لامع */
-  font-weight: bold;
-  font-size: 16px;
-}
-
-
-td {
-  color: #ffffff;      /* النص أبيض */
-  padding: 12px 10px;
-  border: 1px solid #333;
-  font-size: 15px;
-}
-
-
-    tr:nth-child(even) {
-      background-color: #1f2937;
-    }
-
-    #threatChart {
-      max-width: 100%;
-      margin-bottom: 40px;
-    }
-
-    form {
-      margin-top: 20px;
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      align-items: center;
-    }
-
-    button {
-      cursor: pointer;
-      background-color: #238636;
-      color: white;
-      transition: background 0.3s;
-    }
-    button:hover {
-      background-color: #2ea043;
-    }
-
-    .icon {
-      color: #58a6ff;
-      margin-right: 5px;
-    }
-
-    @media (max-width: 600px) {
-      .filters, form {
-        flex-direction: column;
-        align-items: stretch;
-      }
-    }
+    h1 { color: #ffd700; margin-bottom: 20px; font-size: 28px; }
+    #threatChart { height: 250px; max-height: 250px; margin-bottom: 40px; }
+    .filters { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 20px; }
+    input, select, button { background: #161b22; color: #ffffff; border: 1px solid #30363d; border-radius: 6px; padding: 8px 12px; font-size: 14px; }
+    .table-container { max-height: 300px; overflow-y: auto; border: 1px solid #30363d; border-radius: 6px; margin-bottom: 30px; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { padding: 12px; text-align: left; border-bottom: 1px solid #30363d; }
+    th { background-color: #222; color: #ffd700; font-weight: bold; font-size: 16px; }
+    td { color: #ffffff; padding: 12px 10px; border: 1px solid #333; font-size: 15px; }
+    tr:nth-child(even) { background-color: #1f2937; }
+    form { margin-top: 20px; display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+    button { cursor: pointer; background-color: #238636; color: white; transition: background 0.3s; }
+    button:hover { background-color: #2ea043; }
+    .icon { color: #58a6ff; margin-right: 5px; }
+    @media (max-width: 600px) { .filters, form { flex-direction: column; align-items: stretch; } }
   </style>
 </head>
+<body>
+
+<h1><i class="fas fa-shield-alt icon"></i> Threat Monitoring Dashboard</h1>
 
 <div style="margin-top: 30px;">
   <h3>Manual Log Analyzer (AI)</h3>
@@ -126,418 +45,268 @@ td {
   <button id="analyze-btn" style="padding: 10px 15px;">Analyze</button>
 </div>
 
+<div class="filters">
+  <input type="text" id="filterIP" placeholder="🔍 Filter by IP">
+  <select id="filterType">
+    <option value="">All Threats</option>
+    <option value="malware detected">Malware</option>
+    <option value="scan attempt">Scan</option>
+    <option value="attack vector">Attack</option>
+  </select>
+</div>
 
-<body>
+<div class="table-container">
+  <table>
+    <thead>
+      <tr>
+        <th>Timestamp</th>
+        <th>IP Address</th>
+        <th>Method</th>
+        <th>Threat Type</th>
+        <th>Action Taken</th>
+      </tr>
+    </thead>
+    <tbody id="logTableBody"></tbody>
+  </table>
+</div>
 
-  <h1><i class="fas fa-shield-alt icon"></i> Threat Monitoring Dashboard</h1>
+<canvas id="threatChart" height="120"></canvas>
 
-  <div class="filters">
-    <input type="text" id="filterIP" placeholder="🔍 Filter by IP">
-    <select id="filterType">
-      <option value="">All Threats</option>
-      <option value="malware detected">Malware</option>
-      <option value="scan attempt">Scan</option>
-      <option value="attack vector">Attack</option>
-    </select>
-  </div>
+<h3 style="margin-top: 20px;">Add Fake Threat</h3>
+<form id="addForm">
+<input type="text" name="ip" placeholder="IP">
+  <select name="method"><option>GET</option><option>POST</option></select>
+  <select name="type">
+    <option value="malware detected">Malware</option>
+    <option value="scan attempt">Scan</option>
+    <option value="attack vector">Attack</option>
+  </select>
+  <button type="submit"><i class="fas fa-plus-circle icon"></i> Add</button>
+</form>
 
-  <div class="table-container">
-    <table>
-      <thead>
-        <tr>
-          <th>Timestamp</th>
-          <th>IP Address</th>
-          <th>Method</th>
-          <th>Threat Type</th>
-          <th>Action Taken</th>
+<script>
+let allLogs = [];
+let chartRef = null;
 
-        </tr>
-      </thead>
-      <tbody id="logTableBody"></tbody>
-    </table>
-  </div>
-
-  <canvas id="threatChart" height="120"></canvas>
-
-  <h3 style="margin-top: 20px;">Add Fake Threat</h3>
-  <form id="addForm">
-    <input type="text" name="ip" placeholder="IP" required>
-    <select name="method"><option>GET</option><option>POST</option></select>
-    <select name="type">
-      <option value="malware detected">Malware</option>
-      <option value="scan attempt">Scan</option>
-      <option value="attack vector">Attack</option>
-    </select>
-    <button type="submit"><i class="fas fa-plus-circle icon"></i> Add</button>
-  </form>
-
-  <script>
-    let allLogs = [];
-    let chartRef = null;
-
-    // استبدل الدالة القديمة بها
-async function fetchCSVFromGitHub() {
+// قراءة CSV من فولدر logs
+async function fetchCSVFromLogs() {
   try {
-    const res = await fetch(`threats.csv?_=${Date.now()}`, { cache: "no-store" });
-    if (!res.ok) {
-      console.error('Failed to fetch threats.csv', res.status);
-      return [];
-    }
+    const res = await fetch(`logs/threats.csv?_=${Date.now()}`, { cache: "no-store" });
+    if (!res.ok) return [];
     const text = await res.text();
-    if (!text || text.trim().length === 0) return [];
-
-    // parser يحترم الحقول المقتبسة
-    function parseCSV(text) {
-      const lines = text.split(/\r?\n/).filter(Boolean);
-      if (lines.length <= 1) return [];
-      const rows = [];
-      for (let i = 1; i < lines.length; i++) {
-        const line = lines[i];
-        const cols = [];
-        let cur = '';
-        let inQuotes = false;
-        for (let j = 0; j < line.length; j++) {
-          const ch = line[j];
-          if (ch === '"') {
-            if (line[j+1] === '"') { cur += '"'; j++; } 
-            else { inQuotes = !inQuotes; }
-            continue;
-          }
-          if (ch === ',' && !inQuotes) { cols.push(cur); cur=''; continue; }
-          cur += ch;
-        }
-        cols.push(cur);
-        rows.push(cols);
-      }
-      return rows;
+    if (!text.trim()) return [];
+    const lines = text.split(/\r?\n/).filter(Boolean);
+    const rows = [];
+    for (let i = 1; i < lines.length; i++) {
+      const cols = lines[i].split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(s => s.replace(/^"|"$/g,''));
+      if(cols.length >= 3) rows.push(cols);
     }
-
-    const rows = parseCSV(text);
-    return rows
-      .map(parts => {
-        const timestamp = (parts[0] || '').trim();
-        const ip = (parts[1] || '').trim();
-        const method = (parts[2] || '').trim();
-        const threatType = (parts[3] || '').trim();
-        const action = (parts.length >= 5 ? parts[4] : '') || '';
-        return { timestamp, ip, method, threatType, action };
-      })
-      .filter(r => r.ip && r.method);
-  } catch (error) {
-    console.error('Error loading threats.csv:', error);
+    return rows.map(parts => ({
+      timestamp: (parts[0]||'').trim(),
+      ip: (parts[1]||'').trim(),
+      method: (parts[2]||'').trim(),
+      threatType: (parts[3]||'').trim(),
+      action: (parts[4]||'').trim() || ''
+    })).filter(r=>r.ip && r.method);
+  } catch (err) {
+    console.error('Error loading CSV:', err);
     return [];
   }
 }
 
-// دالة عرض الجدول
+function filterLogs(logs) {
+  const ipFilter = document.getElementById('filterIP').value.toLowerCase();
+  const typeFilter = document.getElementById('filterType').value.toLowerCase();
+  return logs.filter(l =>
+    (!ipFilter || l.ip.toLowerCase().includes(ipFilter)) &&
+    (!typeFilter || l.threatType.toLowerCase() === typeFilter)
+  );
+}
+
 function renderTable(logs) {
   const tbody = document.getElementById('logTableBody');
   tbody.innerHTML = '';
-
-  // ترتيب حسب التاريخ تنازلي
-  logs.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
-
+  logs.sort((a,b)=> new Date(b.timestamp)-new Date(a.timestamp));
   logs.forEach(log => {
-    const actionDisplay = log.action || 'N/A';
     tbody.innerHTML += `
       <tr>
         <td>${log.timestamp}</td>
         <td>${log.ip}</td>
         <td>${log.method}</td>
-        <td>${log.threatType}</td>
-        <td style="font-weight:bold;">${actionDisplay}</td>
+        <td style="font-weight:bold;">${log.threatType}</td>
+        <td style="font-weight:bold;">${actionIcon(log.action)}</td>
       </tr>
     `;
   });
 }
 
+function drawThreatChart(logs) {
+  const filtered = filterLogs(logs);
+  const threatCounts = {};
+  filtered.forEach(t => { threatCounts[t.threatType] = (threatCounts[t.threatType]||0)+1; });
+  const labels = Object.keys(threatCounts);
+  const dataValues = Object.values(threatCounts);
+  const ctx = document.getElementById('threatChart').getContext('2d');
+  if(chartRef) chartRef.destroy();
+  chartRef = new Chart(ctx,{
+    type:'bar',
+    data:{ labels, datasets:[{ label:'Threat Count', data:dataValues, backgroundColor:['#d32f2f','#fbc02d','#1976d2'], borderRadius:8 }]},
+    options:{ plugins:{ legend:{labels:{color:'#fff'}}, title:{display:true,text:'Threat Type Statistics',color:'#58a6ff'}}, scales:{ x:{ticks:{color:'#ccc'},grid:{display:false}}, y:{beginAtZero:true,ticks:{color:'#ccc'},grid:{color:'#333'}} } }
+  });
+}
 
-    function drawThreatChart(logs) {
-      const filtered = filterLogs(logs);
-      const threatCounts = {};
-      filtered.forEach(t => {
-        threatCounts[t.threatType] = (threatCounts[t.threatType] || 0) + 1;
-      });
+async function updateDashboard() {
+  allLogs = await fetchCSVFromLogs();
+  renderTable(filterLogs(allLogs));
+  drawThreatChart(allLogs);
+}
 
-      const labels = Object.keys(threatCounts);
-      const dataValues = Object.values(threatCounts);
-      const ctx = document.getElementById('threatChart').getContext('2d');
-
-      if (chartRef) chartRef.destroy();
-
-      chartRef = new Chart(ctx, {
-        type: 'bar',
-        data: {
-          labels,
-          datasets: [{
-            label: 'Threat Count',
-            data: dataValues,
-            backgroundColor: ['#d32f2f', '#fbc02d', '#1976d2'],
-            borderRadius: 8
-          }]
-        },
-        options: {
-          plugins: {
-            legend: { labels: { color: '#fff' } },
-            title: {
-              display: true,
-              text: 'Threat Type Statistics',
-              color: '#58a6ff'
-            }
-          },
-          scales: {
-            x: { ticks: { color: '#ccc' }, grid: { display: false } },
-            y: { beginAtZero: true, ticks: { color: '#ccc' }, grid: { color: '#333' } }
-          }
-        }
-      });
-    }
-
-    async function updateDashboard() {
-      const logs = await fetchCSVFromGitHub();
-      allLogs = logs;
-      renderTable(filterLogs(allLogs));
-      drawThreatChart(allLogs);
-    }
-
-    document.getElementById('filterIP').addEventListener('input', () => {
-      renderTable(filterLogs(allLogs));
-      drawThreatChart(allLogs);
-    });
-
-    document.getElementById('filterType').addEventListener('change', () => {
-      renderTable(filterLogs(allLogs));
-      drawThreatChart(allLogs);
-    });
-
-    document.getElementById('addForm').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const form = e.target;
-      const newThreat = {
-        ip: form.ip.value,
-        method: form.method.value,
-        threatType: form.type.value
-      };
-
-      const res = await fetch('/api/add-threat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(newThreat)
-      });
-
-      if (res.ok) {
-        form.reset();
-        updateDashboard();
-      } else {
-        alert('❌ Failed to send threat to server.');
-      }
-    });
-
-    updateDashboard();
-    // تحديث تلقائي كل 5 ثواني (5000 مللي ثانية)
-setInterval(updateDashboard, 5000);
-
-
-
-document.addEventListener('click', () => {
-  if (!document.fullscreenElement) {
-    document.documentElement.requestFullscreen().catch(err => {
-      console.error(`Error attempting fullscreen: ${err.message}`);
-    });
-  }
-});
-
-
+document.getElementById('filterIP').addEventListener('input',()=>{ renderTable(filterLogs(allLogs)); drawThreatChart(allLogs); });
+document.getElementById('filterType').addEventListener('change',()=>{ renderTable(filterLogs(allLogs)); drawThreatChart(allLogs); });
 
 function actionIcon(action) {
-  if (!action) return '<span style="color:gray;">ℹ️</span> ℹ️ INFO';
-  switch (action.toLowerCase()) {
-    case 'blocked':
-    case 'block':
-      return '<span style="color:red;">❌</span> BLOCKED';
-    case 'suspicious':
-    case 'alerted':
-    case 'alert':
-      return '<span style="color:orange;">⚠️</span> ALERTED';
-    case 'allowed':
-    case 'logged':
-    case 'log':
-    case 'auto':  // <-- أضفت هذه الحالة
-      return '<span style="color:#1e90ff;">🛡️🔒</span> SECURE';
-    case 'normal visit':
-      return '<span style="color:#1e90ff;">🛡️🔒</span> NORMAL VISIT';
-    case 'ignore':
-    case 'ignored':
-      return '<span style="color:gray;">ℹ️</span> IGNORED';
+  if(!action) return '<span style="color:gray;">ℹ️</span> INFO';
+  switch(action.toLowerCase()){
+    case 'blocked': case 'block': return '<span style="color:red;">❌</span> BLOCKED';
+    case 'suspicious': case 'alerted': case 'alert': return '<span style="color:orange;">⚠️</span> ALERTED';
+    case 'allowed': case 'logged': case 'log': return '<span style="color:#1e90ff;">🛡️🔒</span> SECURE';
+    case 'normal visit': return '<span style="color:#1e90ff;">🛡️🔒</span> NORMAL VISIT';
+    case 'ignore': case 'ignored': return '<span style="color:gray;">ℹ️</span> IGNORED';
     default:
-      return '<span style="color:gray;">ℹ️</span> INFO';
+      // لو action موجود بأي نص ثاني نعرضه كما هو
+      return `<span style="color:red;">❌</span> ${action.toUpperCase()}`;
   }
 }
 
+updateDashboard();
+setInterval(updateDashboard,60000);
 
+document.getElementById('addForm').addEventListener('submit', async e => {
+  e.preventDefault();
+  const f = e.target;
 
- const MODEL_URL = './model.json';
-  const ACTIONS = ['block', 'alert', 'ignore'];
-  const LEARNING_RATE = 0.01;
+  // لو فاضي → هنعمل IP عشوائي وهجوم عشوائي
+  let ip = f.ip.value.trim();
+  let method = f.method.value;
+  let type = f.type.value;
 
-  function encodeState(log) {
-    const ipSuspicion = log.includes('192.168') ? 0 : 1;
-    const requestType = log.includes('POST') ? 1 : 0;
-    const keywordDetected = /(malware|attack|scan)/i.test(log) ? 1 : 0;
-    return [ipSuspicion, requestType, keywordDetected, 0, 0, 0, 0, 0];
+  if (!ip) {
+    // توليد IP عشوائي
+    ip = `${Math.floor(Math.random()*256)}.${Math.floor(Math.random()*256)}.${Math.floor(Math.random()*256)}.${Math.floor(Math.random()*256)}`;
+
+    // اختيار طريقة عشوائية
+    const methods = ["GET", "POST"];
+    method = methods[Math.floor(Math.random() * methods.length)];
+
+    // اختيار تهديد عشوائي
+    const types = ["malware detected", "scan attempt", "attack vector"];
+    type = types[Math.floor(Math.random() * types.length)];
   }
 
-  async function loadModel() {
-    const model = await tf.loadLayersModel(MODEL_URL);
-    model.compile({
-      optimizer: tf.train.adam(LEARNING_RATE),
-      loss: 'categoricalCrossentropy',
-    });
-    return model;
-  }
+  const newThreat = {
+    timestamp: new Date().toISOString(),
+    ip,
+    method,
+    threatType: type,
+    action: "added"
+  };
 
-  async function selectAction(model, state) {
-    const input = tf.tensor2d([state]);
-    const prediction = model.predict(input);
-    const actionIdx = (await prediction.argMax(1).data())[0];
-    return ACTIONS[actionIdx];
-  }
 
-  function executeAction(action, log) {
-    const line = document.createElement('div');
-    const resultBox = document.getElementById('logTableBody');
-    switch (action) {
-      case 'block':
-        line.style.color = 'red';
-        line.textContent = `[BLOCKED] ${log}`;
-        break;
-      case 'alert':
-        line.style.color = 'orange';
-        line.textContent = `[ALERT] ${log}`;
-        break;
-      default:
-        line.style.color = 'gray';
-        line.textContent = `[IGNORED] ${log}`;
-    }
-    resultBox.appendChild(line);
-  }
-
-  document.getElementById('analyze-btn')?.addEventListener('click', async () => {
-    const logInput = document.getElementById('log-input')?.value.trim();
-    if (!logInput) return;
-    const model = await loadModel();
-    analyzeLog(logInput, model);
+  // إرسال التهديد فعلياً للسيرفر ليكتب في threats.csv
+  await fetch("/add-threat", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(newThreat)
   });
 
-  async function analyzeLog(rawLog, model) {
-  const state = encodeState(rawLog);
-  const action = await selectAction(model, state);
-
-  const parts = rawLog.split(' ');
-  const timestamp = parts[0] || new Date().toISOString();
-  const ip = parts[1] || '0.0.0.0';
-  const method = parts[2] || 'GET';
-
-  // استخراج نوع الهجوم الحقيقي من rawLog
-  const attackTypes = ['malware detected', 'scan attempt', 'attack vector'];
-  const matchedType = attackTypes.find(type => rawLog.toLowerCase().includes(type)) || 'unknown threat';
-
-  const analyzedLog = {
-    timestamp,
-    ip,
-    method,
-    threatType: matchedType,
-    action
-  };
-
-  prependLogToTable(analyzedLog);
-  allLogs.unshift(analyzedLog);
+  // إضافة التهديد للواجهة فقط
+  allLogs.unshift(newThreat);
+  renderTable(filterLogs(allLogs));
   drawThreatChart(allLogs);
-}
 
-
-
-
-  // توليد عشوائي للهجمات
-const ATTACK_TYPES = [
-  { type: 'malware detected', methods: ['POST', 'GET'], keywords: ['Trojan.exe', 'virus_payload', 'malicious.exe'] },
-  { type: 'scan attempt', methods: ['GET'], keywords: ['nmap scan', 'port scan', 'banner grab'] },
-  { type: 'attack vector', methods: ['POST'], keywords: ['SQL injection', 'XSS payload', 'buffer overflow'] }
-];
-
-function getRandomIP() {
-  return `${Math.floor(Math.random() * 256)}.${Math.floor(Math.random() * 256)}.${Math.floor(Math.random() * 256)}.${Math.floor(Math.random() * 256)}`;
-}
-
-function generateRandomLog() {
-  const attack = ATTACK_TYPES[Math.floor(Math.random() * ATTACK_TYPES.length)];
-  const ip = getRandomIP();
-  const method = attack.methods[Math.floor(Math.random() * attack.methods.length)];
-  const keyword = attack.keywords[Math.floor(Math.random() * attack.keywords.length)];
-  const threatType = attack.type;
-  const timestamp = new Date().toISOString();
-
-  return {
-    timestamp,
-    ip,
-    method,
-    threatType,
-    keyword,
-    raw: `${timestamp} ${ip} ${method} ${threatType} ${keyword}`
-  };
-}
-
-// عند الضغط على زر Generate
-document.getElementById('generate-btn').addEventListener('click', async () => {
-  const log = generateRandomLog();
-  document.getElementById('log-input').value = log.raw;
-
-  const model = await loadModel();
-  const state = encodeState(log.raw);
-  const action = await selectAction(model, state);
-
-  const analyzedLog = {
-    timestamp: log.timestamp,
-    ip: log.ip,
-    method: log.method,
-    threatType: log.threatType, // ✅ هذا موجود مسبقًا بشكل صحيح
-    action
-  };
-
-  prependLogToTable(analyzedLog);
-  allLogs.unshift(analyzedLog);
-  drawThreatChart(allLogs);
+  f.reset();
 });
 
+// Fullscreen عند أي نقرة
+document.addEventListener('click',()=>{ if(!document.fullscreenElement){ document.documentElement.requestFullscreen().catch(err=>console.error(err)); } });
 
-function threatTypeIcon(threatType) {
-  const type = threatType.trim().toLowerCase();
+// توليد وتحليل عشوائي
+const ATTACK_TYPES=[{type:'malware detected',methods:['POST','GET'],keywords:['Trojan.exe','virus_payload','malicious.exe']},{type:'scan attempt',methods:['GET'],keywords:['nmap scan','port scan','banner grab']},{type:'attack vector',methods:['POST'],keywords:['SQL injection','XSS payload','buffer overflow']}];
 
-  if (type.includes('malware')) return '❌ BLOCKED';
-  if (type.includes('scan')) return '✅ LOGGED';
-  if (type.includes('attack')) return '⚠️ ALERTED';
-
-  return 'ℹ️ INFO';
+function getRandomIP(){ return `${Math.floor(Math.random()*256)}.${Math.floor(Math.random()*256)}.${Math.floor(Math.random()*256)}.${Math.floor(Math.random()*256)}`; }
+function generateRandomLog(){
+  const a=ATTACK_TYPES[Math.floor(Math.random()*ATTACK_TYPES.length)];
+  const ip=getRandomIP();
+  const method=a.methods[Math.floor(Math.random()*a.methods.length)];
+  const keyword=a.keywords[Math.floor(Math.random()*a.keywords.length)];
+  return { timestamp:new Date().toISOString(), ip, method, threatType:a.type, keyword, raw:`${new Date().toISOString()} ${ip} ${method} ${a.type} ${keyword}` };
 }
 
-function prependLogToTable(log) {
-  const tbody = document.getElementById('logTableBody');
-  const newRow = document.createElement('tr');
-
-  // نستخدم action فقط، وإذا لم تكن موجودة نعرض رسالة افتراضية
-  const action = log.action ? log.action.toLowerCase() : 'normal visit';
-
-  newRow.innerHTML = `
-    <td>${log.timestamp}</td>
-    <td>${log.ip}</td>
-    <td>${log.method}</td>
-    <td style="font-weight:bold;">${log.threatType}</td>
-    <td style="font-weight:bold;">${actionIcon(action)}</td>
-  `;
+function prependLogToTable(log){
+  const tbody=document.getElementById('logTableBody');
+  const action=log.action?log.action.toLowerCase():log.action; // نستخدم القيمة كما هي
+  const newRow=document.createElement('tr');
+  newRow.innerHTML=`<td>${log.timestamp}</td><td>${log.ip}</td><td>${log.method}</td><td style="font-weight:bold;">${log.threatType}</td><td style="font-weight:bold;">${actionIcon(action)}</td>`;
   tbody.prepend(newRow);
 }
 
+// زر Generate
+document.getElementById('generate-btn').addEventListener('click', async ()=>{
+  const log=generateRandomLog();
+  document.getElementById('log-input').value=log.raw;
+  const analyzedLog={ timestamp:log.timestamp, ip:log.ip, method:log.method, threatType:log.threatType, action:'' };
+  prependLogToTable(analyzedLog);
+  allLogs.unshift(analyzedLog);
+  drawThreatChart(allLogs);
+});
 
-  </script>
+// زر Analyze مع TF.js
+const MODEL_URL='./model.json';
+const ACTIONS=['block','alert','ignore'];
+const LEARNING_RATE=0.01;
+
+function encodeState(log){
+  const ipSuspicion=log.includes('192.168')?0:1;
+  const requestType=log.includes('POST')?1:0;
+  const keywordDetected=/(malware|attack|scan)/i.test(log)?1:0;
+  return [ipSuspicion,requestType,keywordDetected,0,0,0,0,0];
+}
+
+async function loadModel(){
+  const model=await tf.loadLayersModel(MODEL_URL);
+  model.compile({optimizer:tf.train.adam(LEARNING_RATE), loss:'categoricalCrossentropy'});
+  return model;
+}
+
+async function selectAction(model,state){
+  const input=tf.tensor2d([state]);
+  const prediction=model.predict(input);
+  const actionIdx=(await prediction.argMax(1).data())[0];
+  return ACTIONS[actionIdx];
+}
+
+async function analyzeLog(rawLog, model){
+  const state=encodeState(rawLog);
+  const action=await selectAction(model,state);
+  const parts=rawLog.split(' ');
+  const timestamp=parts[0]||new Date().toISOString();
+  const ip=parts[1]||'0.0.0.0';
+  const method=parts[2]||'GET';
+  const attackTypes=['malware detected','scan attempt','attack vector'];
+  const matchedType=attackTypes.find(t=>rawLog.toLowerCase().includes(t))||'unknown threat';
+  const analyzedLog={ timestamp, ip, method, threatType:matchedType, action };
+  prependLogToTable(analyzedLog);
+  allLogs.unshift(analyzedLog);
+  drawThreatChart(allLogs);
+}
+
+document.getElementById('analyze-btn').addEventListener('click', async ()=>{
+  const rawLog=document.getElementById('log-input').value.trim();
+  if(!rawLog) return;
+  const model=await loadModel();
+  analyzeLog(rawLog, model);
+});
+
+</script>
 </body>
 </html>
