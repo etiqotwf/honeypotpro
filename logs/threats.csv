@@ -1,25 +1,2 @@
 Timestamp,IP,Method,ThreatType,Action
-2025-12-12T22:38:49.022Z,156.203.246.53,GET,"normal visit | /favicon.ico",auto,alert
-2025-12-12T22:42:19.240Z,156.203.246.53,GET,"normal visit | /",auto,alert
-2025-12-12T22:42:22.348Z,156.203.246.53,GET,"normal visit | /",auto,alert
-2025-12-12T22:42:24.917Z,156.203.246.53,GET,"normal visit | /",auto,alert
-2025-12-12T22:42:26.541Z,156.203.246.53,GET,"normal visit | /",auto,alert
-2025-12-12T22:42:32.893Z,156.203.246.53,GET,"normal visit | /",auto,alert
-2025-12-12T22:42:40.713Z,156.203.246.53,GET,"normal visit | /",auto,alert
-2025-12-12T22:49:11.989Z,156.203.246.53,GET,"normal visit | /",auto,alert
-2025-12-12T22:49:15.663Z,156.203.246.53,GET,"normal visit | /",auto,alert
-2025-12-12T22:50:29.816Z,156.203.246.53,GET,"normal visit | /",auto,alert
-2025-12-12T22:52:02.173Z,156.203.246.53,GET,"normal visit | /favicon.ico",auto,alert
-2025-12-12T22:53:49.358Z,156.203.246.53,GET,"normal visit | /",auto,alert
-2025-12-12T22:53:53.006Z,156.203.246.53,GET,"normal visit | /",auto,alert
-"2025-12-12T22:55:10.928Z","112.193.231.155","POST","scan attempt","added",alert
-"2025-12-12T22:57:34.233Z","87.132.97.187","GET","scan attempt","added",alert
-"2025-12-12T22:58:39.185Z","240.146.4.0","POST","malware detected","added",block
-2025-12-12T22:58:40.248Z,"240.146.4.0","POST","malware detected","added",BLOCKED by AI (heuristic override (high confidence))
-2025-12-12T22:58:40.253Z,"240.146.4.0","POST","malware detected","added",BLOCKED by AI (heuristic override (high confidence))
-"2025-12-12T22:58:41.409Z","60.36.240.134","POST","malware detected","added",block
-2025-12-12T22:58:42.456Z,"60.36.240.134","POST","malware detected","added",BLOCKED by AI (heuristic override (high confidence))
-"2025-12-12T22:58:41.409Z","60.36.240.134","POST","malware detected","added",block
-2025-12-12T23:59:51.207Z,"60.36.240.134","POST","malware detected","added",BLOCKED by AI (heuristic override (high confidence))
-2025-12-12T23:59:51.221Z,"60.36.240.134","POST","malware detected","added",BLOCKED by AI (heuristic override (high confidence))
-2025-12-12T23:59:51.230Z,"60.36.240.134","POST","malware detected","added",BLOCKED by AI (heuristic override (high confidence))
+2025-12-13T17:32:06.571Z,156.203.128.242,GET,"normal visit | /favicon.ico",auto,alert
