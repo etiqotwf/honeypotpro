@@ -96,7 +96,9 @@
     <button id="clearBtn">🗑 Clear Log</button>
     <button id="copyBtn">📋 Copy Log</button>
     <button id="openNgrok">🌐 Star Attack</button>
+    <button id="openWeights">📊 Model Weights React</button>
     <button id="openConsole">🖥 Open Console</button>
+
   </div>
 </header>
 
@@ -308,6 +310,24 @@ document.addEventListener('click', () => {
     });
   }
 });
+
+
+  // ... باقي الكود كما هو ...
+
+  const openWeightsBtn = document.getElementById('openWeights');
+
+  openWeightsBtn.addEventListener('click', () => {
+    const url = window.location.origin + '/model-explain.html';
+    const w = window.open(url, '_blank');
+
+    if (w) {
+      appendLine('[System] Model Weights Viewer opened', 'system');
+    } else {
+      appendLine('[Warning] Popup blocked when opening model weights', 'system');
+    }
+  });
+
+
 
 </script>
 </body>

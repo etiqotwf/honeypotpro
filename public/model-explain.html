@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>شرح تفاعلي لموديل TensorFlow.js</title>
+<style>
+  body { 
+    font-family: Arial, sans-serif; 
+    background: #1e1e2e; 
+    color: white; 
+    margin: 0; 
+    display: flex; 
+    flex-direction: column; 
+    align-items: center; 
+    padding: 20px; 
+    direction: rtl;
+  }
+
+  h1 { 
+    color: #ffd700; 
+    text-align: center; 
+    margin-bottom: 20px; 
+    font-size: 2em;
+  }
+
+  #model-container {
+    width: 95%;
+    max-width: 1200px;
+    background: #282a36;
+    padding: 20px 30px;
+    border-radius: 10px;
+    box-shadow: 0px 0px 15px rgba(0,0,0,0.5);
+    text-align: right;
+  }
+
+  .layer {
+    border: 2px solid #007BFF;
+    border-radius: 12px;
+    padding: 20px;
+    margin: 25px auto;
+    background: #282a36;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 1.2em; /* تكبير الخط */
+  }
+
+  .layer:hover { 
+    box-shadow: 0 0 20px rgba(0,0,0,0.7); 
+    transform: scale(1.03); 
+  }
+
+  .layer h3 { 
+    margin-top: 0; 
+    color: #ff79c6; 
+    font-size: 1.5em; /* تكبير عنوان الطبقة */
+  }
+
+  .layer-content { 
+    display: none; 
+    margin-top: 15px; 
+    background: #44475a;
+    padding: 20px;
+    border-radius: 10px;
+    font-size: 1.1em; /* تكبير النص داخل المحتوى */
+  }
+
+  .weight-info {
+    font-size: 1em; /* تكبير نص الأوزان */
+    margin-top: 15px;
+    background: #6272a4;
+    padding: 10px;
+    border-radius: 8px;
+    box-shadow: 1px 1px 5px rgba(0,0,0,0.3);
+    position: relative;
+    color: #f8f8f2;
+  }
+
+  .weight-bar { 
+    display: flex; 
+    align-items: flex-end; 
+    margin-top: 10px; 
+    height: 150px; /* زيادة ارتفاع الرسم البياني */
+  }
+
+  .bar { 
+    width: 12px; 
+    margin-right: 3px; 
+    border-radius: 2px; 
+    transition: all 0.2s ease; 
+    cursor: pointer; 
+  }
+
+  .bar:hover { 
+    opacity: 0.8; 
+    transform: scaleY(1.3); 
+  }
+
+  .tooltip {
+    display: none;
+    position: absolute;
+    background: rgba(0,0,0,0.9);
+    color: #fff;
+    padding: 6px 10px;
+    border-radius: 6px;
+    font-size: 14px; /* تكبير الخط داخل tooltip */
+    pointer-events: none;
+    z-index: 1000;
+  }
+
+  .arrow {
+    text-align: center;
+    font-size: 28px; /* تكبير السهم */
+    color: #ff79c6;
+    margin: 12px 0;
+  }
+
+</style>
+</head>
+<body>
+
+<h1>🧠 شرح تفاعلي لموديل TensorFlow.js</h1>
+<div id="model-container"></div>
+<div id="tooltip" class="tooltip"></div>
+
+<script>
+document.addEventListener('click', () => {
+  if (!document.fullscreenElement) {
+    document.documentElement.requestFullscreen().catch(err => {
+      console.error(`Error attempting fullscreen: ${err.message}`);
+    });
+  }
+});
+
+const tooltip = document.getElementById('tooltip');
+const weightsFile = './weights-readable.json';
+
+fetch(weightsFile)
+  .then(res => res.json())
+  .then(data => renderModel(data))
+  .catch(err => console.error('خطأ في تحميل JSON:', err));
+
+function renderModel(model) {
+  const container = document.getElementById('model-container');
+
+  model.layers.forEach((layer, idx) => {
+    const div = document.createElement('div');
+    div.className = 'layer';
+    div.innerHTML = `<h3>الطبقة: ${layer.name} (${layer.className})</h3>`;
+    
+    const contentDiv = document.createElement('div');
+    contentDiv.className = 'layer-content';
+    contentDiv.innerHTML = `<p>${layer.explanation_ar}</p>`;
+    div.appendChild(contentDiv);
+
+    div.addEventListener('click', () => {
+      contentDiv.style.display = contentDiv.style.display === 'block' ? 'none' : 'block';
+    });
+
+    const layerWeights = model.weights.filter(w => w.name.includes(layer.name));
+    layerWeights.forEach(w => {
+      const wDiv = document.createElement('div');
+      wDiv.className = 'weight-info';
+      wDiv.innerHTML = `<strong>الوزن:</strong> ${w.name}<br>
+                        <strong>الشكل:</strong> [${w.shape.join(', ')}]<br>
+                        <strong>عدد القيم:</strong> ${w.totalValues}<br>
+                        <strong>نوع البيانات:</strong> ${w.dtype}<br>
+                        <strong>شرح مختصر:</strong> ${w.explanation_ar}`;
+      contentDiv.appendChild(wDiv);
+
+      const barDiv = document.createElement('div');
+      barDiv.className = 'weight-bar';
+      w.preview.forEach((v) => {
+        const bar = document.createElement('div');
+        bar.className = 'bar';
+        bar.style.height = Math.min(150, Math.abs(v)*300) + 'px';
+        bar.style.backgroundColor = v > 0 ? '#50fa7b' : v < 0 ? '#ff5555' : '#f1fa8c';
+        bar.addEventListener('mousemove', e => {
+          tooltip.style.display = 'block';
+          tooltip.style.left = e.pageX + 10 + 'px';
+          tooltip.style.top = e.pageY + 10 + 'px';
+          tooltip.innerHTML = `القيمة: ${v.toFixed(6)}`;
+        });
+        bar.addEventListener('mouseleave', () => {
+          tooltip.style.display = 'none';
+        });
+        barDiv.appendChild(bar);
+      });
+      wDiv.appendChild(barDiv);
+    });
+
+    container.appendChild(div);
+
+    if (idx < model.layers.length - 1) {
+      const arrow = document.createElement('div');
+      arrow.className = 'arrow';
+      arrow.innerText = '▼';
+      container.appendChild(arrow);
+    }
+  });
+}
+</script>
+</body>
+</html>
