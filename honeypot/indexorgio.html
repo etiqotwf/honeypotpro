@@ -1,0 +1,1863 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reading Comprehension Quiz</title>
+    <style>
+   body {
+    font-family: Arial, sans-serif;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    margin: 0;
+    background: #1e1e2e;
+    color: white;
+}
+
+.container {
+    margin-top: 5px; /* مسافة صغيرة جدًا */
+    width: 95%;
+    max-width: 1200px;
+    background: #282a36;
+    padding: 10px 30px 30px;
+    border-radius: 10px;
+    box-shadow: 0px 0px 15px rgba(0, 0, 0, 0.5);
+    text-align: left;
+}
+
+h1, h2, p {
+    margin-top: 0;
+}
+
+
+        .question {
+            font-weight: bold;
+            font-size: 30px;
+            margin-bottom: 20px;
+        }
+        .options label {
+            display: block;
+            padding: 10px;
+        }
+        .btn {
+            background: #ff5555;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            cursor: pointer;
+            border-radius: 5px;
+            margin-top: 200px;
+            font-size: 18px;
+            display: block;
+        }
+        .btn:hover {
+            background: #ff79c6;
+        }
+
+        .result-screen {
+    display: none;
+    background: #44475a;
+    padding: 30px;
+    border-radius: 10px;
+    text-align: center;
+    width: 100%;
+  }
+
+  #resultScore {
+    font-size: 36px;
+    font-weight: bold;
+    color: #ffffff;
+    margin-top: 20px;
+  }
+
+  .result-screen p {
+    font-size: 20px;
+    font-weight: bold;
+    color: #f8f8f2;
+  }
+
+  #timer {
+    font-size: 28px;         /* حجم أكبر */
+    color: rgb(255, 255, 255);           /* اللون أصفر */
+    font-weight: bold;       /* خط عريض */
+    padding: 20px;
+    border-radius: 10px;
+    width: fit-content;
+    margin: 20px auto;
+  }
+
+      
+      .author {
+  font-size: 24px;        /* تكبير الخط */
+  color: #ffd700;         /* لون ذهبي مميز */
+  text-align: center;
+  font-weight: bold;      /* جعله عريض */
+  margin-bottom: 15px;
+  position: relative;     /* إزالة الوضع المطلق حتى يظهر في مكانه الطبيعي */
+  top: auto;
+}
+
+
+
+
+label {
+  font-size: 22px; /* حجم نص الاختيار */
+  padding: 10px;
+  display: block;
+}
+
+input[type="radio"] {
+  transform: scale(1.5); /* تكبير حجم الدائرة */
+  margin-right: 10px;
+}
+
+
+  #passage {
+    font-size: 16px;     /* حجم الخط */
+    font-weight: bold;   /* خط عريض */
+  }
+
+
+#startScreen p {
+  font-size: 22px;
+  font-weight: bold;
+}
+#startScreen input {
+  font-size: 20px;
+  font-weight: bold;
+  padding: 8px;
+}
+
+  
+
+#startScreen h1 {
+  font-size: 40px; /* حجم الخط */
+  font-weight: bold; /* عريض */
+  color: #ffd700; /* لون مميز مثل الذهبي (اختياري) */
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+
+
+
+    </style>
+</head>
+<body>
+
+
+
+
+    <div class="container" id="startScreen">
+<h1>🛡️ Interactive Honeypot Graduation Project with Deep Q-Learning (DQN)</h1>
+
+</h1>
+        <h2></h2>
+<p>Course Name: <input type="text" id="courseName" value="Fatma Project
+" readonly style="background-color: #f0f0f0; border: none;"></p>
+        <p>Enter Password: <input type="password" id="password"></p>
+        <button class="btn" onclick="startQuiz()">Start Project</button>
+    </div>
+
+    <div class="container" id="quizContainer" style="display: none;">
+        <h2 id="quizTitle">Placement Test</h2>
+<p class="author">🛡️ Interactive Honeypot Graduation Project with Deep Q-Learning (DQN)</p>
+        <p>Date: <span id="date"></span></p>
+        <div id="passage">
+<h3>🛡️ Overview & Detailed Explanation of the Interactive Honeypot Graduation Project (DQN)</h3>
+  <p style="font-size: 22px;">
+    
+                        </div>
+        <div id="quiz"></div>
+    </div>
+    
+    <div class="result-screen" id="resultScreen" style="display: none;">
+        <h2>Test Result</h2>
+        <p class="author">Created by: Ahmed Amer</p>
+        <p><strong>Course Name:</strong> <span id="resultCourse"></span></p>
+        <p><strong>Name:</strong> <span id="resultName"></span></p>
+        <p><strong>Phone Number:</strong> <span id="resultPhone"></span></p>
+        <p><strong>Test Date:</strong> <span id="resultDate"></span></p>
+        <p><strong>Start Time:</strong> <span id="resultStartTime"></span></p>
+        <p><strong>Time Taken:</strong> <span id="resultTime"></span></p>
+        <p><strong>Score:</strong> <span id="resultScore"></span></p>
+    </div>
+
+
+ 
+
+ 
+
+  </div>
+<div style="
+  position: fixed;
+  top: 40px;
+  right: 40px;
+  font-size: 60px;
+  font-weight: bold;
+  color: #ffd700;
+">
+🤖
+  
+</div>
+
+
+<script>
+    // عند الضغط على أي مكان في الصفحة، أدخل وضع ملء الشاشة
+    document.addEventListener("click", () => {
+      const elem = document.documentElement; // أو document.getElementById("myForm")
+      if (document.fullscreenElement) return; // لا تفعل شيء إذا كنا بالفعل في ملء الشاشة
+
+      if (elem.requestFullscreen) {
+        elem.requestFullscreen();
+      } else if (elem.webkitRequestFullscreen) { /* Safari */
+        elem.webkitRequestFullscreen();
+      } else if (elem.msRequestFullscreen) { /* IE11 */
+        elem.msRequestFullscreen();
+      }
+    });
+  </script>
+
+    
+    <script>
+        document.getElementById("date").innerText = new Date().toLocaleDateString("en-US");
+    
+    const trueFalseQuestions = [
+
+
+
+{
+  "passage": `
+
+<style>
+  .hover-card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+  .hover-card:hover {
+    transform: translateY(-8px) scale(1.02);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+  }
+
+  /* ✅ تأثير الأيقونة */
+  .hover-card:hover svg {
+    transform: scale(1.1) rotate(5deg);
+    transition: transform 0.3s ease, stroke 0.3s ease;
+    stroke: #ff5722; /* اللون عند الهوفر */
+  }
+</style>
+
+
+<div style="margin-top: 40px; max-width: 1100px; margin-left:auto; margin-right:auto; font-family: Segoe UI, Arial, sans-serif; line-height:1.6; color:#333;">
+
+  <!-- ✅ Card 1: Introduction -->
+  <!-- ✅ Card 1: Program Introduction -->
+<div class="hover-card" style="background:#f9fbff; border:2px solid #cce0ff; border-radius:15px; padding:25px; box-shadow:0 4px 12px rgba(0,0,0,0.08);">
+  
+  <!-- Icon -->
+  <div style="text-align:center; margin-bottom:12px;">
+    <svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="#0078d7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="12" cy="12" r="10"></circle>
+      <path d="M12 6v6l4 2"></path>
+    </svg>
+  </div>
+
+  <h2 style="color:#0078d7; margin-bottom:15px;">Card 1: Program Introduction</h2>
+  
+  <p>
+    This project represents a <strong>professional adaptive honeypot system</strong> developed as part of a senior graduation program.  
+    The system is designed to attract, monitor, and analyze real attacker behaviors, while dynamically adapting in real-time through automated scripts and machine-learning-assisted decision-making.  
+    By doing so, it not only provides security but also generates <b>valuable research data</b> for ongoing cybersecurity studies.
+  </p>
+
+  <h4 style="color:#004080; margin-top:15px;">🎯 Objectives</h4>
+  <ul style="margin-top:8px; line-height:1.8;">
+    <li>❖ Develop an <b>interactive security system</b> that simulates vulnerable environments to lure attackers.</li>
+    <li>❖ Capture and analyze attacker activity in <b>real-time</b> for deeper insights into evolving threats.</li>
+    <li>❖ Integrate <b>Deep Q-Learning</b> to enable adaptive and intelligent decision-making against attacks.</li>
+    <li>❖ Provide a <b>scalable platform</b> that can be expanded for academic research, enterprise testing, and training.</li>
+  </ul>
+
+  <h4 style="color:#004080; margin-top:15px;">💡 Benefits</h4>
+  <ul style="margin-top:8px; line-height:1.8;">
+    <li>✔ <b>High-fidelity datasets:</b> Unlike traditional IDS/IPS, honeypots generate almost exclusively malicious interactions.</li>
+    <li>✔ <b>Enhanced learning:</b> Provides real-world attacker tactics (TTPs) for security research and teaching.</li>
+    <li>✔ <b>Adaptability:</b> The system evolves with each interaction, making it robust against novel attack methods.</li>
+    <li>✔ <b>Cost-effective:</b> Can be deployed on lightweight servers while still offering deep insights.</li>
+  </ul>
+
+  <h4 style="color:#004080; margin-top:15px;">⚡ Strengths</h4>
+  <ul style="margin-top:8px; line-height:1.8;">
+    <li>🔹 Combines <b>machine learning</b> with classical security monitoring.</li>
+    <li>🔹 Supports <b>real-time detection</b> and automated adaptive responses.</li>
+    <li>🔹 Offers <b>modular architecture</b> for integration with other security tools and dashboards.</li>
+    <li>🔹 Backed by a clear <b>network deployment diagram</b> for transparency and scalability.</li>
+  </ul>
+
+  <h4 style="color:#004080; margin-top:12px;">Network Position (Visual)</h4>
+
+  <!-- Network diagram -->
+  <div style="text-align:center; margin: 16px 0;">
+    <svg width="100%" height="150" viewBox="0 0 1000 150" preserveAspectRatio="xMidYMid meet">
+      <rect x="30" y="30" width="140" height="60" rx="8" fill="#ffecec" stroke="#ff6b6b"/>
+      <text x="100" y="65" font-size="12" fill="#8b0000" text-anchor="middle">Attacker</text>
+
+      <rect x="200" y="20" width="160" height="80" rx="10" fill="#fff7e6" stroke="#ffb84d"/>
+      <text x="280" y="55" font-size="12" fill="#8b4500" text-anchor="middle">Internet / Scan</text>
+
+      <rect x="400" y="20" width="140" height="80" rx="8" fill="#e8f8ff" stroke="#4db6e6"/>
+      <text x="470" y="55" font-size="12" fill="#0b6fa4" text-anchor="middle">Ngrok</text>
+
+      <rect x="600" y="12" width="220" height="96" rx="10" fill="#f0fff4" stroke="#4db86e"/>
+      <text x="710" y="45" font-size="12" fill="#086b3a" text-anchor="middle">Honeypot Server</text>
+
+      <defs>
+        <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+          <path d="M 0 0 L 10 5 L 0 10 z" fill="#333"/>
+        </marker>
+      </defs>
+      <line x1="170" y1="60" x2="200" y2="60" stroke="#333" stroke-width="2" marker-end="url(#arrow)"/>
+      <line x1="360" y1="60" x2="400" y2="60" stroke="#333" stroke-width="2" marker-end="url(#arrow)"/>
+      <line x1="540" y1="60" x2="600" y2="60" stroke="#333" stroke-width="2" marker-end="url(#arrow)"/>
+    </svg>
+  </div>
+</div>
+
+
+  <!-- ✅ Card 2: Server Code -->
+<div class="hover-card" style="margin-top:40px; background:#fff; border-left:6px solid #0078d7; border-radius:12px; padding:20px; box-shadow:0 4px 12px rgba(0,0,0,0.1); transition:transform 0.3s, box-shadow 0.3s;">
+  
+  <!-- Icon -->
+  <div style="text-align:center; margin-bottom:12px;">
+    <svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="#004080" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="3" y="3" width="18" height="18" rx="2"></rect>
+      <path d="M7 7h10v10H7z"></path>
+    </svg>
+  </div>
+
+  <h3 style="color:#0078d7; font-size:20px; margin-bottom:8px;">Card 2: Server Code — Smart Analysis</h3>
+
+  <p style="font-size:15px; text-align:justify;">
+    In the honeypot architecture, the <strong>server</strong> functions as the <em>central orchestrator</em> of all interactions.  
+    It not only <strong>presents decoy content</strong> to attackers but also acts as a powerful <strong>monitoring and analysis hub</strong>.  
+    Every incoming request is intercepted, processed, and evaluated using both <em>lightweight heuristics</em> and advanced logging mechanisms.  
+    This enables the system to distinguish between <strong>casual scans</strong> and <strong>targeted attacks</strong> in real time.  
+  </p>
+
+  <p style="font-size:15px; text-align:justify;">
+    From an academic perspective, this component highlights several key principles:  
+    (1) <b>Data collection</b> — all traffic metadata is systematically stored for later forensic analysis.  
+    (2) <b>Security by deception</b> — the attacker believes they are engaging with a real system, while in fact they are feeding the honeypot intelligence.  
+    (3) <b>Adaptivity</b> — the server can modify its traps dynamically in response to detected attacker behavior, making it a <em>living system</em> rather than a static trap.  
+    Such characteristics make this design both <strong>scalable</strong> and <strong>resilient</strong>, which are essential qualities for professional security deployments.  
+  </p>
+
+  <h4 style="color:#004080; margin-top:12px;">Key Functions:</h4>
+  <ul style="line-height:1.6; margin-left:18px;">
+    <li>Serve fake login/UI pages to lure attackers and simulate realistic systems.</li>
+    <li>Capture every request (headers, IP, payload size, method, timing).</li>
+    <li>Run heuristics to detect anomalies (SQL injection, XSS patterns, brute force attempts).</li>
+    <li>Store structured logs (CSV/JSON) for <b>data mining and machine learning analysis</b>.</li>
+    <li>Trigger adaptive scripts that evolve in real time, increasing the deception complexity.</li>
+    <li>Forward anonymized logs to <b>external secure storage (e.g., GitHub, cloud)</b> for persistence and team collaboration.</li>
+  </ul>
+
+  <h4 style="color:#004080; margin-top:12px;">Example Server Snippet:</h4>
+  <pre style="background:#f4f8ff; padding:10px; border-radius:10px; font-size:13px; overflow-x:auto;">
+// Express server example (simplified)
+app.use(express.json());
+
+app.use((req, res, next) => {
+  const log = {
+    time: new Date().toISOString(),
+    ip: req.ip,
+    url: req.originalUrl,
+    method: req.method,
+    headersCount: Object.keys(req.headers).length
+  };
+  console.log("Captured:", log); // In real case: write to log file or DB
+  next();
+});
+
+app.get("/", (req,res)=>{
+  res.sendFile(__dirname + "/public/fake_login.html");
+});
+  </pre>
+
+  <!-- Server flow diagram (main) -->
+  <div style="text-align:center; margin: 18px 0;">
+    <svg width="100%" height="220" viewBox="0 0 1000 220" preserveAspectRatio="xMidYMid meet">
+      <rect x="40" y="20" width="160" height="50" rx="8" fill="#fff4e6" stroke="#ffb84d"/>
+      <text x="120" y="50" font-size="12" fill="#8b4500" text-anchor="middle">Attacker Request</text>
+
+      <rect x="240" y="20" width="180" height="50" rx="8" fill="#e8f8ff" stroke="#4db6e6"/>
+      <text x="330" y="50" font-size="12" fill="#0b6fa4" text-anchor="middle">Express Middleware</text>
+
+      <rect x="520" y="10" width="180" height="70" rx="8" fill="#f0fff4" stroke="#4db86e"/>
+      <text x="610" y="40" font-size="12" fill="#086b3a" text-anchor="middle">Logging & Heuristics</text>
+
+      <rect x="240" y="110" width="180" height="50" rx="8" fill="#fff0f6" stroke="#ff99c8"/>
+      <text x="330" y="142" font-size="12" fill="#a1005f" text-anchor="middle">Adaptive Script</text>
+
+      <rect x="520" y="110" width="180" height="50" rx="8" fill="#f4f6ff" stroke="#8f9eff"/>
+      <text x="610" y="142" font-size="12" fill="#2f3aa2" text-anchor="middle">External Storage</text>
+
+      <defs>
+        <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+          <path d="M 0 0 L 10 5 L 0 10 z" fill="#333"/>
+        </marker>
+      </defs>
+
+      <line x1="200" y1="45" x2="240" y2="45" stroke="#333" stroke-width="2" marker-end="url(#arrow)"/>
+      <line x1="420" y1="45" x2="520" y2="45" stroke="#333" stroke-width="2" marker-end="url(#arrow)"/>
+      <line x1="420" y1="135" x2="520" y2="135" stroke="#333" stroke-width="2" marker-end="url(#arrow)"/>
+    </svg>
+  </div>
+
+  <!-- Extra mini diagram -->
+  <div style="text-align:center; margin-top:20px;">
+    <svg width="100%" height="120" viewBox="0 0 600 120" preserveAspectRatio="xMidYMid meet">
+      <rect x="20" y="30" width="120" height="50" rx="8" fill="#ffeef0" stroke="#ff6f91"/>
+      <text x="80" y="60" font-size="12" fill="#a1002f" text-anchor="middle">Heuristics</text>
+
+      <rect x="180" y="30" width="120" height="50" rx="8" fill="#f0f9ff" stroke="#4db6e6"/>
+      <text x="240" y="60" font-size="12" fill="#004080" text-anchor="middle">Logs</text>
+
+      <rect x="340" y="30" width="120" height="50" rx="8" fill="#f9f6ff" stroke="#8f9eff"/>
+      <text x="400" y="60" font-size="12" fill="#2f3aa2" text-anchor="middle">Adaptive Action</text>
+
+      <line x1="140" y1="55" x2="180" y2="55" stroke="#333" stroke-width="2" marker-end="url(#arrow2)"/>
+      <line x1="300" y1="55" x2="340" y2="55" stroke="#333" stroke-width="2" marker-end="url(#arrow2)"/>
+
+      <defs>
+        <marker id="arrow2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+          <path d="M 0 0 L 10 5 L 0 10 z" fill="#333"/>
+        </marker>
+      </defs>
+    </svg>
+    <p style="font-size:12px; color:#555;">Mini pipeline: Heuristics → Logs → Adaptive Response</p>
+  </div>
+</div>
+
+
+
+  <!-- ✅ Card 3: Adaptive Honeypot -->
+<div class="hover-card" style="background:#fff; border-radius:16px; box-shadow:0 4px 15px rgba(0,0,0,0.08); padding:30px; margin-top:30px;">
+  
+  <!-- Icon -->
+  <div style="text-align:center; margin-bottom:12px;">
+    <svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="#16a085" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="12" cy="12" r="10"></circle>
+      <path d="M9 9h6v6H9z"></path>
+    </svg>
+  </div>
+
+  <h2 style="font-size:24px; color:#2c3e50; margin-bottom:12px;">Card 3: Adaptive Honeypot with DQN</h2>
+
+  <p>
+    This honeypot integrates <b>Deep Q-Learning (DQN)</b> with TensorFlow.js to dynamically learn from malicious traffic logs.
+    Instead of relying only on static rules, the model continuously <b>updates its policy</b> based on replayed logs, allowing it
+    to evolve and strengthen defenses against attackers.
+  </p>
+
+  <!-- Mini code sample -->
+  <pre style="background:#f4f4f4; padding:12px; border-radius:8px; font-size:13px;">
+// Example encoder
+function encodeStateFromRecord(record) {
+  return [
+    record.ip && record.ip.startsWith('192.168.') ? 0 : 1,
+    record.method === 'POST' ? 1 : 0,
+    /attack|scan/i.test(record.threatType) ? 1 : 0
+  ];
+}
+  </pre>
+
+  <!-- Pipeline text -->
+  <div style="margin:14px 0; padding:12px; background:#ecf0f1; border-radius:10px; font-size:14px;">
+    <b>Pipeline:</b> Logs → Encoder → State Vector → Model.predict() → Action (block/alert/ignore) → Logger + Replay Memory → Trainer
+  </div>
+
+  <!-- ASCII flow -->
+  <pre style="background:#ffffff; padding:12px; border-radius:10px; font-size:13px;">
+Logs -> Encoder -> Model -> Action -> Logger / Replay Memory
+Trainer -> trainModel() -> update weights
+  </pre>
+
+  <!-- Extra DQN diagram -->
+  <div style="text-align:center; margin: 20px 0;">
+    <svg width="100%" height="260" viewBox="0 0 1000 260" preserveAspectRatio="xMidYMid meet">
+      <!-- Input -->
+      <rect x="40" y="80" width="160" height="50" rx="8" fill="#f9f9f9" stroke="#aaa"/>
+      <text x="120" y="110" font-size="13" fill="#333" text-anchor="middle">Raw Logs</text>
+
+      <!-- Encoder -->
+      <rect x="240" y="80" width="160" height="50" rx="8" fill="#e6f7ff" stroke="#3399ff"/>
+      <text x="320" y="110" font-size="13" fill="#004080" text-anchor="middle">Encoder (features)</text>
+
+      <!-- Model -->
+      <rect x="440" y="40" width="160" height="50" rx="8" fill="#f0fff4" stroke="#2ecc71"/>
+      <text x="520" y="70" font-size="13" fill="#086b3a" text-anchor="middle">DQN Model</text>
+
+      <!-- Action -->
+      <rect x="640" y="20" width="160" height="50" rx="8" fill="#fffaf0" stroke="#ff9933"/>
+      <text x="720" y="50" font-size="13" fill="#8b4500" text-anchor="middle">Action</text>
+
+      <!-- Replay -->
+      <rect x="640" y="120" width="160" height="50" rx="8" fill="#fff0f6" stroke="#ff66b2"/>
+      <text x="720" y="150" font-size="13" fill="#a1005f" text-anchor="middle">Replay Memory</text>
+
+      <!-- Trainer -->
+      <rect x="440" y="180" width="160" height="50" rx="8" fill="#f4f6ff" stroke="#6666ff"/>
+      <text x="520" y="210" font-size="13" fill="#2f3aa2" text-anchor="middle">Trainer</text>
+
+      <!-- Arrows -->
+      <line x1="200" y1="105" x2="240" y2="105" stroke="#333" stroke-width="2" marker-end="url(#arrow)"/>
+      <line x1="400" y1="105" x2="440" y2="65" stroke="#333" stroke-width="2" marker-end="url(#arrow)"/>
+      <line x1="600" y1="65" x2="640" y2="45" stroke="#333" stroke-width="2" marker-end="url(#arrow)"/>
+      <line x1="600" y1="65" x2="640" y2="145" stroke="#333" stroke-width="2" marker-end="url(#arrow)"/>
+      <line x1="640" y1="145" x2="520" y2="180" stroke="#333" stroke-width="2" marker-end="url(#arrow)"/>
+      <line x1="520" y1="180" x2="520" y2="90" stroke="#333" stroke-width="2" marker-end="url(#arrow)"/>
+      
+      <!-- Arrow marker -->
+      <defs>
+        <marker id="arrow" markerWidth="10" markerHeight="10" refX="6" refY="3" orient="auto" markerUnits="strokeWidth">
+          <path d="M0,0 L0,6 L9,3 z" fill="#333"/>
+        </marker>
+      </defs>
+    </svg>
+  </div>
+
+  <!-- ✅ Analysis Section -->
+  <div style="margin-top:20px; background:#fdfdfd; border-left:5px solid #16a085; padding:15px; border-radius:8px; font-size:14px;">
+    <h3 style="color:#16a085;">Detailed Analysis</h3>
+    <p>
+      The <b>dqn-honeypot-ai.js</b> script orchestrates the full adaptive cycle:
+      <ul>
+        <li><b>Encoding:</b> Each log entry (IP, method, threat type) is mapped into an <code>[8-dim state vector]</code>.</li>
+        <li><b>Model:</b> A 3-layer dense neural network outputs probabilities for actions: block, alert, ignore.</li>
+        <li><b>Training:</b> Bootstraps with heuristics, then fine-tunes continuously with replayed logs (experience replay).</li>
+        <li><b>Persistence:</b> Model is saved into <code>model.json</code> + <code>weights.bin</code> to survive restarts.</li>
+        <li><b>Automation:</b> Watches <code>public/logs/threats.csv</code>; each new log triggers processing, action selection, and fine-tuning.</li>
+        <li><b>Compatibility:</b> Can also parse legacy <code>honeypot.log</code> for backward support.</li>
+      </ul>
+      This creates a <b>self-learning defense system</b>: logs become training data, improving the honeypot over time.
+    </p>
+  </div>
+</div>
+
+
+<!-- ✅ Card 4: Threat Logging System (Improved CSV Handling) -->
+<div class="hover-card" style="background:#fff; border-radius:16px; box-shadow:0 4px 15px rgba(0,0,0,0.08); padding:30px; margin-top:30px;">
+
+  <!-- Icon -->
+  <div style="text-align:center; margin-bottom:12px;">
+    <svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="#d35400" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M12 2l9 4.9v9.1L12 22l-9-6.9V6.9z"></path>
+      <path d="M12 22V12"></path>
+      <path d="M3 6.9l9 5.1 9-5.1"></path>
+    </svg>
+  </div>
+
+  <h2 style="font-size:24px; color:#2c3e50; margin-bottom:12px;">Card 4: Threat Logging (logThreats.js)</h2>
+
+  <p>
+    In this improved version, we <b>sanitize and escape values</b> before writing to CSV.  
+    This prevents <b>broken rows</b> if an attacker injects commas, quotes, or newlines in headers or payloads.
+  </p>
+
+  <!-- Code sample -->
+  <pre style="background:#f4f4f4; padding:12px; border-radius:8px; font-size:13px;">
+// logThreats.js (ESM with Safe CSV)
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+const LOGS_DIR = path.join(__dirname, 'logs');
+const OUTPUT_CSV = path.join(LOGS_DIR, 'threats.csv');
+
+// ✅ Escape CSV values safely
+function csvEscape(value) {
+  if (value == null) return '';
+  const str = String(value);
+  if (/[",\n]/.test(str)) {
+    return '"' + str.replace(/"/g, '""') + '"';
+  }
+  return str;
+}
+
+function ensureLogsCsv() {
+  if (!fs.existsSync(LOGS_DIR)) fs.mkdirSync(LOGS_DIR, { recursive: true });
+  if (!fs.existsSync(OUTPUT_CSV)) {
+    fs.writeFileSync(OUTPUT_CSV, 'Timestamp,IP,Method,ThreatType,Action\n', 'utf8');
+  }
+}
+
+export function logThreat(ip, method, threatType, action = 'ignored', timestamp = new Date().toISOString()) {
+  ensureLogsCsv();
+  const row = [
+    csvEscape(timestamp),
+    csvEscape(ip),
+    csvEscape(method),
+    csvEscape(threatType),
+    csvEscape(action)
+  ].join(',') + '\n';
+
+  fs.appendFileSync(OUTPUT_CSV, row, 'utf8');
+}
+  </pre>
+
+  <!-- Flow Diagram -->
+  <div style="text-align:center; margin: 20px 0;">
+    <svg width="100%" height="240" viewBox="0 0 1000 240" preserveAspectRatio="xMidYMid meet">
+      <!-- Suspicious Request -->
+      <rect x="40" y="80" width="180" height="50" rx="8" fill="#fffaf0" stroke="#ff9933"/>
+      <text x="130" y="110" font-size="13" fill="#8b4500" text-anchor="middle">Suspicious Request</text>
+
+      <!-- logThreat() -->
+      <rect x="280" y="80" width="160" height="50" rx="8" fill="#f0fff4" stroke="#27ae60"/>
+      <text x="360" y="110" font-size="13" fill="#086b3a" text-anchor="middle">logThreat()</text>
+
+      <!-- csvEscape() -->
+      <rect x="500" y="40" width="200" height="50" rx="8" fill="#f4f6ff" stroke="#6666ff"/>
+      <text x="600" y="70" font-size="13" fill="#2f3aa2" text-anchor="middle">csvEscape()</text>
+
+      <!-- threats.csv -->
+      <rect x="500" y="140" width="200" height="50" rx="8" fill="#fff0f6" stroke="#ff66b2"/>
+      <text x="600" y="170" font-size="13" fill="#a1005f" text-anchor="middle">logs/threats.csv</text>
+
+      <!-- Arrows -->
+      <line x1="220" y1="105" x2="280" y2="105" stroke="#333" stroke-width="2" marker-end="url(#arrow)"/>
+      <line x1="440" y1="105" x2="500" y2="65" stroke="#333" stroke-width="2" marker-end="url(#arrow)"/>
+      <line x1="440" y1="105" x2="500" y2="165" stroke="#333" stroke-width="2" marker-end="url(#arrow)"/>
+
+      <!-- Arrow marker -->
+      <defs>
+        <marker id="arrow" markerWidth="10" markerHeight="10" refX="6" refY="3" orient="auto" markerUnits="strokeWidth">
+          <path d="M0,0 L0,6 L9,3 z" fill="#333"/>
+        </marker>
+      </defs>
+    </svg>
+  </div>
+
+  <!-- ✅ Analysis Section -->
+  <div style="margin-top:20px; background:#fdfdfd; border-left:5px solid #d35400; padding:15px; border-radius:8px; font-size:14px;">
+    <h3 style="color:#d35400;">Detailed Analysis</h3>
+    <ul>
+      <li><b>CSV Escaping:</b> Values containing commas, quotes, or newlines are safely wrapped in quotes and internal quotes are doubled.</li>
+      <li><b>Sanitized Logging:</b> Prevents malformed CSV rows caused by attacker payloads.</li>
+      <li><b>Default Action:</b> Events without classification are marked as <code>ignored</code>.</li>
+      <li><b>Machine Learning Ready:</b> Structured and clean CSV ensures compatibility with downstream models.</li>
+      <li><b>Resilient:</b> Works even with maliciously crafted inputs (e.g., SQL injection strings).</li>
+    </ul>
+    <p>
+      This ensures the honeypot’s logs are <b>clean, reliable, and tamper-resistant</b>, making them suitable 
+      for <b>forensic analysis</b> and <b>continuous ML training</b>.
+    </p>
+  </div>
+</div>
+
+
+
+
+<!-- ✅ Card 5: Frontend Honeypot (Secure Login Page) -->
+<div class="hover-card" style="background:#fff; border-radius:16px; box-shadow:0 4px 15px rgba(0,0,0,0.08); padding:30px; margin-top:30px;">
+
+  <!-- Icon -->
+  <div style="text-align:center; margin-bottom:12px;">
+    <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M12 1l3 5h-6l3-5z"></path>
+      <rect x="4" y="7" width="16" height="13" rx="2" ry="2"></rect>
+      <path d="M12 11v6"></path>
+      <path d="M9 14h6"></path>
+    </svg>
+  </div>
+
+  <h2 style="font-size:24px; color:#1e3a8a; margin-bottom:12px;">Card 5: Frontend Honeypot (Fake Secure Login)</h2>
+
+  <p>
+    This <b>deceptive login portal</b> is designed as the <b>first point of contact</b> for attackers.  
+    It mimics a corporate-grade login system with professional design, background animations, and 
+    a forced <b>fullscreen trap</b>.  
+    While attackers try fake credentials, the system <b>captures behavior</b>, logs inputs, and 
+    triggers adaptive server-side responses.
+  </p>
+
+  <!-- Code Snippet -->
+  <pre style="background:#f4f4f4; padding:12px; border-radius:8px; font-size:13px; white-space:pre-wrap;">
+&lt;div class="login-container"&gt;
+  &lt;h1 class="login-title"&gt;Authorized Personnel Login Portal&lt;/h1&gt;
+  &lt;form method="POST" action="/fake-login"&gt;
+    &lt;div class="input-group"&gt;
+      &lt;label for="username"&gt;Username&lt;/label&gt;
+      &lt;input type="text" id="username" name="username" required /&gt;
+    &lt;/div&gt;
+    &lt;div class="input-group"&gt;
+      &lt;label for="password"&gt;Password&lt;/label&gt;
+      &lt;input type="password" id="password" name="password" required /&gt;
+    &lt;/div&gt;
+    &lt;button type="submit"&gt;Log In&lt;/button&gt;
+  &lt;/form&gt;
+&lt;/div&gt;
+
+&lt;script&gt;
+// Fullscreen trap
+document.addEventListener('click', () =&gt; {
+  if (!document.fullscreenElement) {
+    document.documentElement.requestFullscreen();
+  }
+});
+&lt;/script&gt;
+  </pre>
+
+  <!-- Flow Diagram -->
+  <div style="text-align:center; margin: 20px 0;">
+    <svg width="100%" height="250" viewBox="0 0 1000 250" preserveAspectRatio="xMidYMid meet">
+      <!-- Attacker -->
+      <rect x="40" y="90" width="160" height="50" rx="8" fill="#fff4e6" stroke="#f97316"/>
+      <text x="120" y="120" font-size="13" fill="#9a3412" text-anchor="middle">Attacker</text>
+
+      <!-- Fake Login -->
+      <rect x="260" y="90" width="200" height="60" rx="8" fill="#e0f2fe" stroke="#2563eb"/>
+      <text x="360" y="120" font-size="13" fill="#1e3a8a" text-anchor="middle">Fake Secure Login Page</text>
+
+      <!-- Fullscreen Trap -->
+      <rect x="520" y="50" width="200" height="60" rx="8" fill="#f0fdf4" stroke="#22c55e"/>
+      <text x="620" y="80" font-size="13" fill="#166534" text-anchor="middle">Fullscreen Trap</text>
+
+      <!-- Behavior Capture -->
+      <rect x="520" y="140" width="200" height="60" rx="8" fill="#fef9c3" stroke="#eab308"/>
+      <text x="620" y="170" font-size="13" fill="#78350f" text-anchor="middle">Input &amp; Behavior Logging</text>
+
+      <!-- Server -->
+      <rect x="780" y="90" width="180" height="60" rx="8" fill="#fdf2f8" stroke="#db2777"/>
+      <text x="870" y="120" font-size="13" fill="#9d174d" text-anchor="middle">Server-side Responses</text>
+
+      <!-- Arrows -->
+      <line x1="200" y1="115" x2="260" y2="115" stroke="#333" stroke-width="2" marker-end="url(#arrow)"/>
+      <line x1="460" y1="115" x2="520" y2="80" stroke="#333" stroke-width="2" marker-end="url(#arrow)"/>
+      <line x1="460" y1="115" x2="520" y2="170" stroke="#333" stroke-width="2" marker-end="url(#arrow)"/>
+      <line x1="720" y1="80" x2="780" y2="115" stroke="#333" stroke-width="2" marker-end="url(#arrow)"/>
+      <line x1="720" y1="170" x2="780" y2="115" stroke="#333" stroke-width="2" marker-end="url(#arrow)"/>
+
+      <!-- Arrow marker -->
+      <defs>
+        <marker id="arrow" markerWidth="10" markerHeight="10" refX="6" refY="3" orient="auto" markerUnits="strokeWidth">
+          <path d="M0,0 L0,6 L9,3 z" fill="#333"/>
+        </marker>
+      </defs>
+    </svg>
+  </div>
+
+  <!-- ✅ Analysis Section -->
+  <div style="margin-top:20px; background:#fdfdfd; border-left:5px solid #2563eb; padding:15px; border-radius:8px; font-size:14px;">
+    <h3 style="color:#2563eb;">Detailed Analysis</h3>
+    <ul>
+      <li><b>Visual Deception:</b> The UI is polished with gradients, shadows, and animated bubbles to appear authentic.</li>
+      <li><b>Trap Mechanism:</b> A fullscreen request ensures attackers stay focused, hiding the browser chrome.</li>
+      <li><b>Credential Capture:</b> All POST requests to <code>/fake-login</code> are intercepted and logged by the backend.</li>
+      <li><b>Behavioral Logging:</b> Tracks keystrokes, timings, and submission patterns for forensic profiling.</li>
+      <li><b>Integration:</b> Pairs with <code>logThreats.js</code> to generate structured CSV records of login attempts.</li>
+    </ul>
+    <p>
+      This fake login page acts as a <b>psychological honeypot</b>, exploiting attacker curiosity and 
+      capturing every interaction for <b>threat intelligence</b> and <b>machine learning pipelines</b>.
+    </p>
+  </div>
+</div>
+
+
+
+<!-- ✅ Card 6: Frontend Dashboard Analysis -->
+<div class="hover-card" style="background:#fff; border-radius:16px; box-shadow:0 4px 15px rgba(0,0,0,0.08); padding:30px; margin-top:30px;">
+
+  <!-- Icon -->
+  <div style="text-align:center; margin-bottom:12px;">
+    <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <polygon points="12 2 22 8.5 22 15.5 12 22 2 15.5 2 8.5 12 2"></polygon>
+      <line x1="12" y1="22" x2="12" y2="15"></line>
+      <line x1="12" y1="2" x2="12" y2="8.5"></line>
+    </svg>
+  </div>
+
+  <h2 style="font-size:24px; color:#166534; margin-bottom:12px;">Card 6: Frontend Dashboard Analysis</h2>
+
+  <p>
+    The <b>Threat Monitoring Dashboard</b> acts as the central hub for security analysts.  
+    It combines <b>data visualization, filters, AI prediction,</b> and <b>real-time logging</b>.  
+    Below are some <b>code examples</b> that highlight key parts of the frontend.
+  </p>
+
+  <!-- ✅ Example 1: Filtering Threats -->
+  <pre style="background:#f9fafb; padding:12px; border-radius:8px; font-size:13px; border:1px solid #e5e7eb;">
+// Example: Filtering threats by IP
+function filterByIP(ip) {
+  return threats.filter(t => t.ip === ip);
+}
+
+// Usage:
+const filtered = filterByIP("192.168.1.10");
+console.log(filtered);
+  </pre>
+  <p><b>Explanation:</b> Analysts can quickly narrow logs to a specific attacker IP, improving investigation speed.</p>
+
+  <!-- ✅ Example 2: Updating the Table -->
+  <pre style="background:#f9fafb; padding:12px; border-radius:8px; font-size:13px; border:1px solid #e5e7eb;">
+// Example: Dynamically update threat table
+function addThreatRow(threat) {
+  const table = document.getElementById("threatTableBody");
+  const row = document.createElement("tr");
+
+  table.appendChild(row);
+}
+  </pre>
+  <p><b>Explanation:</b> Every detected attack is instantly logged into the table for visibility.</p>
+
+  <!-- ✅ Example 3: AI Prediction -->
+  <pre style="background:#f9fafb; padding:12px; border-radius:8px; font-size:13px; border:1px solid #e5e7eb;">
+// Example: Using TensorFlow.js to classify threats
+async function analyzeThreat(features) {
+  const prediction = model.predict(tf.tensor([features]));
+  const result = prediction.argMax(-1).dataSync()[0];
+  return ["Ignore", "Alert", "Block"][result];
+}
+  </pre>
+  <p><b>Explanation:</b> AI model decides whether to ignore, alert, or block a suspicious request.</p>
+
+  <!-- ✅ Diagram -->
+  <div style="text-align:center; margin: 20px 0;">
+    <svg width="100%" height="300" viewBox="0 0 1100 300" preserveAspectRatio="xMidYMid meet">
+      <!-- Logs Source -->
+      <rect x="40" y="100" width="180" height="60" rx="8" fill="#e0f2fe" stroke="#2563eb"/>
+      <text x="130" y="130" font-size="13" fill="#1e3a8a" text-anchor="middle">Raw Logs (CSV / API)</text>
+
+      <!-- Filters -->
+      <rect x="280" y="60" width="180" height="60" rx="8" fill="#fef9c3" stroke="#eab308"/>
+      <text x="370" y="90" font-size="13" fill="#78350f" text-anchor="middle">Filters (IP / Type)</text>
+
+      <!-- Table -->
+      <rect x="280" y="160" width="180" height="60" rx="8" fill="#fdf2f8" stroke="#db2777"/>
+      <text x="370" y="190" font-size="13" fill="#9d174d" text-anchor="middle">Threat Table</text>
+
+      <!-- Chart -->
+      <rect x="520" y="60" width="180" height="60" rx="8" fill="#f0fdf4" stroke="#22c55e"/>
+      <text x="610" y="90" font-size="13" fill="#166534" text-anchor="middle">Threat Statistics Chart</text>
+
+      <!-- AI Analyzer -->
+      <rect x="520" y="160" width="220" height="60" rx="8" fill="#fff4e6" stroke="#f97316"/>
+      <text x="630" y="190" font-size="13" fill="#9a3412" text-anchor="middle">AI Log Analyzer (TensorFlow.js)</text>
+
+      <!-- Actions -->
+      <rect x="820" y="110" width="200" height="70" rx="8" fill="#dbeafe" stroke="#1d4ed8"/>
+      <text x="920" y="145" font-size="13" fill="#1e3a8a" text-anchor="middle">Actions (Block / Alert / Ignore)</text>
+
+      <!-- Arrows -->
+      <line x1="220" y1="130" x2="280" y2="90" stroke="#333" stroke-width="2" marker-end="url(#arrow)"/>
+      <line x1="220" y1="130" x2="280" y2="190" stroke="#333" stroke-width="2" marker-end="url(#arrow)"/>
+      <line x1="460" y1="90" x2="520" y2="90" stroke="#333" stroke-width="2" marker-end="url(#arrow)"/>
+      <line x1="460" y1="190" x2="520" y2="190" stroke="#333" stroke-width="2" marker-end="url(#arrow)"/>
+      <line x1="700" y1="90" x2="820" y2="145" stroke="#333" stroke-width="2" marker-end="url(#arrow)"/>
+      <line x1="740" y1="190" x2="820" y2="145" stroke="#333" stroke-width="2" marker-end="url(#arrow)"/>
+
+      <!-- Arrow marker -->
+      <defs>
+        <marker id="arrow" markerWidth="10" markerHeight="10" refX="6" refY="3" orient="auto" markerUnits="strokeWidth">
+          <path d="M0,0 L0,6 L9,3 z" fill="#333"/>
+        </marker>
+      </defs>
+    </svg>
+  </div>
+
+  <!-- ✅ Analysis Section -->
+  <div style="margin-top:20px; background:#fdfdfd; border-left:5px solid #16a34a; padding:15px; border-radius:8px; font-size:14px;">
+    <h3 style="color:#166534;">Detailed Functional Analysis</h3>
+    <ul>
+      <li><b>Filtering:</b> Allows quick isolation of specific attack vectors.</li>
+      <li><b>Table Update:</b> Ensures visibility of each threat in chronological order.</li>
+      <li><b>AI Analyzer:</b> Automates classification using a trained ML model.</li>
+      <li><b>Chart Visualization:</b> Gives a bird’s-eye view of the distribution of threats.</li>
+      <li><b>Actions:</b> Final step where analysts or the system act (block, alert, ignore).</li>
+    </ul>
+    <p>
+      These examples demonstrate how the frontend bridges <b>raw threat data</b> and 
+      <b>actionable intelligence</b> using clean UI, real-time logging, and AI integration.
+    </p>
+  </div>
+</div>
+
+
+
+<!-- ✅ Card 7: Workflow Integration -->
+<div class="hover-card" style="background:#fff; border-radius:16px; box-shadow:0 4px 15px rgba(0,0,0,0.08); padding:30px; margin-top:30px;">
+
+  <!-- Icon -->
+  <div style="text-align:center; margin-bottom:12px;">
+    <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="#0ea5e9" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="12" cy="12" r="10"></circle>
+      <path d="M8 12l2 2 4-4"></path>
+    </svg>
+  </div>
+
+  <h2 style="font-size:24px; color:#0c4a6e; margin-bottom:12px;">Card 7: Honeypot Workflow Overview</h2>
+
+  <p>
+    This card visualizes the <b>end-to-end workflow</b> of the adaptive honeypot system,  
+    connecting all previous modules (Cards 1–6) into a single pipeline:  
+    from <b>attack capture</b>, <b>logging</b>, <b>storage</b>, <b>AI processing</b>, and finally <b>dashboard analysis</b>.
+  </p>
+
+  <!-- ✅ Workflow Diagram -->
+  <div style="text-align:center; margin: 20px 0;">
+    <svg width="100%" height="380" viewBox="0 0 1200 380" preserveAspectRatio="xMidYMid meet">
+
+      <!-- Card 1 -->
+      <rect x="40" y="40" width="160" height="60" rx="8" fill="#f0f9ff" stroke="#0284c7"/>
+      <text x="120" y="70" font-size="13" fill="#075985" text-anchor="middle">Card 1: Request Trap</text>
+
+      <!-- Card 2 -->
+      <rect x="260" y="40" width="160" height="60" rx="8" fill="#fef9c3" stroke="#eab308"/>
+      <text x="340" y="70" font-size="13" fill="#78350f" text-anchor="middle">Card 2: Threat Classifier</text>
+
+      <!-- Card 3 -->
+      <rect x="480" y="40" width="160" height="60" rx="8" fill="#fdf2f8" stroke="#db2777"/>
+      <text x="560" y="70" font-size="13" fill="#9d174d" text-anchor="middle">Card 3: Adaptive Response</text>
+
+      <!-- Card 4 -->
+      <rect x="700" y="40" width="160" height="60" rx="8" fill="#fff0f6" stroke="#ec4899"/>
+      <text x="780" y="70" font-size="13" fill="#9a165f" text-anchor="middle">Card 4: Logging System</text>
+
+      <!-- Card 5 -->
+      <rect x="920" y="40" width="160" height="60" rx="8" fill="#f0fdf4" stroke="#22c55e"/>
+      <text x="1000" y="70" font-size="13" fill="#166534" text-anchor="middle">Card 5: ML Training</text>
+
+      <!-- Card 6 -->
+      <rect x="480" y="200" width="200" height="70" rx="8" fill="#e0f2fe" stroke="#2563eb"/>
+      <text x="580" y="235" font-size="13" fill="#1e3a8a" text-anchor="middle">Card 6: Dashboard Analysis</text>
+
+      <!-- Arrows -->
+      <line x1="200" y1="70" x2="260" y2="70" stroke="#333" stroke-width="2" marker-end="url(#arrow)"/>
+      <line x1="420" y1="70" x2="480" y2="70" stroke="#333" stroke-width="2" marker-end="url(#arrow)"/>
+      <line x1="640" y1="70" x2="700" y2="70" stroke="#333" stroke-width="2" marker-end="url(#arrow)"/>
+      <line x1="860" y1="70" x2="920" y2="70" stroke="#333" stroke-width="2" marker-end="url(#arrow)"/>
+
+      <!-- Connection down to Dashboard -->
+      <line x1="780" y1="100" x2="580" y2="200" stroke="#333" stroke-width="2" marker-end="url(#arrow)"/>
+      <line x1="1000" y1="100" x2="580" y2="200" stroke="#333" stroke-width="2" marker-end="url(#arrow)"/>
+
+      <!-- Arrow marker -->
+      <defs>
+        <marker id="arrow" markerWidth="10" markerHeight="10" refX="6" refY="3" orient="auto" markerUnits="strokeWidth">
+          <path d="M0,0 L0,6 L9,3 z" fill="#333"/>
+        </marker>
+      </defs>
+    </svg>
+  </div>
+
+  <!-- ✅ Analysis Section -->
+  <div style="margin-top:20px; background:#fdfdfd; border-left:5px solid #0ea5e9; padding:15px; border-radius:8px; font-size:14px;">
+    <h3 style="color:#0ea5e9;">Workflow Explanation</h3>
+    <ul>
+      <li><b>Card 1:</b> Captures suspicious requests.</li>
+      <li><b>Card 2:</b> Classifies type of threat (SQLi, XSS, etc.).</li>
+      <li><b>Card 3:</b> Decides adaptive response (block, redirect, delay).</li>
+      <li><b>Card 4:</b> Logs event details into structured CSV.</li>
+      <li><b>Card 5:</b> Uses logs as dataset for continuous ML training.</li>
+      <li><b>Card 6:</b> Dashboard visualizes attacks, AI predictions, and actions.</li>
+    </ul>
+    <p>
+      This integrated workflow ensures <b>end-to-end coverage</b>:  
+      from attack interception → classification → adaptive response → logging → ML improvement → analyst visibility.
+    </p>
+  </div>
+</div>
+
+
+
+
+
+
+
+
+
+`
+},
+
+
+
+{
+  "passage": `
+<div style="margin-top: 40px; max-width: 1100px; margin-left:auto; margin-right:auto; position: relative; font-family: Segoe UI, Arial, sans-serif; line-height:1.6; color:#333;">
+
+  <!-- Introduction -->
+  <div style="background:#f9fbff; border:2px solid #cce0ff; border-radius:15px; padding:25px; box-shadow:0 4px 12px rgba(0,0,0,0.08);">
+    <h2 style="color:#0078d7; margin-bottom:15px;">Program Introduction</h2>
+
+    <p>
+      This project delivers a professional adaptive honeypot system intended for research, monitoring and demonstration
+      as a senior graduation project. The honeypot is designed to attract, monitor and learn from real attacker behaviour,
+      then adapt in real time using automated scripts and machine-learning-assisted classification.
+    </p>
+
+    <p>
+      Compared to classic IDS/IPS, honeypots provide <b>high-fidelity</b> data (attacker interactions are nearly always malicious),
+      enabling research-quality datasets and hands-on analysis of TTPs (Tactics, Techniques, Procedures). For a graduation
+      project this gives clear evaluation metrics (detection precision/recall, latency, dataset size) and an impressive demo
+      (live deception + adaptive response).
+    </p>
+
+    <h4 style="color:#004080; margin-top:12px;">Where the honeypot sits in a network (visual)</h4>
+
+    <!-- Network diagram (SVG) -->
+    <div style="text-align:center; margin: 16px 0;">
+      <svg width="100%" height="150" viewBox="0 0 1000 150" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg">
+        <!-- Attacker -->
+        <rect x="30" y="30" width="140" height="60" rx="8" fill="#ffecec" stroke="#ff6b6b"/>
+        <text x="100" y="65" font-family="Segoe UI" font-size="12" fill="#8b0000" text-anchor="middle">Attacker</text>
+
+        <!-- Internet -->
+        <rect x="200" y="20" width="160" height="80" rx="10" fill="#fff7e6" stroke="#ffb84d"/>
+        <text x="280" y="55" font-family="Segoe UI" font-size="12" fill="#8b4500" text-anchor="middle">Internet / Scan</text>
+
+        <!-- Ngrok -->
+        <rect x="400" y="20" width="140" height="80" rx="8" fill="#e8f8ff" stroke="#4db6e6"/>
+        <text x="470" y="55" font-family="Segoe UI" font-size="12" fill="#0b6fa4" text-anchor="middle">Ngrok (optional)</text>
+
+        <!-- Honeypot Server -->
+        <rect x="600" y="12" width="220" height="96" rx="10" fill="#f0fff4" stroke="#4db86e"/>
+        <text x="710" y="45" font-family="Segoe UI" font-size="12" fill="#086b3a" text-anchor="middle">Honeypot Server (Express)</text>
+        <text x="710" y="65" font-family="Segoe UI" font-size="11" fill="#086b3a" text-anchor="middle">fake_login.html · logs · adaptive scripts</text>
+
+        <!-- Arrows -->
+        <defs>
+          <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+            <path d="M 0 0 L 10 5 L 0 10 z" fill="#333"/>
+          </marker>
+        </defs>
+
+        <line x1="170" y1="60" x2="200" y2="60" stroke="#333" stroke-width="2" marker-end="url(#arrow)"/>
+        <line x1="360" y1="60" x2="400" y2="60" stroke="#333" stroke-width="2" marker-end="url(#arrow)"/>
+        <line x1="540" y1="60" x2="600" y2="60" stroke="#333" stroke-width="2" marker-end="url(#arrow)"/>
+
+      </svg>
+    </div>
+
+    <h4 style="color:#004080; margin-top:10px;">Detailed explanation of the network diagram</h4>
+
+    <p><b>Attacker:</b> could be a human, botnet node, or automated scanner. The attacker sends probes and payloads (HTTP requests, port scans, payloads containing SQLi or XSS patterns).</p>
+
+    <p><b>Internet / Scan:</b> represents transit networks and scanners. Traffic here is noisy; honeypots are designed to accept this noise and capture malicious signals.</p>
+
+    <p><b>Ngrok (optional):</b> if you expose the honeypot outside a lab, ngrok provides a secure tunnel and a public URL for your local server. This is useful for distributed testing or demos, but treat ngrok URLs as public interfaces — restrict sensitive data and sanitize logs before publishing.</p>
+
+    <p><b>Honeypot Server (Express):</b> the focal point that accepts requests, provides deceptive pages (fake_login.html), logs interactions, runs quick heuristic classification, and triggers adaptive scripts or ML inferences. The server does several discrete jobs — capture, label, store, and react — each mapped to code blocks in Card 1.</p>
+
+    <p><b>Mapping to your code (examples):</b></p>
+    <ul>
+      <li><b>Serving the fake page:</b>
+        <pre style="background:#f4f4f4; padding:8px; border-radius:6px; font-size:13px; overflow-x:auto;">app.get('/', (req, res) =&gt; res.sendFile(path.join(process.cwd(), 'public', 'fake_login.html')));</pre>
+        This is the deception surface that attracts attackers.
+      </li>
+
+      <li><b>Ngrok start (automated):</b>
+        <pre style="background:#f4f4f4; padding:8px; border-radius:6px; font-size:13px; overflow-x:auto;">exec('ngrok.exe http 3000 --log=stdout', (err) =&gt; { /* ... */ });</pre>
+        After ngrok starts, your code fetches the public tunnel info and stores it (serverUrl) so collaborators can access the honeypot remotely.
+      </li>
+
+      <li><b>Why sanitize logs before pushing:</b> you push CSV to GitHub; before push you should anonymize IPs:
+        <pre style="background:#f4f4f4; padding:8px; border-radius:6px; font-size:13px; overflow-x:auto;">const anonymizeIp = ip =&gt; ip ? ip.split('.').slice(0,3).join('.') + '.0' : 'unknown';</pre>
+        This masks the last octet and reduces privacy risk when publishing datasets.
+      </li>
+    </ul>
+
+    <p style="margin-top:10px;">Below Card 1 we expand the internal request flow diagram and map every arrow to the exact server functions and code patterns you already have in the repository.</p>
+  </div>
+
+  <!-- Card 1: Intelligent analysis of server code -->
+  <div style="margin-top:40px;">
+
+    <!-- Card 1 -->
+    <div style="background:#fff; border-left:6px solid #0078d7; border-radius:12px; padding:20px; box-shadow:0 4px 12px rgba(0,0,0,0.1); word-wrap:break-word; overflow-wrap:break-word; transition:transform 0.3s ease, box-shadow 0.3s ease;"
+         onmouseover="this.style.transform='scale(1.03)'; this.style.boxShadow='0 8px 20px rgba(0,0,0,0.15)';"
+         onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.1)';">
+      <h3 style="color:#0078d7; font-size:20px; margin-bottom:8px;">1. Server Code — Smart Analysis & Examples</h3>
+
+      <p><b>Overview:</b> The server is the control plane: it serves the fake UI, captures every request, applies quick
+      heuristic labeling, writes structured logs, syncs model files to public assets, and runs adaptive processes when new
+      log lines appear. The design prioritizes modularity (separate capture, storage, ML inference, and response components).</p>
+
+      <h4 style="color:#004080; margin-top:10px;">Request handling flow (visual + explanation)</h4>
+
+      <!-- Flow diagram (SVG) -->
+      <div style="text-align:center; margin: 12px 0;">
+        <svg width="100%" height="220" viewBox="0 0 1000 220" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg">
+          <!-- boxes -->
+          <rect x="40" y="20" width="160" height="50" rx="8" fill="#fff4e6" stroke="#ffb84d"/>
+          <text x="120" y="50" font-family="Segoe UI" font-size="12" fill="#8b4500" text-anchor="middle">Attacker Request</text>
+
+          <rect x="240" y="20" width="180" height="50" rx="8" fill="#e8f8ff" stroke="#4db6e6"/>
+          <text x="330" y="50" font-family="Segoe UI" font-size="12" fill="#0b6fa4" text-anchor="middle">Express Middleware</text>
+          <text x="330" y="65" font-family="Segoe UI" font-size="11" fill="#0b6fa4" text-anchor="middle">classification & feature extraction</text>
+
+          <rect x="520" y="10" width="180" height="70" rx="8" fill="#f0fff4" stroke="#4db86e"/>
+          <text x="610" y="40" font-family="Segoe UI" font-size="12" fill="#086b3a" text-anchor="middle">Logging (CSV / JSON)</text>
+          <text x="610" y="56" font-family="Segoe UI" font-size="11" fill="#086b3a" text-anchor="middle">local disk / public/logs</text>
+
+          <rect x="240" y="110" width="180" height="50" rx="8" fill="#fff0f6" stroke="#ff99c8"/>
+          <text x="330" y="142" font-family="Segoe UI" font-size="12" fill="#a1005f" text-anchor="middle">Adaptive Script</text>
+
+          <rect x="520" y="110" width="180" height="50" rx="8" fill="#f4f6ff" stroke="#8f9eff"/>
+          <text x="610" y="142" font-family="Segoe UI" font-size="12" fill="#2f3aa2" text-anchor="middle">GitHub / ML Storage</text>
+
+          <!-- arrows -->
+          <defs>
+            <marker id="arr2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="#333"/>
+            </marker>
+          </defs>
+
+          <line x1="200" y1="45" x2="240" y2="45" stroke="#333" stroke-width="2" marker-end="url(#arr2)"/>
+          <line x1="420" y1="45" x2="520" y2="45" stroke="#333" stroke-width="2" marker-end="url(#arr2)"/>
+          <line x1="420" y1="135" x2="520" y2="135" stroke="#333" stroke-width="2" marker-end="url(#arr2)"/>
+          <line x1="620" y1="80" x2="620" y2="110" stroke="#333" stroke-width="2" marker-end="url(#arr2)"/>
+
+        </svg>
+      </div>
+
+      <p><b>Flow explanation (arrow by arrow):</b></p>
+      <ol>
+        <li><b>Attacker Request → Express Middleware:</b> the request hits middleware that extracts features (IP, headers count, payload size) and runs quick keyword heuristics. Example code that extracts features:
+          <pre style="background:#f4f4f4; padding:10px; border-radius:8px; font-size:13px; overflow-x:auto;">
+const ip = req.headers['x-forwarded-for'] ? req.headers['x-forwarded-for'].split(',')[0].trim() : req.socket.remoteAddress;
+const method = req.method;
+const url = req.originalUrl || '';
+const bodyStr = JSON.stringify(req.body || {});
+const features = &#123;
+  ts: new Date().toISOString(),
+  ipAddress: ip,
+  method: method,
+  url: url,
+  headersCount: Object.keys(req.headers).length,
+  payloadLength: bodyStr.length
+&#125;;
+          </pre>
+          These fields become the structured input for both logs and ML features.
+        </li>
+
+        <li><b>Express Middleware → Logging (CSV/JSON):</b> middleware appends a labeled CSV row to your threats file:
+          <pre style="background:#f4f4f4; padding:10px; border-radius:8px; font-size:13px; overflow-x:auto;">
+let threatType = 'benign';
+const combined = (url + ' ' + bodyStr).toLowerCase();
+if (combined.includes('union select')) threatType = 'sql injection attempt';
+if (combined.includes('<script>')) threatType = 'xss attempt';
+const row = features.ts + ',' + features.ipAddress + ',' + features.method + ',' + threatType + ',auto\\n';
+fs.appendFileSync(logPath, row);
+          </pre>
+          This is the durable record you use for offline ML training and research.
+        </li>
+
+        <li><b>Logging → GitHub / ML Storage (throttled):</b> after logging, the system schedules a push to remote storage. Instead of pushing every write, batch them:
+          <pre style="background:#f4f4f4; padding:10px; border-radius:8px; font-size:13px; overflow-x:auto;">
+// naive batching idea: collect events and flush every 5 minutes
+let pushScheduled = false;
+function schedulePush() &#123;
+  if (pushScheduled) return;
+  pushScheduled = true;
+  setTimeout(() =&gt; &#123 pushToGitHub(); pushScheduled = false; &#125;, 5 * 60 * 1000);
+&#125;
+          </pre>
+          This reduces git churn and prevents redundant pushes.
+        </li>
+
+        <li><b>Logging → Adaptive Script:</b> the watcher detects file changes and sends the most recent line to an adaptive script. Use a safe spawn:
+          <pre style="background:#f4f4f4; padding:10px; border-radius:8px; font-size:13px; overflow-x:auto;">
+const lastLine = '...'; // read tail of file
+const safeArg = Buffer.from(lastLine).toString('base64');
+spawn('node', ['adaptive-honeypot.js', safeArg], &#123; stdio: 'inherit' &#125;);
+          </pre>
+          The adaptive script decodes the Base64 argument and decides actions: change fake content, add firewall rule, or escalate an alert.
+        </li>
+      </ol>
+
+      <h4 style="color:#004080; margin-top:10px;">Adaptive script responsibilities & example</h4>
+      <p>The adaptive script is responsible for taking a new log line and converting it into actions. Example (pseudo-logic):</p>
+      <pre style="background:#f4f4f4; padding:10px; border-radius:8px; font-size:13px; overflow-x:auto;">
+// adaptive-honeypot.js (concept)
+// decode arg: const lastLine = Buffer.from(process.argv[2], 'base64').toString('utf8');
+/* parse CSV, if threatType === 'sql injection attempt' -> increase deception depth:
+   - serve more realistic DB-like responses
+   - record full session traffic
+   - optionally add IP to temporary blocklist */
+      </pre>
+
+      <strong>Practical safety measures (code-level):</strong>
+      <ul>
+        <li><b>Sandbox the adaptive script:</b> run it inside a container (Docker) with limited permissions.</li>
+        <li><b>Escape/encode all shell args:</b> never pass raw CSV into a shell command (use spawn + args).</li>
+        <li><b>Sanitize logs:</b> before pushToGitHub(), replace or hash IPs and remove PII:</li>
+        <pre style="background:#f4f4f4; padding:10px; border-radius:8px; font-size:13px; overflow-x:auto;">
+function anonymizeRow(row) &#123;
+  // simple IPv4 mask
+  return row.replace(/(\\d+\\.\\d+\\.\\d+)\\.(\\d+)/g, '$1.0');
+&#125;
+          </pre>
+      </ul>
+
+      <h4 style="color:#004080; margin-top:10px;">Which code lines map to each box/arrow (summary)</h4>
+      <table style="width:100%; border-collapse:collapse; margin-top:8px;">
+        <tr style="background:#e9f5ff;"><th style="padding:6px; text-align:left;">Diagram element</th><th style="padding:6px; text-align:left;">Server code / function</th></tr>
+        <tr><td style="padding:6px;">Attacker → Express</td><td style="padding:6px;">Route: <code>app.get('/', ...)</code>; Static serve <code>express.static('public')</code></td></tr>
+        <tr><td style="padding:6px;">Express → Middleware</td><td style="padding:6px;">Middleware that computes <code>features</code> and runs heuristics (see capture snippet)</td></tr>
+        <tr><td style="padding:6px;">Middleware → Log file</td><td style="padding:6px;"><code>fs.appendFileSync(logPath, row)</code></td></tr>
+        <tr><td style="padding:6px;">Log change → Adaptive</td><td style="padding:6px;">File watch + <code>spawn('node', ['adaptive-honeypot.js', safeArg])</code></td></tr>
+        <tr><td style="padding:6px;">Log push → GitHub</td><td style="padding:6px;"><code>pushToGitHub()</code> which internally uses <code>runCommand</code> to call git</td></tr>
+      </table>
+
+      <p style="margin-top:10px;"><em>If you want, I can now produce a ready-to-apply patch that:</em></p>
+      
+      <ol>
+        <li>Replaces unsafe exec usage with spawn + Base64 (diff-ready patch you can apply to your repo).</li>
+        <li>Implements a buffered write queue for logging (non-blocking).</li>
+        <li>Provides a small Dockerfile template to sandbox adaptive-honeypot.js for safe execution during demos.</li>
+      </ol>
+
+       ...
+    <p style="margin-top:10px;"><em>If you want, I can now produce ...</em></p>
+    <ol>...</ol>
+
+
+  </div> <!-- ✅ إغلاق Card 1 -->
+
+
+<!-- Card 2: Adaptive Honeypot (place this after Card 1, inside the same outer container) -->
+<div style="background:#fff; border-radius:16px; box-shadow:0 4px 15px rgba(0,0,0,0.08); padding:30px; margin-top:30px;">
+
+  <h2 style="font-size:24px; color:#2c3e50; margin-bottom:12px;">🧠 Card 2: Adaptive Honeypot with DQN (AI-driven)</h2>
+
+  <p style="font-size:15px; line-height:1.6; color:#34495e; margin-bottom:14px;">
+    This card explains how the <strong>adaptive honeypot</strong> integrates <em>Deep Q-Learning</em> to dynamically learn from logs
+    and improve defense decisions. The explanation uses small, non-executable snippets displayed as HTML <code>&lt;pre&gt;</code> blocks
+    (safe for embedding inside your template literal).
+  </p>
+
+  <hr style="margin:18px 0;">
+
+  <h3 style="color:#16a085; font-size:18px; margin-bottom:8px;">📌 Core Workflow</h3>
+
+  <p style="font-size:15px; color:#2c3e50;">
+    The pipeline converts raw log lines into numeric state vectors, uses a neural network to predict Q-values, selects the highest action,
+    logs the result and stores the event into replay memory for fine-tuning.
+  </p>
+
+  <pre style="background:#f4f4f4; padding:12px; border-radius:8px; font-size:13px; overflow-x:auto; white-space:pre-wrap;">
+// Example encoder (display-only)
+function encodeStateFromRecord(record) {
+  return [
+    record.ip && record.ip.startsWith('192.168.') ? 0 : 1,   // ipSuspicion
+    record.method === 'POST' ? 1 : 0,                       // requestType
+    /malware|attack|scan/i.test(record.threatType) ? 1 : 0  // keywordDetected
+  ];
+}
+  </pre>
+
+  <div style="margin:14px 0; padding:12px; background:#ecf0f1; border-radius:10px; font-size:14px;">
+    <strong>Pipeline summary:</strong><br>
+    Raw Log → <code>encodeStateFromRecord()</code> → State Vector → <code>model.predict()</code> → Action (block / alert / ignore) → Log to <code>logs/threats.csv</code> + push to replay memory → <code>trainModel()</code> (fine-tune).
+  </div>
+
+  <hr style="margin:18px 0;">
+
+  <h3 style="color:#2980b9; font-size:18px; margin-bottom:8px;">📊 Interaction Between Components</h3>
+  <ul style="font-size:15px; color:#2c3e50; line-height:1.6;">
+    <li><strong>CSV Reader</strong> — reads <code>public/logs/threats.csv</code> and produces records.</li>
+    <li><strong>Encoder</strong> — maps text fields to numeric features.</li>
+    <li><strong>DQN Model</strong> — sequential neural network that outputs probabilities/Q-values for actions.</li>
+    <li><strong>Replay Memory</strong> — stores recent (state, action) pairs; trimmed to a fixed limit.</li>
+    <li><strong>Trainer</strong> — fine-tunes model using replay memory (small number of epochs).</li>
+    <li><strong>Logger</strong> — writes final decisions to project logs for audit & retraining.</li>
+  </ul>
+
+  <hr style="margin:18px 0;">
+
+  <h3 style="color:#8e44ad; font-size:18px; margin-bottom:8px;">📐 Diagram (visual)</h3>
+
+  <pre style="background:#ffffff; padding:12px; border-radius:10px; font-size:13px; overflow-x:auto; line-height:1.4;">
+      +-----------+     +-----------+     +---------+     +-------------+
+Logs ->|  Encoder  |->  |   Model   |->  |  Action |->   |  Logger /   |
+      +-----------+     +-----------+     +---------+     |  ReplayMem  |
+           |                 |                |           +-------------+
+           |                 |                |
+           v                 v                v
+       [State Vector]     [Q-values]   [block / alert / ignore]
+
+Trainer periodically consumes ReplayMem -> trainModel() -> update model weights
+  </pre>
+
+  <hr style="margin:18px 0;">
+
+  <h3 style="color:#c0392b; font-size:18px; margin-bottom:8px;">⚡ Example Walkthrough (display-only)</h3>
+  <pre style="background:#f4f4f4; padding:12px; border-radius:8px; font-size:13px; overflow-x:auto; white-space:pre-wrap;">
+Record: 8.8.8.8 GET attack vector
+
+1) Encoder -> [1, 0, 1, 0, 0, 0, 0, 0]
+2) Model predict -> Q-values (or softmax probabilities) -> e.g. [0.92, 0.05, 0.03]
+3) Action selected -> "block"
+4) Action logged to logs/threats.csv and appended to replay.json
+5) Trainer fine-tunes model on replay memory (small number of epochs)
+  </pre>
+
+  <hr style="margin:18px 0;">
+
+  <h3 style="color:#27ae60; font-size:18px; margin-bottom:8px;">🔒 Safety & Operational Notes</h3>
+  <ul style="font-size:15px; color:#2c3e50; line-height:1.6;">
+    <li>Run model training inside a sandbox (use Docker) to avoid exposing host to malicious payloads.</li>
+    <li>Sanitize logs before any external push (anonymize IPs, remove PII).</li>
+    <li>Persist model files (<code>model.json</code>, <code>weights.bin</code>) and keep backups for reproducibility.</li>
+    <li>Limit replay memory size to avoid unbounded disk growth (e.g. BATCH_LIMIT = 2000).</li>
+  </ul>
+
+  <hr style="margin:18px 0;">
+
+  <h3 style="color:#d35400; font-size:18px; margin-bottom:8px;">🚀 Suggested Enhancements</h3>
+  <ul style="font-size:15px; color:#2c3e50; line-height:1.6;">
+    <li>Enrich feature vector: include request headers count, payload length, geolocation, and time-of-day features.</li>
+    <li>Use a small validation split from replay memory to evaluate drift before applying weight saves.</li>
+    <li>Expose a minimal dashboard (static HTML + periodic refresh) that shows recent decisions and model loss per fine-tune.</li>
+    <li>Consider switching to &quot;tfjs-node&quot; on server for faster training if running on Node.js.</li>
+  </ul>
+
+</div>
+</div> <!-- ✅ إغلاق غلاف Card 1 -->
+
+
+
+
+
+`
+},
+
+
+];
+
+    
+const questions = [
+  
+// 🔹 HTML Questions
+{
+  q: "2. Which HTML tag is used to insert a line break?",
+  a: "c",
+  options: [
+    "&lt;hr&gt;",
+    "&lt;p&gt;",
+    "&lt;br&gt;",
+    "&lt;break&gt;"
+  ]
+},
+{
+  q: "3. In HTML, which attribute is used to open a link in a new tab?",
+  a: "b",
+  options: [
+    "src='_blank'",
+    "target='_blank'",
+    "newTab='true'",
+    "open='tab'"
+  ]
+},
+{
+  q: "4. Which HTML tag is used to create a dropdown list?",
+  a: "a",
+  options: [
+    "&lt;select&gt;",
+    "&lt;list&gt;",
+    "&lt;dropdown&gt;",
+    "&lt;input type='list'&gt;"
+  ]
+},
+{
+  q: "5. Which HTML tag is used to display a table row?",
+  a: "d",
+  options: [
+    "&lt;td&gt;",
+    "&lt;table&gt;",
+    "&lt;th&gt;",
+    "&lt;tr&gt;"
+  ]
+},
+{
+  q: "6. In HTML, which element is used to display an unordered list?",
+  a: "c",
+  options: [
+    "&lt;ol&gt;",
+    "&lt;dl&gt;",
+    "&lt;ul&gt;",
+    "&lt;li&gt;"
+  ]
+},
+{
+  q: "7. Which attribute in HTML is used to provide a tooltip when hovering?",
+  a: "a",
+  options: [
+    "title",
+    "alt",
+    "tooltip",
+    "hover"
+  ]
+},
+
+// 🔹 CSS Questions
+{
+  q: "8. Which CSS property is used to change the text color?",
+  a: "b",
+  options: [
+    "font-color",
+    "color",
+    "text-style",
+    "font-style"
+  ]
+},
+{
+  q: "9. In CSS, which property sets the space outside an element’s border?",
+  a: "a",
+  options: [
+    "margin",
+    "padding",
+    "border-spacing",
+    "gap"
+  ]
+},
+{
+  q: "10. Which CSS property is used to make text italic?",
+  a: "c",
+  options: [
+    "font-italic",
+    "text-slant",
+    "font-style: italic",
+    "text-italic"
+  ]
+},
+{
+  q: "11. In CSS, which property sets the width of an element?",
+  a: "d",
+  options: [
+    "length",
+    "size",
+    "max-width",
+    "width"
+  ]
+},
+{
+  q: "12. Which CSS property is used to add shadow to text?",
+  a: "a",
+  options: [
+    "text-shadow",
+    "font-shadow",
+    "shadow-text",
+    "letter-shadow"
+  ]
+},
+{
+  q: "13. Which CSS property is used to make a background image repeat?",
+  a: "c",
+  options: [
+    "background-repeat: off",
+    "repeat-image",
+    "background-repeat",
+    "bg-repeat"
+  ]
+},
+
+// 🔹 JavaScript Questions
+{
+  q: "14. In JavaScript, which function is used to parse a string into an integer?",
+  a: "a",
+  options: [
+    "parseInt()",
+    "int()",
+    "stringToInt()",
+    "Number.parse()"
+  ]
+},
+{
+  q: "15. Which JavaScript method displays data in an alert box?",
+  a: "b",
+  options: [
+    "prompt()",
+    "alert()",
+    "console.log()",
+    "msgBox()"
+  ]
+},
+{
+  q: "16. In JavaScript, which symbol is used for comments in a single line?",
+  a: "c",
+  options: [
+    "<!-- -->",
+    "#",
+    "//",
+    "/* */"
+  ]
+},
+{
+  q: "17. Which built-in method is used to join all elements of an array into a string?",
+  a: "d",
+  options: [
+    "concat()",
+    "merge()",
+    "combine()",
+    "join()"
+  ]
+},
+{
+  q: "18. Which keyword is used to define a constant variable in JavaScript?",
+  a: "b",
+  options: [
+    "let",
+    "const",
+    "constant",
+    "var"
+  ]
+},
+{
+  q: "19. In JavaScript, which method removes the last element of an array?",
+  a: "a",
+  options: [
+    "pop()",
+    "remove()",
+    "delete()",
+    "shift()"
+  ]
+},
+{
+  q: "20. Which operator is used to assign a value to a variable in JavaScript?",
+  a: "c",
+  options: [
+    "==",
+    "===",
+    "=",
+    ":="
+  ]
+},
+{
+  q: "21. Which function in JavaScript is used to ask for user input?",
+  a: "d",
+  options: [
+    "alert()",
+    "msg()",
+    "console.log()",
+    "prompt()"
+  ]
+},
+
+
+
+];
+
+
+
+    
+        let currentTFQuestion = 0;
+        let tfCorrectAnswers = 0;
+        let currentQuestion = 0;
+        let correctAnswers = 0;
+        let timeLeft = 3600;
+        let timerInterval;
+        let startTime;
+    
+        function startQuiz() {
+    // قراءة كلمة المرور واسم الكورس (اختياري)
+    let password = document.getElementById("password").value;
+    let course = document.getElementById("courseName")?.value.trim(); // اختياري
+    let quizTitle = document.getElementById("quizTitle"); 
+
+    // التحقق من كلمة المرور (اختياري)
+    if (password !== "1550") {
+        alert("❌ كلمة المرور غير صحيحة! الرجاء المحاولة مرة أخرى.");
+        return;
+    }
+
+    // تغيير العنوان بناءً على اسم الكورس
+    quizTitle.textContent = course || "Placement Test";
+
+    // إخفاء شاشة البداية وبدء الاختبار
+    document.getElementById("startScreen").style.display = "none";
+    document.getElementById("quizContainer").style.display = "block";
+
+    // تسجيل وقت البداية
+    startTime = new Date();
+    startTimer();
+    loadTFQuestion();
+
+    // تشغيل وضع ملء الشاشة
+    let elem = document.documentElement;
+    if (elem.requestFullscreen) {
+        elem.requestFullscreen();
+    } else if (elem.mozRequestFullScreen) {
+        elem.mozRequestFullScreen();
+    } else if (elem.webkitRequestFullscreen) {
+        elem.webkitRequestFullscreen();
+    } else if (elem.msRequestFullscreen) {
+        elem.msRequestFullscreen();
+    }
+}
+
+
+
+    
+        function startTimer() {
+            timerInterval = setInterval(() => {
+                let minutes = Math.floor(timeLeft / 60);
+                let seconds = timeLeft % 60;
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    showResult();
+                }
+                timeLeft--;
+            }, 1000);
+        }
+    
+      function loadTFQuestion() {
+    let quizDiv = document.getElementById("quiz");
+    let passageDiv = document.getElementById("passage");
+
+    if (currentTFQuestion < trueFalseQuestions.length) {
+        let q = trueFalseQuestions[currentTFQuestion];
+
+        // عرض المقطع
+        passageDiv.innerHTML = `
+            <h3></h3>
+            <p style="font-size: 22px;">${q.passage}</p>
+        `;
+
+        // عرض السؤال والاختيارات
+        let questionHTML = `<p class='question'><strong>${currentTFQuestion + 1}- ${q.q}</strong></p>`;
+
+        q.options.forEach((option, index) => {
+    const letter = String.fromCharCode(97 + index); // "a", "b", ...
+    questionHTML += `
+        <label>
+            <input type='radio' name='answer' value='${letter}'>
+            ${option}
+        </label><br>
+    `;
+});
+
+        questionHTML += `<button class='btn' onclick='nextTFQuestion()'>Next</button>`;
+        quizDiv.innerHTML = questionHTML;
+    } else {
+        // الانتهاء من عرض كل الأسئلة
+        document.getElementById("passage").style.display = "none";
+        quizDiv.innerHTML = "<p>You've finished all reading questions.</p>";
+        loadQuestion(); // لو فيه مرحلة تانية
+    }
+}
+
+    
+  function nextTFQuestion() {
+  const selectedAnswer = document.querySelector("input[name='answer']:checked");
+  if (!selectedAnswer) {
+    alert("Please select an answer");
+    return;
+  }
+
+  const q = trueFalseQuestions[currentTFQuestion];
+  const selectedValue = selectedAnswer.value;
+
+  const isAnswerKeyALetter = q.a.length === 1 && ["a", "b", "c", "d"].includes(q.a.toLowerCase());
+
+  if (isAnswerKeyALetter) {
+    if (selectedValue === q.a.toLowerCase()) {
+      tfCorrectAnswers++; // ✅ صحح هنا بدل score
+    }
+  } else {
+    const selectedOptionIndex = selectedValue.charCodeAt(0) - 97;
+    const selectedOptionText = q.options[selectedOptionIndex];
+
+    if (selectedOptionText.trim().toLowerCase() === q.a.trim().toLowerCase()) {
+      tfCorrectAnswers++; // ✅ صحح هنا بدل score
+    }
+  }
+
+  currentTFQuestion++;
+  loadTFQuestion();
+}
+
+
+
+        function loadQuestion() {
+            let quizDiv = document.getElementById("quiz");
+            let q = questions[currentQuestion];
+            quizDiv.innerHTML = `<p class='question'>${q.q}</p>` +
+                q.options.map((option, index) => `<label><input type='radio' name='answer' value='${String.fromCharCode(97 + index)}'> ${option}</label>`).join('') +
+                `<button class='btn' onclick='nextQuestion()'>${currentQuestion === questions.length - 1 ? "Finish" : "Next"}</button>`;
+        }
+    
+        function nextQuestion() {
+            let selectedAnswer = document.querySelector("input[name='answer']:checked");
+            if (!selectedAnswer) return;
+            if (selectedAnswer.value === questions[currentQuestion].a) {
+                correctAnswers++;
+            }
+            if (currentQuestion < questions.length - 1) {
+                currentQuestion++;
+                loadQuestion();
+            } else {
+                showResult();
+            }
+        }
+    
+let serverUrl = ""; // سيتم تحديثه تلقائيًا عند تحميل الصفحة
+
+// دالة لجلب رابط السيرفر المخزن في GitHub
+function fetchServerUrl() {
+fetch("https://raw.githubusercontent.com/etiqotwf/liveServer1/main/serverUrl.json")
+        .then(response => response.json())
+        .then(data => {
+            if (data.serverUrl) {
+                serverUrl = data.serverUrl;
+                console.log("✅ رابط السيرفر المحدث من GitHub:", serverUrl);
+            } else {
+                console.error("❌ لم يتم العثور على رابط السيرفر في المستودع.");
+                retryFetchServerUrl();
+            }
+        })
+        .catch(error => {
+            console.error("❌ خطأ في جلب رابط السيرفر من GitHub:", error);
+            retryFetchServerUrl();
+        });
+}
+
+// دالة لإعادة المحاولة عند الفشل
+function retryFetchServerUrl() {
+    if (retryCount < MAX_RETRIES) {
+        retryCount++;
+        console.log(`🔄 إعادة المحاولة (${retryCount}/${MAX_RETRIES}) بعد 3 ثوانٍ...`);
+        setTimeout(fetchServerUrl, 3000);
+    } else {
+        console.error("⛔ تم الوصول إلى الحد الأقصى من المحاولات، تعذر جلب رابط السيرفر.");
+    }
+}
+
+// تحميل رابط السيرفر عند فتح الصفحة
+fetchServerUrl();
+
+function showResult() {
+    clearInterval(timerInterval);
+
+    let endTime = new Date();
+    let timeTaken = Math.floor((endTime - startTime) / 1000);
+    let minutesTaken = Math.floor(timeTaken / 60);
+    let secondsTaken = timeTaken % 60;
+
+    let name = document.getElementById("traineeName").value || "Unknown";
+    let phone = document.getElementById("traineePhone").value || "Unknown";
+    let date = new Date().toLocaleDateString("en-US");
+    let course = document.getElementById("courseName").value || "Unknown";
+
+    let totalQuestions = trueFalseQuestions.length + questions.length;
+    let totalCorrectAnswers = tfCorrectAnswers + correctAnswers;
+
+    let resultData = {
+        name: name,
+        phone: phone,
+        date: date,
+        course: course,
+        startTime: startTime.toLocaleString("en-GB", {
+            timeZone: "Africa/Cairo",
+            year: "numeric",
+            month: "long",
+            day: "numeric",
+            hour: "numeric",
+            minute: "numeric",
+            second: "numeric",
+            hour12: true
+        }),
+        timeTaken: `${minutesTaken} min ${secondsTaken} sec`,
+        score: `${totalCorrectAnswers} / ${totalQuestions}`
+    };
+
+    // إرسال البيانات إلى السيرفر إذا تم تحميل الرابط
+    if (!serverUrl) {
+        console.log("⏳ انتظار تحميل رابط السيرفر...");
+        fetchServerUrl().then(() => {
+            if (serverUrl) {
+                sendDataToServer(resultData);
+            } else {
+                console.error("❌ لم يتم تحميل رابط السيرفر بعد.");
+                alert("⚠️ تعذر إرسال البيانات! تأكد من اتصال الإنترنت وأعد المحاولة.");
+            }
+        });
+    } else {
+        sendDataToServer(resultData);
+    }
+
+    // إرسال البيانات إلى Google Sheets
+    sendDataToGoogleSheet(resultData);
+
+    // تحديث واجهة المستخدم
+    document.getElementById("resultCourse").innerText = course;
+    document.getElementById("resultName").innerText = name;
+    document.getElementById("resultPhone").innerText = phone;
+    document.getElementById("resultDate").innerText = date;
+    document.getElementById("resultStartTime").innerText = startTime.toLocaleTimeString();
+    document.getElementById("resultTime").innerText = `${minutesTaken} min ${secondsTaken} sec`;
+    document.getElementById("resultScore").innerText = `${totalCorrectAnswers} / ${totalQuestions}`;
+
+    document.getElementById("quizContainer").style.display = "none";
+    document.getElementById("resultScreen").style.display = "block";
+}
+
+// إرسال البيانات إلى السيرفر الأساسي
+function sendDataToServer(resultData) {
+    fetch(`${serverUrl}/submit`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify(resultData)
+    })
+    .then(response => response.json())
+    .then(data => console.log("✅ تم الإرسال إلى السيرفر بنجاح:", data))
+    .catch(error => console.error("❌ خطأ أثناء الإرسال إلى السيرفر:", error));
+}
+
+
+
+
+
+function sendDataToGoogleSheet(resultData) {
+    const formData = new URLSearchParams();
+    formData.append("course", resultData.course);
+    formData.append("name", resultData.name);
+    formData.append("phone", resultData.phone);
+    formData.append("date", resultData.date);
+    formData.append("startTime", resultData.startTime);
+    formData.append("timeTaken", resultData.timeTaken);
+    formData.append("score", resultData.score);
+    formData.append("course", resultData.course);
+
+
+    fetch("https://script.google.com/macros/s/AKfycbxEYf2XYk1MT_yp_R9cMrw7xaWifGrN8D17woiDRoMxE05T4xZFQxVihdhP22TcPBypkQ/exec", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/x-www-form-urlencoded",
+        },
+        body: formData.toString(),
+    })
+    .then(response => response.text())
+    .then(responseText => {
+        console.log("✅ تم الإرسال إلى Google Sheet:", responseText);
+    })
+    .catch(error => {
+        console.error("❌ خطأ في الإرسال إلى Google Sheet:", error);
+    });
+}
+
+
+
+
+    </script>
+    </body>
+</html>

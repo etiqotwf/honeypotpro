@@ -1,0 +1,2842 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reading Comprehension Quiz</title>
+    <style>
+   body {
+    font-family: Arial, sans-serif;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    margin: 0;
+    background: #1e1e2e;
+    color: white;
+}
+
+.container {
+    margin-top: 15px; /* مسافة صغيرة جدًا */
+    width: 95%;
+    max-width: 1200px;
+    background: #282a36;
+    padding: 10px 30px 30px;
+    border-radius: 10px;
+    box-shadow: 0px 0px 15px rgba(0, 0, 0, 0.5);
+    text-align: left;
+}
+
+h1, h2, p {
+    margin-top: 15px;
+}
+
+
+        .question {
+            font-weight: bold;
+            font-size: 30px;
+            margin-bottom: 20px;
+        }
+        .options label {
+            display: block;
+            padding: 10px;
+        }
+        .btn {
+            background: #ff5555;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            cursor: pointer;
+            border-radius: 5px;
+            margin-top: 200px;
+            font-size: 18px;
+            display: block;
+        }
+        .btn:hover {
+            background: #ff79c6;
+        }
+
+        .result-screen {
+    display: none;
+    background: #44475a;
+    padding: 30px;
+    border-radius: 10px;
+    text-align: center;
+    width: 100%;
+  }
+
+  #resultScore {
+    font-size: 36px;
+    font-weight: bold;
+    color: #ffffff;
+    margin-top: 20px;
+  }
+
+  .result-screen p {
+    font-size: 20px;
+    font-weight: bold;
+    color: #f8f8f2;
+  }
+
+  #timer {
+    font-size: 28px;         /* حجم أكبر */
+    color: rgb(255, 255, 255);           /* اللون أصفر */
+    font-weight: bold;       /* خط عريض */
+    padding: 20px;
+    border-radius: 10px;
+    width: fit-content;
+    margin: 20px auto;
+  }
+
+      
+      .author {
+  font-size: 24px;        /* تكبير الخط */
+  color: #ffd700;         /* لون ذهبي مميز */
+  text-align: center;
+  font-weight: bold;      /* جعله عريض */
+  margin-bottom: 15px;
+  position: relative;     /* إزالة الوضع المطلق حتى يظهر في مكانه الطبيعي */
+  top: auto;
+}
+
+
+
+
+label {
+  font-size: 22px; /* حجم نص الاختيار */
+  padding: 10px;
+  display: block;
+}
+
+input[type="radio"] {
+  transform: scale(1.5); /* تكبير حجم الدائرة */
+  margin-right: 10px;
+}
+
+
+  #passage {
+    font-size: 16px;     /* حجم الخط */
+    font-weight: bold;   /* خط عريض */
+  }
+
+
+#startScreen p {
+  font-size: 22px;
+  font-weight: bold;
+}
+#startScreen input {
+  font-size: 20px;
+  font-weight: bold;
+  padding: 8px;
+}
+
+  
+
+#startScreen h1 {
+  font-size: 40px; /* حجم الخط */
+  font-weight: bold; /* عريض */
+  color: #ffd700; /* لون مميز مثل الذهبي (اختياري) */
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+<style>
+/* خلفية الصفحة */
+body {
+  margin: 0;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-family: 'Segoe UI', Tahoma, sans-serif;
+  background:
+    radial-gradient(circle at top, rgba(0,255,255,0.15), transparent 40%),
+    radial-gradient(circle at bottom, rgba(138,43,226,0.2), transparent 45%),
+    linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+  overflow: hidden;
+}
+
+/* هالة خفيفة متحركة */
+body::before {
+  content: "";
+  position: absolute;
+  width: 120%;
+  height: 120%;
+  background: repeating-linear-gradient(
+    45deg,
+    rgba(255,255,255,0.03),
+    rgba(255,255,255,0.03) 2px,
+    transparent 2px,
+    transparent 6px
+  );
+  animation: moveGrid 20s linear infinite;
+}
+
+@keyframes moveGrid {
+  from { transform: translate(0,0); }
+  to   { transform: translate(-200px, 200px); }
+}
+
+/* الكارت نفسه */
+.container {
+  position: relative;
+  z-index: 1;
+  background: rgba(255,255,255,0.12);
+  backdrop-filter: blur(14px);
+  border-radius: 18px;
+  padding: 30px 35px;
+  color: #fff;
+  box-shadow:
+    0 0 40px rgba(0,255,255,0.25),
+    inset 0 0 20px rgba(255,255,255,0.05);
+}
+
+/* النصوص */
+.container p {
+  margin: 15px 0;
+  font-size: 16px;
+}
+
+/* زر البداية */
+.btn {
+  width: 100%;
+  padding: 12px;
+  margin-top: 20px;
+  font-size: 16px;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  background: linear-gradient(135deg, #00f2fe, #4facfe);
+  color: #003;
+  font-weight: bold;
+  transition: 0.3s;
+}
+
+.btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 0 20px rgba(79,172,254,0.9);
+}
+</style>
+
+
+
+    </style>
+</head>
+<body>
+
+
+
+
+    <div class="container" id="startScreen">
+<h1>🛡️ An Intelligent Interactive Honeypot Based on Deep Reinforcement Learning</h1>
+
+
+        <p>Enter Password: <input type="password" id="password"></p>
+        <button class="btn" onclick="startQuiz()">Start Project</button>
+    </div>
+
+    <div class="container" id="quizContainer" style="display: none;">
+        <h2 id="quizTitle">Placement Test</h2>
+<p class="author">🛡️ Interactive Honeypot Graduation Project with Deep Q-Learning (DQN)</p>
+        <p>Date: <span id="date"></span></p>
+        <div id="passage">
+<h3>🛡️ Overview & Detailed Explanation of the Interactive Honeypot Graduation Project (DQN)</h3>
+  <p style="font-size: 22px;">
+    
+                        </div>
+        <div id="quiz"></div>
+    </div>
+    
+    <div class="result-screen" id="resultScreen" style="display: none;">
+        <h2>Test Result</h2>
+        <p class="author">Created by: Ahmed Amer</p>
+        <p><strong>Course Name:</strong> <span id="resultCourse"></span></p>
+        <p><strong>Name:</strong> <span id="resultName"></span></p>
+        <p><strong>Phone Number:</strong> <span id="resultPhone"></span></p>
+        <p><strong>Test Date:</strong> <span id="resultDate"></span></p>
+        <p><strong>Start Time:</strong> <span id="resultStartTime"></span></p>
+        <p><strong>Time Taken:</strong> <span id="resultTime"></span></p>
+        <p><strong>Score:</strong> <span id="resultScore"></span></p>
+    </div>
+
+
+ 
+
+ 
+
+  </div>
+<div style="
+  position: fixed;
+  top: 40px;
+  right: 40px;
+  font-size: 60px;
+  font-weight: bold;
+  color: #ffd700;
+">
+🤖
+  
+</div>
+
+
+<script>
+    // عند الضغط على أي مكان في الصفحة، أدخل وضع ملء الشاشة
+    document.addEventListener("click", () => {
+      const elem = document.documentElement; // أو document.getElementById("myForm")
+      if (document.fullscreenElement) return; // لا تفعل شيء إذا كنا بالفعل في ملء الشاشة
+
+      if (elem.requestFullscreen) {
+        elem.requestFullscreen();
+      } else if (elem.webkitRequestFullscreen) { /* Safari */
+        elem.webkitRequestFullscreen();
+      } else if (elem.msRequestFullscreen) { /* IE11 */
+        elem.msRequestFullscreen();
+      }
+    });
+  </script>
+
+    
+    <script>
+        document.getElementById("date").innerText = new Date().toLocaleDateString("en-US");
+    
+    const trueFalseQuestions = [
+
+
+{
+  "passage": `
+
+
+<style>
+/* ===============================
+   Core Card
+================================ */
+.hover-card {
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(180deg, #f9fbff, #f3f7ff);
+  transition: 
+    transform 0.6s cubic-bezier(.19,1,.22,1),
+    box-shadow 0.6s cubic-bezier(.19,1,.22,1);
+  animation: breathe 6s ease-in-out infinite;
+}
+
+/* Breathing effect (subtle life) */
+@keyframes breathe {
+  0%,100% { box-shadow: 0 8px 18px rgba(26,115,232,0.12); }
+  50%     { box-shadow: 0 14px 28px rgba(26,115,232,0.18); }
+}
+
+/* ===============================
+   Multi-layer Glow
+================================ */
+.hover-card::before {
+  content: "";
+  position: absolute;
+  inset: -3px;
+  border-radius: 24px;
+  background:
+    radial-gradient(circle at 30% 30%, rgba(26,115,232,0.35), transparent 40%),
+    radial-gradient(circle at 70% 70%, rgba(138,180,248,0.25), transparent 45%);
+  opacity: 0;
+  transition: opacity 0.6s ease;
+  filter: blur(6px);
+}
+
+/* Neon Edge */
+.hover-card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 20px;
+  border: 1px solid rgba(26,115,232,0.35);
+  pointer-events: none;
+}
+
+/* ===============================
+   Light Sweep Layer
+================================ */
+.hover-card .light-sweep {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    120deg,
+    transparent 35%,
+    rgba(255,255,255,0.55) 50%,
+    transparent 65%
+  );
+  transform: translateX(-120%) skewX(-20deg);
+  opacity: 0;
+}
+
+/* ===============================
+   Hover State
+================================ */
+.hover-card:hover {
+  transform: translateY(-14px) scale(1.02);
+  box-shadow: 0 22px 44px rgba(0,0,0,0.22);
+}
+
+.hover-card:hover::before {
+  opacity: 1;
+}
+
+.hover-card:hover .light-sweep {
+  animation: sweep 1.4s ease forwards;
+}
+
+@keyframes sweep {
+  from { transform: translateX(-120%) skewX(-20deg); opacity: 0; }
+  to   { transform: translateX(120%)  skewX(-20deg); opacity: 1; }
+}
+
+/* ===============================
+   SVG Icon Aura
+================================ */
+.hover-card svg {
+  filter: drop-shadow(0 0 6px rgba(26,115,232,0.4));
+  transition: transform 0.5s ease, filter 0.5s ease;
+}
+
+.hover-card:hover svg {
+  transform: scale(1.18) rotate(6deg);
+  filter: drop-shadow(0 0 14px rgba(26,115,232,0.8));
+}
+
+/* ===============================
+   Typography Power
+================================ */
+.hover-card h2 {
+  font-size: 28px;
+  letter-spacing: 0.4px;
+}
+
+.hover-card p,
+.hover-card li {
+  font-size: 18px;
+}
+
+/* ===============================
+   Final Question Focus
+================================ */
+.final-question {
+  margin-top: 30px;
+  padding: 26px;
+  font-size: 24px;
+  font-weight: bold;
+  text-align: center;
+  color: #1a73e8;
+  position: relative;
+}
+
+.final-question::before {
+  content: "";
+  position: absolute;
+  top: -10px;
+  left: 50%;
+  width: 60%;
+  height: 1px;
+  transform: translateX(-50%);
+  background: linear-gradient(90deg, transparent, #1a73e8, transparent);
+}
+
+.final-question::after {
+  content: "";
+  position: absolute;
+  inset: -10px;
+  border-radius: 14px;
+  background: radial-gradient(circle, rgba(26,115,232,0.18), transparent 70%);
+  opacity: 0;
+  transition: opacity 0.6s ease;
+}
+
+.hover-card:hover .final-question::after {
+  opacity: 1;
+}
+</style>
+
+
+
+
+<div style="margin-top:40px; max-width:1150px; margin-left:auto; margin-right:auto; font-family:Segoe UI, Arial, sans-serif; line-height:1.9; color:#222; direction:rtl; text-align:right;">
+
+<div class="hover-card" style="background:linear-gradient(180deg,#f9fbff,#eef4ff); border:2px solid #d6e4ff; border-radius:22px; padding:36px; box-shadow:0 10px 26px rgba(0,0,0,0.12);">
+
+<!-- Icon -->
+<div style="text-align:center; margin-bottom:18px;">
+  <svg width="68" height="68" viewBox="0 0 24 24" fill="none" stroke="#1a73e8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="12" cy="12" r="10"></circle>
+    <path d="M12 6v6l4 2"></path>
+  </svg>
+</div>
+
+<h2 style="color:#1a73e8; margin-bottom:30px; text-align:center;">
+رحلة الذكاء الاصطناعي: من فكرة إلى واقع… ثم إلى ما بعد الواقع
+</h2>
+
+<!-- 1950 -->
+<h3>1950 — الفكرة تولد</h3>
+<p>
+في هذا العام، نشر <strong>آلان تيورينج</strong> ورقته الشهيرة:
+</p>
+<p style="font-style:italic; font-weight:bold;">
+"Computing Machinery and Intelligence"
+</p>
+<p>
+وطرح سؤالًا غيّر التاريخ:
+</p>
+<p style="font-weight:bold; font-size:18px; color:#1a73e8;">
+هل يمكن للآلة أن تفكّر؟
+</p>
+<p>
+لم يكن هناك ذكاء اصطناعي بعد…  
+بل مجرد فكرة فلسفية تحاول قياس الذكاء من خلال <strong>السلوك</strong>.
+</p>
+
+<hr>
+
+<!-- 1956 -->
+<h3>1956 — ولادة المصطلح</h3>
+<p>
+في مؤتمر <strong>Dartmouth</strong>،  
+ظهر لأول مرة مصطلح:
+</p>
+<p style="font-weight:bold;">
+Artificial Intelligence
+</p>
+<p>
+وكان الاعتقاد السائد آنذاك:
+</p>
+<p style="font-style:italic;">
+"يمكن محاكاة كل جانب من جوانب الذكاء البشري"
+</p>
+
+<hr>
+
+<!-- 1960–1980 -->
+<h3>1960 – 1980 — عصر القواعد والخبراء</h3>
+<p>
+الذكاء الاصطناعي تم بناؤه على:
+</p>
+<ul>
+  <li>قواعد منطقية</li>
+  <li>أنظمة If / Then</li>
+  <li>Expert Systems</li>
+</ul>
+<p>
+نجحت هذه الأنظمة في البيئات المغلقة،  
+لكنها فشلت أمام العالم الحقيقي المعقّد.
+</p>
+
+<hr>
+
+<!-- 1997 -->
+<h3>1997 — أول صدمة للعالم</h3>
+<p>
+حاسوب <strong>IBM Deep Blue</strong> يهزم بطل العالم في الشطرنج:
+</p>
+<p style="font-weight:bold; color:#1a73e8;">
+غاري كاسباروف
+</p>
+<p>
+لأول مرة، آلة تتفوّق على الإنسان  
+في مهمة تتطلب تخطيطًا واستراتيجية.
+</p>
+
+<hr>
+
+<!-- 2012 -->
+<h3>2012 — نقطة التحول الحقيقية</h3>
+<p>
+شبكة عصبية عميقة تفوز بمسابقة <strong>ImageNet</strong>  
+وتقلل نسبة الخطأ بأكثر من:
+</p>
+<p style="font-weight:bold; font-size:18px;">
+50%
+</p>
+<p>
+هنا بدأ عصر:
+</p>
+<ul>
+  <li>Deep Learning</li>
+  <li>البيانات الضخمة</li>
+  <li>المعالجات المتوازية (GPU)</li>
+</ul>
+
+<hr>
+
+<!-- 2017 -->
+<h3>2017 — الانتباه يغيّر كل شيء</h3>
+<p>
+ظهور معمارية:
+</p>
+<p style="font-weight:bold;">
+Transformer
+</p>
+<p>
+وجملة واحدة قلبت المجال:
+</p>
+<p style="font-style:italic;">
+"Attention is all you need"
+</p>
+
+<hr>
+
+<!-- 2020–2024 -->
+<h3>2020 – 2024 — عصر نماذج اللغة</h3>
+<p>
+ظهور نماذج تضم:
+</p>
+<ul>
+  <li>مليارات المعاملات</li>
+  <li>فهم سياقي للغة</li>
+  <li>قدرة على الحوار، التحليل، والإبداع</li>
+</ul>
+<p>
+لم يعد الذكاء الاصطناعي:
+</p>
+<ul>
+  <li>أداة خلف الكواليس</li>
+</ul>
+<p>
+بل أصبح:
+</p>
+<ul>
+  <li>واجهة مباشرة مع الإنسان</li>
+</ul>
+
+<hr>
+
+<!-- Future -->
+<h3>ما القادم؟ (2025 → )</h3>
+<p>
+الاتجاهات الحالية تشير إلى:
+</p>
+<ul>
+  <li>أنظمة متعددة الأنماط (نص + صورة + صوت)</li>
+  <li>ذكاء مساعد لاتخاذ القرار</li>
+  <li>تكامل بين الإنسان والآلة</li>
+</ul>
+
+<p style="font-weight:bold; color:#1a73e8;">
+الذكاء القادم… لن يعمل وحده  
+ولن يعمل بدل الإنسان  
+بل سيعمل <u>معه</u>.
+</p>
+
+<hr>
+
+<div class="final-question">
+إذا كانت الآلة اليوم تفهم…  
+فما هو دور الإنسان غدًا؟
+</div>
+
+</div>
+</div>
+
+
+
+
+<div style="margin-top:40px; max-width:1100px; margin-left:auto; margin-right:auto; font-family:Segoe UI, Arial, sans-serif; line-height:1.8; color:#333; direction:rtl; text-align:right;">
+
+<div class="hover-card" style="background:#f9fbff; border:2px solid #d6e4ff; border-radius:20px; padding:30px; box-shadow:0 6px 18px rgba(0,0,0,0.1);">
+
+<div style="text-align:center; margin-bottom:16px;">
+  <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#1a73e8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="12" cy="12" r="10"></circle>
+    <path d="M8 12h8"></path>
+    <path d="M12 8v8"></path>
+  </svg>
+</div>
+
+<h2 style="color:#1a73e8; margin-bottom:20px;">
+رحلة الذكاء الاصطناعي: من سؤال فلسفي إلى عقل رقمي
+</h2>
+
+<h3>1. البداية لم تكن تقنية… بل فلسفية</h3>
+
+<p>
+فكرة الذكاء الاصطناعي لم تبدأ بكود،
+ولا بحاسوب،
+ولا بخوارزمية.
+</p>
+
+<p>
+بل بدأت بسؤال بسيط وخطير في نفس الوقت:
+</p>
+
+<p style="font-weight:bold; font-size:18px;">
+"هل يمكن للآلة أن تفكّر؟"
+</p>
+
+<p>
+هذا السؤال طُرح قبل وجود الحواسيب الحديثة،
+وكان في جوهره
+<strong>سؤالًا عن العقل الإنساني نفسه</strong>:
+كيف نفكّر؟  
+كيف نتخذ قرارًا؟  
+وهل التفكير مجرد قواعد… أم فهم؟
+</p>
+
+<hr>
+
+<h3>2. المرحلة الأولى: التفكير كقواعد</h3>
+
+<p>
+في البدايات، تم افتراض أن الذكاء يمكن تمثيله على شكل:
+</p>
+
+<ul>
+  <li>قواعد منطقية</li>
+  <li>شروط If / Then</li>
+  <li>قرارات محددة مسبقًا</li>
+</ul>
+
+<p>
+وهكذا وُلد ما يُعرف بـ
+<strong>الذكاء الاصطناعي الرمزي (Symbolic AI)</strong>.
+</p>
+
+<p>
+نجح هذا الأسلوب في الأنظمة المغلقة،
+لكنه فشل أمام:
+</p>
+
+<ul>
+  <li>الغموض</li>
+  <li>السلوك غير المتوقع</li>
+  <li>البيئات المفتوحة مثل الإنترنت</li>
+</ul>
+
+<hr>
+
+<h3>3. التحول الكبير: التعلم بدل البرمجة</h3>
+
+<p>
+مع تطور القدرة الحاسوبية وتوفر البيانات،
+حدث التحول الجذري:
+</p>
+
+<p style="font-weight:bold;">
+بدل أن نُعلّم الآلة ماذا تفعل…  
+بدأنا نتركها تتعلّم بنفسها.
+</p>
+
+<p>
+وهنا ظهر:
+</p>
+
+<ul>
+  <li>Machine Learning</li>
+  <li>Neural Networks</li>
+  <li>Deep Learning</li>
+</ul>
+
+<p>
+لم تعد القواعد مكتوبة يدويًا،
+بل أصبحت
+<strong>مُستخلصة من التجربة والخطأ</strong>.
+</p>
+
+<hr>
+
+<h3>4. الذكاء اليوم: فهم + قرار</h3>
+
+<p>
+ما نراه اليوم ليس مجرد نماذج تتنبأ،
+بل أنظمة:
+</p>
+
+<ul>
+  <li>تتعلم من الماضي</li>
+  <li>تُقيّم الحاضر</li>
+  <li>وتتكيف مع المستقبل</li>
+</ul>
+
+<p>
+ومع ظهور
+<strong>نماذج اللغة الكبيرة (LLMs)</strong>،
+أضيف بُعد جديد:
+</p>
+
+<p style="font-style:italic;">
+القدرة على فهم السياق… وليس فقط الأرقام.
+</p>
+
+<hr>
+
+<h3>5. أين وصلنا الآن؟</h3>
+
+<p>
+اليوم، الذكاء الاصطناعي لم يعد:
+</p>
+
+<ul>
+  <li>آلة تنفذ أوامر</li>
+  <li>أداة مساعدة فقط</li>
+</ul>
+
+<p>
+بل أصبح:
+</p>
+
+<ul>
+  <li>شريك في اتخاذ القرار</li>
+  <li>محلل سلوك</li>
+  <li>نظام يتعلم ويتطور</li>
+</ul>
+
+<p style="font-weight:bold; color:#1a73e8;">
+لكن الأهم…
+أنه لم يعد يعمل وحده.
+</p>
+
+<hr>
+
+<h3>6. من هنا تبدأ فكرة "الذكاء المركّب"</h3>
+
+<p>
+الأنظمة الحديثة الأكثر نجاحًا
+لا تعتمد على نوع واحد من الذكاء،
+بل على
+<strong>تكامل عدة أنماط تفكير</strong>:
+</p>
+
+<ul>
+  <li>قواعد بشرية (Heuristics)</li>
+  <li>تعلم آلي (Neural / DQN)</li>
+  <li>فهم سياقي (LLM)</li>
+</ul>
+
+<p>
+وهذا بالضبط ما سنراه لاحقًا:
+</p>
+
+<p style="font-weight:bold;">
+لجنة قرار ذكية…  
+كل عضو فيها يرى العالم بطريقة مختلفة.
+</p>
+
+</div>
+</div>
+
+
+
+
+<div style="margin-top:40px; max-width:1100px; margin-left:auto; margin-right:auto; font-family:Segoe UI, Arial, sans-serif; line-height:1.8; color:#333; direction:rtl; text-align:right;">
+
+<div class="hover-card" style="background:#fefefe; border:2px solid #ffd6d6; border-radius:20px; padding:30px; box-shadow:0 8px 20px rgba(0,0,0,0.12);">
+
+<div style="text-align:center; margin-bottom:16px;">
+  <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#c62828" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="12" cy="12" r="10"></circle>
+    <path d="M12 8v4"></path>
+    <path d="M12 16h.01"></path>
+  </svg>
+</div>
+
+<h2 style="color:#c62828; margin-bottom:20px;">
+ماذا لو كان المهاجم أذكى منك؟
+</h2>
+
+<h3>قبل أن نبدأ… تخيّل هذا السيناريو</h3>
+
+<p>
+تخيل أن لديك نظام حماية تقليدي:
+</p>
+
+<ul>
+  <li>Firewall مضبوط</li>
+  <li>قواعد ثابتة</li>
+  <li>تنبيهات تعمل كما ينبغي</li>
+</ul>
+
+<p>
+وفجأة…
+</p>
+
+<p style="font-weight:bold; color:#c62828;">
+يصل مهاجم لا يكرر نفسه،  
+لا يستخدم أدوات معروفة،  
+ولا يهاجم بنفس الطريقة مرتين.
+</p>
+
+<hr>
+
+<h3>المشكلة الحقيقية</h3>
+
+<p>
+معظم أنظمة الحماية
+<strong>تدافع عن الماضي</strong>:
+</p>
+
+<ul>
+  <li>توقيعات معروفة</li>
+  <li>أنماط محفوظة</li>
+  <li>قواعد تم اختبارها مسبقًا</li>
+</ul>
+
+<p>
+لكن المهاجم الحديث:
+</p>
+
+<ul>
+  <li>يتعلم</li>
+  <li>يغيّر سلوكه</li>
+  <li>يختبر رد فعلك قبل أن يهاجم</li>
+</ul>
+
+<hr>
+
+<h3>السؤال الحقيقي</h3>
+
+<p style="font-size:18px; font-weight:bold;">
+هل نحتاج نظامًا  
+<strong>أقوى</strong>…
+أم نظامًا  
+<strong>أذكى</strong>؟
+</p>
+
+<hr>
+
+<h3>من هنا يبدأ دور الذكاء الاصطناعي</h3>
+
+<p>
+الذكاء الاصطناعي لا يأتي ليحل محل الحماية،
+بل ليغيّر السؤال نفسه:
+</p>
+
+<p style="font-style:italic;">
+"كيف نتصدى للهجوم؟"
+</p>
+
+<p style="font-weight:bold;">
+إلى:
+</p>
+
+<p style="font-style:italic; color:#c62828;">
+"كيف نفهم المهاجم؟"
+</p>
+
+<hr>
+
+<h3>هدف هذه الندوة</h3>
+
+<p>
+في هذه الندوة،
+لن نعرض أداة،
+ولا منتجًا،
+ولا كودًا فقط.
+</p>
+
+<p>
+بل سنعرض:
+</p>
+
+<ul>
+  <li>كيف يفكّر المهاجم</li>
+  <li>كيف يتعلم النظام</li>
+  <li>وكيف يتحول الدفاع من رد فعل… إلى عقل</li>
+</ul>
+
+<p style="margin-top:14px; font-weight:bold;">
+ومن هنا يبدأ الحديث عن  
+Honeypot ذكي… لا ينتظر الهجوم، بل يدرسه.
+</p>
+
+</div>
+</div>
+
+
+
+
+
+
+<div style="margin-top:40px; max-width:1100px; margin-left:auto; margin-right:auto; font-family:Segoe UI, Arial, sans-serif; line-height:1.7; color:#333; direction:rtl; text-align:right;">
+
+<div class="hover-card" style="background:#f9fbff; border:2px solid #cce0ff; border-radius:15px; padding:25px; box-shadow:0 4px 12px rgba(0,0,0,0.08);">
+
+<div style="text-align:center; margin-bottom:12px;">
+  <svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="#0078d7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="12" cy="12" r="10"></circle>
+    <path d="M12 6v6l4 2"></path>
+  </svg>
+</div>
+
+<h2 style="color:#0078d7; margin-bottom:15px;">
+تقرير عرض مشروع Honeypot الذكي
+</h2>
+
+<h3>1. المقدمة</h3>
+<p>
+المشروع هو نظام Honeypot ذكي ومتقدم يعتمد على دمج
+<strong>تحليل التهديدات التقليدي، الشبكات العصبية، التعلم التعزيزي (DQN)، وتحليل نماذج اللغة (LLM)</strong>
+لاتخاذ قرارات أمنية في الزمن الحقيقي.
+<br><br>
+يقوم النظام باستقبال الهجمات الفعلية، تحليلها، تسجيلها، ثم تنفيذ قرارات أمنية ذكية مثل
+<strong>حظر المهاجم أو غلق المنافذ المستهدفة تلقائيًا</strong>.
+<br><br>
+الهدف من المشروع هو تقديم نموذج عملي لنظام
+<strong>دفاع سيبراني ذكي وقابل للتطبيق في بيئات حقيقية</strong>.
+</p>
+
+<hr>
+
+<h3>2. القوة الأمنية للنظام</h3>
+
+<h4>✔ نظام الحظر الذكي</h4>
+<ul>
+  <li>تحديث تلقائي لقائمة الحظر عبر ملف <b>blocked.json</b>.</li>
+  <li>إضافة أي مصدر هجوم خطير فور اكتشافه.</li>
+  <li>عدم الاعتماد فقط على عنوان IP، بل على <b>تحليل السلوك</b>.</li>
+  <li>استمرار الحظر حتى مع تغيير:
+    <ul>
+      <li>ngrok link</li>
+      <li>Tunnel</li>
+      <li>Proxy</li>
+      <li>Server</li>
+    </ul>
+  </li>
+</ul>
+
+<p><strong>
+هذا الأسلوب يعكس طبيعة الهجمات الحقيقية التي لا تعتمد على مصدر ثابت.
+</strong></p>
+
+<hr>
+
+<h3>3. الابتكار في المشروع</h3>
+
+<h4>✔ الدمج بين ثلاث طبقات ذكاء</h4>
+
+<ol>
+  <li>
+    <b>Deep Q-Network (DQN)</b>
+    <ul>
+      <li>يتعلم من الهجمات السابقة</li>
+      <li>يحسن قرارات الحظر والسماح بمرور الوقت</li>
+    </ul>
+  </li>
+
+  <li>
+    <b>LLM Analysis</b>
+    <ul>
+      <li>تحليل محتوى وسياق الهجوم</li>
+      <li>فهم الأنماط النصية والسلوكية</li>
+    </ul>
+  </li>
+
+  <li>
+    <b>Heuristic Engine</b>
+    <ul>
+      <li>قواعد خبرة بشرية بسيطة لدعم القرار</li>
+    </ul>
+  </li>
+</ol>
+
+<h4>آلية اتخاذ القرار</h4>
+
+<table style="width:100%; border-collapse:collapse;">
+<tr><th>Layer</th><th>Role</th></tr>
+<tr><td>DQN</td><td>Learning from historical data</td></tr>
+<tr><td>LLM</td><td>Threat semantic analysis</td></tr>
+<tr><td>Heuristic</td><td>Rule-based suggestion</td></tr>
+<tr><td>Decision Core</td><td>Final decision making</td></tr>
+</table>
+
+<hr>
+
+<h3>4. تنفيذ القرار على مستوى النظام</h3>
+
+<p><strong>
+🔥 النظام لا يكتفي بتحليل الهجوم، بل ينفّذ القرار فعليًا:
+</strong></p>
+
+<ul>
+  <li>إغلاق المنفذ المستهدف</li>
+  <li>منع أي اتصال جديد عليه</li>
+  <li>تحديث ملفات الحظر</li>
+  <li>تسجيل القرار والأحداث</li>
+  <li>تحسين النموذج بالتعلم المستمر</li>
+</ul>
+
+<hr>
+
+<h3>Network Position (Visual)</h3>
+
+<div style="text-align:center; margin: 16px 0;">
+  <svg width="100%" height="150" viewBox="0 0 1000 150" preserveAspectRatio="xMidYMid meet">
+    <rect x="30" y="30" width="140" height="60" rx="8" fill="#ffecec" stroke="#ff6b6b"/>
+    <text x="100" y="65" font-size="12" fill="#8b0000" text-anchor="middle">Attacker</text>
+
+    <rect x="200" y="20" width="160" height="80" rx="10" fill="#fff7e6" stroke="#ffb84d"/>
+    <text x="280" y="55" font-size="12" fill="#8b4500" text-anchor="middle">Internet / Scan</text>
+
+    <rect x="400" y="20" width="140" height="80" rx="8" fill="#e8f8ff" stroke="#4db6e6"/>
+    <text x="470" y="55" font-size="12" fill="#0b6fa4" text-anchor="middle">Ngrok</text>
+
+    <rect x="600" y="12" width="220" height="96" rx="10" fill="#f0fff4" stroke="#4db86e"/>
+    <text x="710" y="45" font-size="12" fill="#086b3a" text-anchor="middle">Honeypot Server</text>
+
+    <defs>
+      <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+        <path d="M 0 0 L 10 5 L 0 10 z" fill="#333"/>
+      </marker>
+    </defs>
+    <line x1="170" y1="60" x2="200" y2="60" stroke="#333" stroke-width="2" marker-end="url(#arrow)"/>
+    <line x1="360" y1="60" x2="400" y2="60" stroke="#333" stroke-width="2" marker-end="url(#arrow)"/>
+    <line x1="540" y1="60" x2="600" y2="60" stroke="#333" stroke-width="2" marker-end="url(#arrow)"/>
+  </svg>
+</div>
+
+</div>
+</div>
+
+
+
+<div style="margin-top:40px; max-width:1100px; margin-left:auto; margin-right:auto;
+            font-family:Consolas, 'Courier New', monospace;
+            direction:ltr; text-align:left;">
+
+<div class="hover-card"
+     style="background:#0d1117;
+            color:#c9d1d9;
+            border-radius:18px;
+            padding:25px;
+            box-shadow:0 10px 26px rgba(0,0,0,0.45);
+            border:1px solid #30363d;">
+
+<!-- Header -->
+<div style="display:flex; align-items:center; margin-bottom:16px;">
+  <div style="display:flex; gap:8px; margin-right:12px;">
+    <span style="width:12px; height:12px; background:#ff5f56; border-radius:50%;"></span>
+    <span style="width:12px; height:12px; background:#ffbd2e; border-radius:50%;"></span>
+    <span style="width:12px; height:12px; background:#27c93f; border-radius:50%;"></span>
+  </div>
+  <span style="color:#8b949e; font-size:14px;">
+    Honeypot Terminal — Live Session
+  </span>
+</div>
+
+<pre style="font-size:14px; line-height:1.6; white-space:pre-wrap;">
+
+🔒 Loaded 6 blocked IP(s) from blocked.json
+👁️ Watching logs/decisions.json for AI decisions...
+⚠️ Project logs/threats.csv not found, skipping watch...
+🚀 Server running at http://localhost:3000
+✅ Server URL (ngrok) is: https://a82ce9e387a6.ngrok-free.app
+✅ Terminal opened in Google Chrome (detached).
+
+[System] Terminal UI ready
+[System] Start requested: ensuring SSE then ngrok URL...
+[System] SSE connection established
+SSE connected
+[System] ngrok URL ready: https://a82ce9e387a6.ngrok-free.app
+
+📥 [AUTO] 156.203.128.242 HEAD / => normal visit
+👁️ Detected new entry in public/logs/threats.csv
+🆕 New line detected:
+2025-12-13T17:31:58.136Z,156.203.128.242,HEAD,"normal visit | /",auto
+
+📥 [AUTO] 156.203.128.242 GET / => normal visit
+👁️ Detected new entry in public/logs/threats.csv
+🆕 New line detected:
+2025-12-13T17:31:59.872Z,156.203.128.242,GET,"normal visit | /",auto
+
+⏳ Honeypot busy — scheduling pending run.
+
+📥 [AUTO] 156.203.128.242 GET /favicon.ico => normal visit
+👁️ Detected new entry in public/logs/threats.csv
+🆕 New line detected:
+2025-12-13T17:32:06.571Z,156.203.128.242,GET,"normal visit | /favicon.ico",auto
+
+⏳ Honeypot busy — scheduling pending run.
+
+[HONEYPOT] 🧪 No saved model found — bootstrap training...
+[HONEYPOT] 🔧 Training on 4 samples for 50 epochs...
+
+Epoch 1:  loss=1.112197
+Epoch 10: loss=0.386465
+Epoch 20: loss=0.013139
+Epoch 30: loss=0.000455
+Epoch 40: loss=0.000079
+Epoch 50: loss=0.000035
+
+[HONEYPOT] ✅ Model saved to disk.
+[HONEYPOT] 🤖 Loading local LLM...
+[HONEYPOT] ✅ LLM ready.
+
+[HONEYPOT] 🤖 LLM analysis:
+type=neutral | severity=medium | score=0.71
+
+[HONEYPOT] 🔎 Final decision: ALERT
+[HONEYPOT] ⚙️ Fine-tuning on last record...
+[HONEYPOT] 🧠 Model updated and saved.
+
+👁️ Watching public/logs/threats.csv for changes...
+</pre>
+
+</div>
+</div>
+
+
+
+
+<div style="margin-top:40px; max-width:1100px; margin-left:auto; margin-right:auto;
+            font-family:Segoe UI, Arial, sans-serif; line-height:1.8; color:#333;
+            direction:rtl; text-align:right;">
+
+<div class="hover-card"
+     style="background:#f9fbff; border:2px solid #d6e4ff; border-radius:20px;
+            padding:30px; box-shadow:0 6px 18px rgba(0,0,0,0.1);">
+
+<!-- Icon -->
+<div style="text-align:center; margin-bottom:18px;">
+  <svg width="64" height="64" viewBox="0 0 24 24" fill="none"
+       stroke="#1a73e8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect x="3" y="3" width="18" height="18" rx="3"></rect>
+    <path d="M7 7h10"></path>
+    <path d="M7 12h10"></path>
+    <path d="M7 17h10"></path>
+  </svg>
+</div>
+
+<h2 style="color:#1a73e8; margin-bottom:20px;">
+كيف يفكّر الـ Honeypot؟  
+قصة ما حدث داخل الـ Terminal خطوة بخطوة
+</h2>
+
+<hr>
+
+<h3>1️⃣ لحظة إيقاظ النظام</h3>
+
+<p>
+مع تشغيل السيرفر، لا يبدأ النظام في استقبال الهجمات فورًا،
+بل يبدأ بما يشبه
+<strong>فحص الذاكرة والخبرة السابقة</strong>.
+</p>
+
+<ul>
+  <li>تم تحميل <b>6 عناوين IP</b> محظورة مسبقًا من ملف <b>blocked.json</b>.</li>
+  <li>بدأ النظام في مراقبة ملف <b>decisions.json</b> لمتابعة قرارات الذكاء الاصطناعي.</li>
+  <li>ملف <b>threats.csv</b> لم يكن موجودًا بعد — فلا يوجد نشاط سابق.</li>
+</ul>
+
+<p>
+ثم تم تشغيل السيرفر محليًا،  
+وفتح قناة اتصال خارجية عبر <strong>Ngrok</strong>
+للسماح باستقبال زيارات حقيقية من الإنترنت.
+</p>
+
+<hr>
+
+<h3>2️⃣ أول اتصال حقيقي بالعالم الخارجي</h3>
+
+<p>
+بعد ثوانٍ، وصل أول طلب حقيقي من الإنترنت:
+</p>
+
+<ul>
+  <li>طلب <b>HEAD</b> ثم <b>GET</b> من عنوان IP خارجي.</li>
+  <li>تم تصنيف السلوك تلقائيًا على أنه <strong>زيارة طبيعية</strong>.</li>
+  <li>تم تسجيل الحدث داخل <b>threats.csv</b> مع الطابع الزمني.</li>
+</ul>
+
+<p>
+📌 هنا النظام لم يتصرف…
+بل <strong>راقب فقط</strong>.
+</p>
+
+<hr>
+
+<h3>3️⃣ المراقبة المستمرة للملفات</h3>
+
+<p>
+الـ Honeypot لا ينتظر أوامر،
+بل يعمل كمراقب دائم:
+</p>
+
+<ul>
+  <li>يراقب أي سطر جديد يُضاف إلى <b>threats.csv</b>.</li>
+  <li>يُجدول التحليل إذا كان مشغولًا.</li>
+  <li>يتعامل مع كل حدث كسلوك مستقل.</li>
+</ul>
+
+<p>
+كل زيارة، حتى الطبيعية،
+تمر عبر نفس المسار التحليلي.
+</p>
+
+<hr>
+
+<h3>4️⃣ تشغيل الذكاء الاصطناعي لأول مرة</h3>
+
+<p>
+عند أول تحليل فعلي:
+</p>
+
+<ul>
+  <li>لم يجد النظام نموذجًا محفوظًا سابقًا.</li>
+  <li>بدأ <strong>تدريبًا أوليًا (Bootstrap Training)</strong>.</li>
+  <li>تم التدريب على عينات مبدئية لخلق أساس قرار.</li>
+</ul>
+
+<p>
+نلاحظ في الـ Terminal:
+</p>
+
+<ul>
+  <li>انخفاض قيمة <b>Loss</b> تدريجيًا.</li>
+  <li>هذا يعني أن النموذج <strong>يتعلّم فهم السلوك</strong>.</li>
+</ul>
+
+<hr>
+
+<h3>5️⃣ دخول اللجنة الثلاثية للقرار</h3>
+
+<p>
+بعد تسجيل أول سلوك،
+تم تمريره إلى
+<strong>لجنة الذكاء الاصطناعي</strong>:
+</p>
+
+<ol>
+  <li>
+    <b>Heuristic Engine</b>
+    <ul>
+      <li>بحث عن أنماط خطيرة.</li>
+      <li>لم يجد أي تطابق.</li>
+      <li>اقترح: <b>Ignore</b>.</li>
+    </ul>
+  </li>
+
+  <li>
+    <b>نموذج DQN (التعلم المعزز)</b>
+    <ul>
+      <li>اعتمد على الخبرة السابقة.</li>
+      <li>اقترح: <b>Ignore</b>.</li>
+    </ul>
+  </li>
+
+  <li>
+    <b>LLM (نموذج اللغة)</b>
+    <ul>
+      <li>حلّل السياق الكامل للسلوك.</li>
+      <li>صنّفه كـ <b>Neutral</b>.</li>
+      <li>لكن بشدة <b>متوسطة</b>.</li>
+    </ul>
+  </li>
+</ol>
+
+<hr>
+
+<h3>6️⃣ لحظة القرار النهائي</h3>
+
+<p>
+رغم أن:
+</p>
+
+<ul>
+  <li>Heuristic = Ignore</li>
+  <li>DQN = Ignore</li>
+</ul>
+
+<p>
+إلا أن:
+</p>
+
+<p style="font-weight:bold;">
+الـ LLM رفع مستوى الانتباه.
+</p>
+
+<p>
+🔔 القرار النهائي:
+</p>
+
+<p style="font-size:18px; font-weight:bold; color:#1a73e8;">
+Alert
+</p>
+
+<p>
+ليس حظرًا،
+ولا تجاهلًا،
+بل تنبيه ذكي محسوب.
+</p>
+
+<hr>
+
+<h3>7️⃣ التعلم بعد القرار (Reinforcement)</h3>
+
+<p>
+بعد اتخاذ القرار،
+لم ينتهِ دور الذكاء الاصطناعي.
+</p>
+
+<ul>
+  <li>تم إعادة تدريب النموذج على الحدث الأخير.</li>
+  <li>تم تعديل الأوزان الداخلية.</li>
+  <li>تم حفظ النموذج الجديد على القرص.</li>
+</ul>
+
+<p>
+📌 هذه الخطوة تعني:
+</p>
+
+<p style="font-weight:bold;">
+النظام يتعلم من كل سلوك…  
+حتى السلوك الطبيعي.
+</p>
+
+<hr>
+
+<h3>8️⃣ ماذا عن ملف الحظر؟</h3>
+
+<p>
+في هذه الحالة:
+</p>
+
+<ul>
+  <li>لم يتم تحديث <b>blocked.json</b>.</li>
+  <li>لأن اللجنة لم تعتبر السلوك عدائيًا.</li>
+</ul>
+
+<p>
+لكن عند ظهور:
+</p>
+
+<ul>
+  <li>Malware</li>
+  <li>Injection</li>
+  <li>Brute Force</li>
+</ul>
+
+<p>
+يتم:
+</p>
+
+<ul>
+  <li>إضافة الـ IP فورًا إلى ملف الحظر.</li>
+  <li>منع أي اتصال مستقبلي.</li>
+</ul>
+
+<hr>
+
+<h3>9️⃣ الخلاصة التشغيلية</h3>
+
+<ul>
+  <li>النظام لا يتفاعل بعشوائية.</li>
+  <li>كل طلب يُحلَّل.</li>
+  <li>كل قرار مُبرَّر.</li>
+  <li>كل تجربة تُحوَّل إلى معرفة.</li>
+</ul>
+
+<p style="font-weight:bold; color:#1a73e8;">
+هذا ليس Honeypot تقليدي…  
+بل عقل رقمي يراقب ويتعلم ويقرر.
+</p>
+
+</div>
+</div>
+
+
+
+
+
+
+
+
+<div style="margin-top:40px; max-width:1100px; margin-left:auto; margin-right:auto; font-family:Segoe UI, Arial, sans-serif; line-height:1.7; color:#333; direction:rtl; text-align:right;">
+
+<div class="hover-card" style="background:#f9fbff; border:2px solid #cce0ff; border-radius:15px; padding:25px; box-shadow:0 4px 12px rgba(0,0,0,0.08);">
+
+<div style="text-align:center; margin-bottom:12px;">
+  <svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="#0078d7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="12" cy="12" r="10"></circle>
+    <path d="M12 6v6l4 2"></path>
+  </svg>
+</div>
+
+<h2 style="color:#0078d7; margin-bottom:15px;">
+تقرير تحليل نموذج الذكاء الاصطناعي (TensorFlow Decision Model)
+</h2>
+
+<h3>1. نظرة عامة على النموذج</h3>
+<p>
+يمثل هذا الملف البنية الداخلية لنموذج ذكاء اصطناعي تم تدريبه مسبقًا باستخدام
+<strong>TensorFlow</strong>.
+<br><br>
+المحتوى لا يوضح كيفية كتابة النموذج، بل يوضح
+<strong>كيف يفكر النموذج فعليًا بعد التدريب</strong>
+وكيف تنتقل البيانات داخله حتى الوصول إلى القرار النهائي.
+</p>
+
+<hr>
+
+<h3>2. مدخلات النموذج (Input Features)</h3>
+<p>
+يستقبل النموذج مجموعة من الخصائص الرقمية (Features) تمثل سلوك الجلسة أو الحدث،
+مثل:
+</p>
+
+<ul>
+  <li>نوع الطلب (GET / POST)</li>
+  <li>عدد الرؤوس (Headers)</li>
+  <li>حجم الحمولة (Payload Size)</li>
+  <li>التوقيت والتكرار</li>
+</ul>
+
+<p>
+يتم تحويل هذه القيم إلى
+<strong>متجه رقمي (Numerical Vector)</strong>
+ليدخل إلى الطبقة الأولى.
+</p>
+
+<hr>
+
+<h3>3. الطبقات العصبية (Neural Layers)</h3>
+
+<p>
+النموذج يتكوّن من ثلاث طبقات Dense متتالية:
+</p>
+
+<ol>
+  <li>
+    <b>الطبقة الأولى</b>
+    <ul>
+      <li>تستقبل البيانات الخام.</li>
+      <li>تتعلم العلاقات الأولية بين الخصائص.</li>
+      <li>تضخّم الأنماط المهمة وتقلل الضوضاء.</li>
+    </ul>
+  </li>
+
+  <li>
+    <b>الطبقة الثانية</b>
+    <ul>
+      <li>تحلل الأنماط السلوكية المركبة.</li>
+      <li>تربط بين أكثر من مؤشر خطر.</li>
+    </ul>
+  </li>
+
+  <li>
+    <b>طبقة الإخراج</b>
+    <ul>
+      <li>تحوّل التحليل إلى قرار رقمي.</li>
+      <li>النواتج تمثل: Ignore / Alert / Block</li>
+    </ul>
+  </li>
+</ol>
+
+<hr>
+
+<h3>4. الأوزان (Weights) والانحياز (Bias)</h3>
+
+<p>
+كل وصلة بين الخلايا العصبية لها
+<strong>وزن رقمي</strong>
+يعبر عن أهمية هذا المسار.
+</p>
+
+<ul>
+  <li>الأوزان العالية تعني تأثير قوي على القرار.</li>
+  <li>الأوزان الضعيفة يتم تجاهلها تدريجيًا.</li>
+  <li>Bias يسمح للنموذج بالمرونة وعدم الجمود.</li>
+</ul>
+
+<p>
+هذه القيم هي
+<strong>خلاصة خبرة النموذج السابقة</strong>.
+</p>
+
+<hr>
+
+<h3>5. مسار اتخاذ القرار</h3>
+
+<p>
+عند إدخال حدث جديد:
+</p>
+
+<ul>
+  <li>تمر البيانات عبر الطبقات.</li>
+  <li>يتم ضرب القيم في الأوزان.</li>
+  <li>تُطبّق دوال التفعيل (Activation Functions).</li>
+  <li>يخرج القرار كاحتمالات رقمية.</li>
+</ul>
+
+<p>
+يتم اختيار القرار الأعلى احتمالًا
+كإجراء نهائي.
+</p>
+
+<hr>
+
+<h3>6. التعلم والتحديث</h3>
+
+<p>
+بعد كل حالة حقيقية:
+</p>
+
+<ul>
+  <li>يتم تقييم صحة القرار.</li>
+  <li>تعديل الأوزان داخليًا.</li>
+  <li>حفظ النموذج المحدث.</li>
+</ul>
+
+<p>
+وهذا يجعل النموذج
+<strong>يتحسن بمرور الوقت</strong>.
+</p>
+
+<hr>
+
+<h3>7. الخلاصة</h3>
+
+<p><strong>
+هذا النموذج:
+</strong></p>
+
+<ul>
+  <li>لا يعتمد على قواعد ثابتة.</li>
+  <li>يفهم السلوك لا الحدث فقط.</li>
+  <li>يتخذ قرارات احتمالية ذكية.</li>
+  <li>يمثل عقل النظام بالكامل.</li>
+</ul>
+
+<p>
+بالتالي، القرار الصادر
+هو نتيجة تحليل عميق
+وليس رد فعل مباشر.
+</p>
+
+<div style="text-align:center; margin-top:20px;">
+  <svg width="100%" height="120" viewBox="0 0 600 120" preserveAspectRatio="xMidYMid meet">
+    <rect x="20" y="30" width="140" height="50" rx="8" fill="#eaf4ff" stroke="#4db6e6"/>
+    <text x="90" y="60" font-size="12" fill="#004080" text-anchor="middle">Input Features</text>
+
+    <rect x="220" y="30" width="160" height="50" rx="8" fill="#f9f6ff" stroke="#8f9eff"/>
+    <text x="300" y="60" font-size="12" fill="#2f3aa2" text-anchor="middle">Neural Layers</text>
+
+    <rect x="440" y="30" width="140" height="50" rx="8" fill="#fff3e6" stroke="#ff9f43"/>
+    <text x="510" y="60" font-size="12" fill="#8a4b00" text-anchor="middle">Decision Output</text>
+
+    <line x1="160" y1="55" x2="220" y2="55" stroke="#333" stroke-width="2" marker-end="url(#arrow3)"/>
+    <line x1="380" y1="55" x2="440" y2="55" stroke="#333" stroke-width="2" marker-end="url(#arrow3)"/>
+
+    <defs>
+      <marker id="arrow3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+        <path d="M 0 0 L 10 5 L 0 10 z" fill="#333"/>
+      </marker>
+    </defs>
+  </svg>
+  <p style="font-size:12px; color:#555;">Decision Pipeline: Features → Neural Processing → Action</p>
+</div>
+
+</div>
+</div>
+
+
+
+<div style="margin-top:40px; max-width:1100px; margin-left:auto; margin-right:auto; font-family:Segoe UI, Arial, sans-serif; line-height:1.7; color:#333; direction:rtl; text-align:right;">
+
+<div class="hover-card" style="background:#fffdf9; border:2px solid #ffe0b3; border-radius:15px; padding:25px; box-shadow:0 4px 12px rgba(0,0,0,0.08);">
+
+<div style="text-align:center; margin-bottom:12px;">
+  <svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="#ff9800" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect x="3" y="3" width="18" height="18" rx="3"></rect>
+    <path d="M3 9h18M9 21V9"></path>
+  </svg>
+</div>
+
+<h2 style="color:#ff9800; margin-bottom:15px;">
+مقارنة منطق اتخاذ القرار: Heuristic vs Neural Model
+</h2>
+
+<h3>1. الهدف من المقارنة</h3>
+<p>
+يعتمد نظام الـ Honeypot الذكي على
+<strong>مدرستين مختلفتين في تحليل التهديدات</strong>:
+التحليل القاعدي (Heuristic) والتحليل العصبي (Neural).
+<br><br>
+كل منهما يخدم غرضًا مختلفًا،
+واجتماعهما معًا هو ما يصنع نظامًا متوازنًا وقابلًا للتوسع.
+</p>
+
+<hr>
+
+<h3>2. Heuristic Engine (التحليل القاعدي)</h3>
+
+<p>
+يعتمد على
+<strong>قواعد صريحة ومباشرة</strong>
+تم تحديدها مسبقًا.
+</p>
+
+<ul>
+  <li>يبحث عن كلمات أو أنماط معروفة.</li>
+  <li>يعمل بسرعة عالية جدًا.</li>
+  <li>فعّال في الهجمات الواضحة والمكررة.</li>
+</ul>
+
+<p>
+<strong>مثال:</strong><br>
+إذا احتوى الطلب على <code>/admin</code> أو <code>DROP TABLE</code>
+→ يتم رفع مستوى الخطر فورًا.
+</p>
+
+<p>
+نقطة الضعف الأساسية:
+<br>
+<strong>لا يفهم السياق</strong>، فقط يطابق الأنماط.
+</p>
+
+<hr>
+
+<h3>3. Neural Decision Model (التحليل العصبي)</h3>
+
+<p>
+يعتمد على
+<strong>شبكة عصبية مدربة</strong>
+تتعلم من البيانات السابقة.
+</p>
+
+<ul>
+  <li>يفهم السلوك وليس الطلب فقط.</li>
+  <li>يحلل التوقيت، التكرار، والتدرج.</li>
+  <li>يتعامل مع الحالات غير الواضحة.</li>
+</ul>
+
+<p>
+<strong>مثال:</strong><br>
+طلبات عادية، لكن بتكرار وزمن غير طبيعي
+→ النموذج يكتشف سلوك استطلاعي.
+</p>
+
+<p>
+نقطة القوة الأساسية:
+<br>
+<strong>القدرة على التعميم والتكيّف</strong>.
+</p>
+
+<hr>
+
+<h3>4. الفرق الجوهري بينهما</h3>
+
+<table style="width:100%; border-collapse:collapse; margin-top:10px;">
+  <tr style="background:#fff3e0;">
+    <th style="border:1px solid #ddd; padding:8px;">Heuristic</th>
+    <th style="border:1px solid #ddd; padding:8px;">Neural Model</th>
+  </tr>
+  <tr>
+    <td style="border:1px solid #ddd; padding:8px;">قواعد ثابتة</td>
+    <td style="border:1px solid #ddd; padding:8px;">تعلم ديناميكي</td>
+  </tr>
+  <tr>
+    <td style="border:1px solid #ddd; padding:8px;">سريع جدًا</td>
+    <td style="border:1px solid #ddd; padding:8px;">أبطأ نسبيًا</td>
+  </tr>
+  <tr>
+    <td style="border:1px solid #ddd; padding:8px;">دقيق في الهجمات الواضحة</td>
+    <td style="border:1px solid #ddd; padding:8px;">دقيق في الحالات الرمادية</td>
+  </tr>
+  <tr>
+    <td style="border:1px solid #ddd; padding:8px;">لا يتعلم</td>
+    <td style="border:1px solid #ddd; padding:8px;">يتعلم باستمرار</td>
+  </tr>
+</table>
+
+<hr>
+
+<h3>5. لماذا نستخدم الاثنين معًا؟</h3>
+
+<p>
+الاعتماد على أحدهما فقط يؤدي إلى خلل:
+</p>
+
+<ul>
+  <li>Heuristic وحده → قرارات جامدة.</li>
+  <li>Neural وحده → تكلفة حسابية أعلى.</li>
+</ul>
+
+<p>
+لكن دمجهما يحقق:
+</p>
+
+<ul>
+  <li>سرعة الاستجابة.</li>
+  <li>فهم السلوك.</li>
+  <li>تقليل الإنذارات الكاذبة.</li>
+</ul>
+
+<hr>
+
+<h3>6. الخلاصة</h3>
+
+<p><strong>
+Heuristic = رد فعل سريع<br>
+Neural = فهم عميق
+</strong></p>
+
+<p>
+والنظام الذكي الحقيقي
+هو الذي يعرف
+<strong>متى يستخدم كل منهما</strong>.
+</p>
+
+<div style="text-align:center; margin-top:20px;">
+  <svg width="100%" height="120" viewBox="0 0 600 120" preserveAspectRatio="xMidYMid meet">
+    <rect x="20" y="30" width="160" height="50" rx="8" fill="#ffe0b2" stroke="#ff9800"/>
+    <text x="100" y="60" font-size="12" fill="#8a4b00" text-anchor="middle">Heuristic Rules</text>
+
+    <rect x="220" y="30" width="160" height="50" rx="8" fill="#e3f2fd" stroke="#2196f3"/>
+    <text x="300" y="60" font-size="12" fill="#0d47a1" text-anchor="middle">Decision Fusion</text>
+
+    <rect x="420" y="30" width="160" height="50" rx="8" fill="#ede7f6" stroke="#673ab7"/>
+    <text x="500" y="60" font-size="12" fill="#311b92" text-anchor="middle">Neural Analysis</text>
+
+    <line x1="180" y1="55" x2="220" y2="55" stroke="#333" stroke-width="2" marker-end="url(#arrow4)"/>
+    <line x1="380" y1="55" x2="420" y2="55" stroke="#333" stroke-width="2" marker-end="url(#arrow4)"/>
+
+    <defs>
+      <marker id="arrow4" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+        <path d="M 0 0 L 10 5 L 0 10 z" fill="#333"/>
+      </marker>
+    </defs>
+  </svg>
+  <p style="font-size:12px; color:#555;">Hybrid Intelligence: Rules + Learning</p>
+</div>
+
+</div>
+</div>
+
+
+<div style="margin-top:40px; max-width:1100px; margin-left:auto; margin-right:auto; font-family:Segoe UI, Arial, sans-serif; line-height:1.7; color:#333; direction:rtl; text-align:right;">
+
+<div class="hover-card" style="background:#f9fff9; border:2px solid #c8e6c9; border-radius:15px; padding:25px; box-shadow:0 4px 12px rgba(0,0,0,0.08);">
+
+<div style="text-align:center; margin-bottom:12px;">
+  <svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="#2e7d32" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="12" cy="12" r="10"></circle>
+    <path d="M8 12h8M12 8v8"></path>
+  </svg>
+</div>
+
+<h2 style="color:#2e7d32; margin-bottom:15px;">
+دور نماذج اللغة الكبيرة (LLM) ولجنة الذكاء الثلاثية
+</h2>
+
+<h3>1. لماذا نحتاج إلى LLM؟</h3>
+<p>
+رغم قوة كل من
+<strong>Heuristic Engine</strong>
+و
+<strong>Neural Models</strong>،
+إلا أن كليهما يعمل أساسًا على
+<strong>أنماط رقمية وسلوكية</strong>.
+<br><br>
+هنا يأتي دور الـ
+<strong>Large Language Model (LLM)</strong>،
+الذي يضيف طبقة
+<strong>فهم دلالي وسياقي</strong>
+لا يمكن الوصول إليها بالقواعد أو الأرقام وحدها.
+</p>
+
+<hr>
+
+<h3>2. ماذا يفعل الـ LLM داخل النظام؟</h3>
+
+<p>
+الـ LLM لا يبحث عن كلمات فقط،
+ولا يحلل أرقام فقط،
+بل يحاول الإجابة على سؤال أعمق:
+</p>
+
+<p style="font-style:italic; color:#2e7d32;">
+"هل هذا السلوك يبدو منطقيًا لبشر؟ أم يحمل نية عدائية خفية؟"
+</p>
+
+<ul>
+  <li>يفهم سياق الطلب وليس شكله فقط.</li>
+  <li>يحلل تسلسل الأحداث كقصة متكاملة.</li>
+  <li>يميّز بين الاستخدام الخاطئ والنية الخبيثة.</li>
+</ul>
+
+<hr>
+
+<h3>3. دور الـ LLM مقارنة بالطبقتين السابقتين</h3>
+
+<ul>
+  <li>
+    <b>Heuristic</b>  
+    <br>
+    يجيب بسرعة:  
+    <i>"هل هذا الطلب يشبه هجومًا معروفًا؟"</i>
+  </li>
+
+  <li>
+    <b>Neural Model</b>  
+    <br>
+    يحلل السلوك:  
+    <i>"هل هذا النمط يشبه سلوكًا عدائيًا سابقًا؟"</i>
+  </li>
+
+  <li>
+    <b>LLM</b>  
+    <br>
+    يفهم النية:  
+    <i>"هل هذا التصرف منطقي أم خادع؟"</i>
+  </li>
+</ul>
+
+<hr>
+
+<h3>4. لجنة القرار الثلاثية (Tri-Layer Decision Committee)</h3>
+
+<p>
+النظام لا يعتمد على صوت واحد،
+بل يعمل وفق
+<strong>لجنة ذكاء</strong>
+مكوّنة من ثلاث آليات مستقلة:
+</p>
+
+<ol>
+  <li>Heuristic Engine</li>
+  <li>Neural Decision Model</li>
+  <li>LLM Context Analyzer</li>
+</ol>
+
+<p>
+كل عضو في اللجنة:
+</p>
+
+<ul>
+  <li>يقيّم التهديد من زاوية مختلفة.</li>
+  <li>يمنح درجة ثقة مستقلة.</li>
+  <li>لا يعرف قرار الآخر مسبقًا.</li>
+</ul>
+
+<hr>
+
+<h3>5. لماذا اللجنة أهم من أي نموذج منفرد؟</h3>
+
+<p>
+أي نموذج منفرد يعاني من تحيز طبيعي:
+</p>
+
+<ul>
+  <li>Heuristic → تحيز للقواعد.</li>
+  <li>Neural → تحيز للبيانات السابقة.</li>
+  <li>LLM → تحيز للسياق اللغوي.</li>
+</ul>
+
+<p>
+لكن اللجنة:
+</p>
+
+<ul>
+  <li>تكشف أخطاء كل عضو.</li>
+  <li>تقلل الإنذارات الكاذبة.</li>
+  <li>ترفع دقة القرار النهائي.</li>
+</ul>
+
+<hr>
+
+<h3>6. الخلاصة الذكية</h3>
+
+<p><strong>
+Heuristic يرى الشكل<br>
+Neural يرى السلوك<br>
+LLM يفهم النية
+</strong></p>
+
+<p>
+والذكاء الحقيقي
+لا يعتمد على رأي واحد،
+بل على
+<strong>توازن الآراء الثلاثة</strong>.
+</p>
+
+<div style="text-align:center; margin-top:20px;">
+  <svg width="100%" height="140" viewBox="0 0 600 140" preserveAspectRatio="xMidYMid meet">
+    <rect x="40" y="30" width="140" height="50" rx="8" fill="#ffe0b2" stroke="#ff9800"/>
+    <text x="110" y="60" font-size="12" fill="#8a4b00" text-anchor="middle">Heuristic</text>
+
+    <rect x="230" y="30" width="140" height="50" rx="8" fill="#e3f2fd" stroke="#2196f3"/>
+    <text x="300" y="60" font-size="12" fill="#0d47a1" text-anchor="middle">Neural Model</text>
+
+    <rect x="420" y="30" width="140" height="50" rx="8" fill="#e8f5e9" stroke="#2e7d32"/>
+    <text x="490" y="60" font-size="12" fill="#1b5e20" text-anchor="middle">LLM</text>
+
+    <rect x="230" y="100" width="140" height="35" rx="8" fill="#ede7f6" stroke="#673ab7"/>
+    <text x="300" y="122" font-size="12" fill="#311b92" text-anchor="middle">Final Decision</text>
+
+    <line x1="110" y1="80" x2="270" y2="100" stroke="#333" stroke-width="2"/>
+    <line x1="300" y1="80" x2="300" y2="100" stroke="#333" stroke-width="2"/>
+    <line x1="490" y1="80" x2="330" y2="100" stroke="#333" stroke-width="2"/>
+  </svg>
+  <p style="font-size:12px; color:#555;">
+    Tri-Layer Intelligence: Rules + Behavior + Intent
+  </p>
+</div>
+
+</div>
+</div>
+
+
+<div style="margin-top:40px; max-width:1100px; margin-left:auto; margin-right:auto; font-family:Segoe UI, Arial, sans-serif; line-height:1.8; color:#333; direction:rtl; text-align:right;">
+
+<div class="hover-card" style="background:#fffdf7; border:2px solid #ffe0b2; border-radius:18px; padding:28px; box-shadow:0 6px 16px rgba(0,0,0,0.1);">
+
+<div style="text-align:center; margin-bottom:14px;">
+  <svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="#ef6c00" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="12" cy="12" r="10"></circle>
+    <path d="M9 12h6"></path>
+    <path d="M12 9v6"></path>
+  </svg>
+</div>
+
+<h2 style="color:#ef6c00; margin-bottom:18px;">
+هل الذكاء قرار أم فهم؟
+</h2>
+
+<h3>1. السؤال الذي يسبق كل خوارزمية</h3>
+<p>
+عندما نقول إن نظامًا ما <strong>ذكي</strong>،
+فنحن غالبًا نقصد أنه
+<strong>اتخذ قرارًا صحيحًا</strong>.
+<br><br>
+لكن السؤال الأعمق هو:
+هل الذكاء هو
+<strong>الوصول إلى القرار</strong>،
+أم
+<strong>فهم لماذا تم اتخاذه</strong>؟
+</p>
+
+<hr>
+
+<h3>2. الذكاء القائم على القرار</h3>
+<p>
+في هذا النموذج،
+الذكاء يُقاس بالنتيجة:
+</p>
+
+<ul>
+  <li>هل تم إيقاف الهجوم؟</li>
+  <li>هل تم تقليل الخسائر؟</li>
+  <li>هل خرج النظام باستجابة صحيحة؟</li>
+</ul>
+
+<p>
+هذا النوع من الذكاء:
+</p>
+
+<ul>
+  <li>سريع</li>
+  <li>فعال</li>
+  <li>لكنه <b>أعمى</b> للسياق أحيانًا</li>
+</ul>
+
+<p style="font-style:italic; color:#ef6c00;">
+"قرار صحيح… لسبب خاطئ"
+</p>
+
+<hr>
+
+<h3>3. الذكاء القائم على الفهم</h3>
+<p>
+هنا يتحول السؤال من:
+<br>
+<i>ماذا أفعل؟</i>
+<br>
+إلى:
+<br>
+<i>لماذا أفعل هذا؟</i>
+</p>
+
+<p>
+الذكاء القائم على الفهم:
+</p>
+
+<ul>
+  <li>يحلل النية</li>
+  <li>يفهم السياق</li>
+  <li>يدرك العواقب</li>
+</ul>
+
+<p>
+لكنه في المقابل:
+</p>
+
+<ul>
+  <li>أبطأ</li>
+  <li>أكثر تعقيدًا</li>
+  <li>أقل يقينًا</li>
+</ul>
+
+<hr>
+
+<h3>4. أين تقف الأنظمة الذكية الحديثة؟</h3>
+<p>
+الأنظمة التقليدية كانت
+<strong>أنظمة قرار</strong>.
+<br>
+الأنظمة الحديثة تحاول أن تكون
+<strong>أنظمة فهم</strong>.
+</p>
+
+<p>
+لكن الحقيقة:
+</p>
+
+<p style="font-weight:bold; color:#ef6c00;">
+لا يوجد فهم بلا قرار،  
+ولا قرار ذكي بلا فهم كافٍ.
+</p>
+
+<hr>
+
+<h3>5. لجنة الذكاء كحل فلسفي</h3>
+<p>
+وجود
+<strong>Heuristic + Neural + LLM</strong>
+ليس مجرد تصميم تقني،
+بل موقف فلسفي:
+</p>
+
+<ul>
+  <li>القواعد تمثل العقل الصارم.</li>
+  <li>الشبكات العصبية تمثل الخبرة.</li>
+  <li>الـ LLM يمثل الفهم.</li>
+</ul>
+
+<p>
+والقرار النهائي
+ليس رأي آلة واحدة،
+بل
+<strong>حوار داخلي بين ثلاث عقول</strong>.
+</p>
+
+<hr>
+
+<h3>6. الخلاصة الوجودية</h3>
+
+<p style="font-size:17px; font-weight:bold;">
+الذكاء ليس في الإجابة،  
+ولا في القرار،  
+بل في القدرة على  
+<strong>تفسير القرار… ومراجعته</strong>.
+</p>
+
+<p style="margin-top:14px;">
+ولهذا السبب،
+النظام الذكي الحقيقي
+ليس الذي <em>لا يخطئ</em>،
+بل الذي
+<strong>يعرف لماذا أخطأ</strong>.
+</p>
+
+<div style="text-align:center; margin-top:22px;">
+  <svg width="100%" height="150" viewBox="0 0 600 150" preserveAspectRatio="xMidYMid meet">
+    <rect x="40" y="30" width="140" height="45" rx="8" fill="#fff3e0" stroke="#ef6c00"/>
+    <text x="110" y="58" font-size="12" fill="#bf360c" text-anchor="middle">Decision</text>
+
+    <rect x="230" y="30" width="140" height="45" rx="8" fill="#e3f2fd" stroke="#2196f3"/>
+    <text x="300" y="58" font-size="12" fill="#0d47a1" text-anchor="middle">Understanding</text>
+
+    <rect x="420" y="30" width="140" height="45" rx="8" fill="#ede7f6" stroke="#673ab7"/>
+    <text x="490" y="58" font-size="12" fill="#311b92" text-anchor="middle">Wisdom</text>
+
+    <line x1="180" y1="52" x2="230" y2="52" stroke="#333" stroke-width="2"/>
+    <line x1="370" y1="52" x2="420" y2="52" stroke="#333" stroke-width="2"/>
+  </svg>
+  <p style="font-size:12px; color:#555;">
+    Decision → Understanding → Intelligence with Wisdom
+  </p>
+</div>
+
+</div>
+</div>
+
+
+
+
+
+
+<div style="margin-top:40px; max-width:1100px; margin-left:auto; margin-right:auto; font-family:Segoe UI, Arial, sans-serif; line-height:1.8; color:#333; direction:rtl; text-align:right;">
+
+<div class="hover-card" style="background:#f9fbff; border:2px solid #d6e4ff; border-radius:20px; padding:30px; box-shadow:0 6px 18px rgba(0,0,0,0.1);">
+
+<div style="text-align:center; margin-bottom:16px;">
+  <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#1a73e8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="12" cy="12" r="10"></circle>
+    <path d="M12 6v6"></path>
+    <path d="M12 14h.01"></path>
+  </svg>
+</div>
+
+<h2 style="color:#1a73e8; margin-bottom:20px;">
+ما بعد الفهم: هل ستستخدم الذكاء الاصطناعي… أم ستصنعه؟
+</h2>
+
+<h3>1. الذكاء الاصطناعي لم يعد فكرة بعيدة</h3>
+
+<p>
+لم نعد نتحدث عن مستقبل غامض،  
+ولا عن تقنية تجريبية داخل المعامل.
+</p>
+
+<p>
+الذكاء الاصطناعي أصبح:
+</p>
+
+<ul>
+  <li>داخل قراراتنا اليومية</li>
+  <li>داخل الأنظمة التي نعتمد عليها</li>
+  <li>داخل كل مجال تقريبًا</li>
+</ul>
+
+<p style="font-weight:bold;">
+لكن السؤال الحقيقي لم يعد:  
+ماذا يستطيع الذكاء الاصطناعي أن يفعل؟
+</p>
+
+<hr>
+
+<h3>2. السؤال الأهم: أين دورك أنت؟</h3>
+
+<p>
+كل مجال يمتلك مشاكله الخاصة،  
+تعقيداته،  
+وتفاصيله التي لا يفهمها إلا من يعيشها.
+</p>
+
+<p>
+وهنا تظهر الحقيقة المهمة:
+</p>
+
+<p style="font-weight:bold; color:#1a73e8;">
+الذكاء الاصطناعي لا يستبدل أصحاب الخبرة…  
+بل يضخّم تأثيرهم.
+</p>
+
+<p>
+من يفهم المجال  
+هو الأقدر على بناء ذكاء يخدمه.
+</p>
+
+<hr>
+
+<h3>3. اسأل نفسك الآن</h3>
+
+<ul>
+  <li>ما القرارات في مجالي التي تُتخذ بلا تحليل كافٍ؟</li>
+  <li>ما الأنماط التي ألاحظها يوميًا ولا يراها أي نظام؟</li>
+  <li>ما العمل الذهني المتكرر الذي يمكن تحويله إلى نموذج ذكي؟</li>
+  <li>ما المشكلة التي اعتدنا وجودها… رغم أنها ليست طبيعية؟</li>
+</ul>
+
+<hr>
+
+<h3>4. المشاريع الذكية لا تبدأ بكود</h3>
+
+<p>
+أقوى مشاريع الذكاء الاصطناعي  
+لم تبدأ بخوارزمية،
+ولا بنموذج،
+ولا بلغة برمجة.
+</p>
+
+<p style="font-weight:bold;">
+بدأت بسؤال صحيح…  
+من شخص يفهم الواقع.
+</p>
+
+<p>
+الفكرة أولًا،  
+ثم الفهم،  
+ثم اختيار الأداة المناسبة.
+</p>
+
+<hr>
+
+<h3>5. المستقبل لا يُشاهَد… بل يُبنى</h3>
+
+<p>
+في السنوات القادمة،  
+لن يكون الفارق بين الناس:
+</p>
+
+<ul>
+  <li>من يعرف ما هو الذكاء الاصطناعي</li>
+  <li>ومن يستخدم أدواته فقط</li>
+</ul>
+
+<p>
+بل بين:
+</p>
+
+<ul>
+  <li>من طبّق الذكاء الاصطناعي في مجاله</li>
+  <li>ومن ترك غيره يصمّم له قراراته</li>
+</ul>
+
+<hr>
+
+<h3>6. الخاتمة</h3>
+
+<p style="font-weight:bold; font-size:18px;">
+هذه الندوة ليست نهاية شرح…  
+بل بداية مسؤولية.
+</p>
+
+<p>
+مسؤولية أن:
+</p>
+
+<ul>
+  <li>تفكّر</li>
+  <li>تجرّب</li>
+  <li>تبني</li>
+  <li>وتخطئ… ثم تتعلم</li>
+</ul>
+
+<p style="font-weight:bold; color:#1a73e8;">
+لأن الذكاء الاصطناعي القادم  
+سيحمل بصمة من قرر أن يصنعه…  
+لا من اكتفى بمشاهدته.
+</p>
+
+</div>
+</div>
+
+
+
+
+
+
+
+
+
+`
+},
+
+
+
+];
+
+    
+const questions = [
+  
+// 🔹 HTML Questions
+{
+  q: "2. Which HTML tag is used to insert a line break?",
+  a: "c",
+  options: [
+    "&lt;hr&gt;",
+    "&lt;p&gt;",
+    "&lt;br&gt;",
+    "&lt;break&gt;"
+  ]
+},
+{
+  q: "3. In HTML, which attribute is used to open a link in a new tab?",
+  a: "b",
+  options: [
+    "src='_blank'",
+    "target='_blank'",
+    "newTab='true'",
+    "open='tab'"
+  ]
+},
+{
+  q: "4. Which HTML tag is used to create a dropdown list?",
+  a: "a",
+  options: [
+    "&lt;select&gt;",
+    "&lt;list&gt;",
+    "&lt;dropdown&gt;",
+    "&lt;input type='list'&gt;"
+  ]
+},
+{
+  q: "5. Which HTML tag is used to display a table row?",
+  a: "d",
+  options: [
+    "&lt;td&gt;",
+    "&lt;table&gt;",
+    "&lt;th&gt;",
+    "&lt;tr&gt;"
+  ]
+},
+{
+  q: "6. In HTML, which element is used to display an unordered list?",
+  a: "c",
+  options: [
+    "&lt;ol&gt;",
+    "&lt;dl&gt;",
+    "&lt;ul&gt;",
+    "&lt;li&gt;"
+  ]
+},
+{
+  q: "7. Which attribute in HTML is used to provide a tooltip when hovering?",
+  a: "a",
+  options: [
+    "title",
+    "alt",
+    "tooltip",
+    "hover"
+  ]
+},
+
+// 🔹 CSS Questions
+{
+  q: "8. Which CSS property is used to change the text color?",
+  a: "b",
+  options: [
+    "font-color",
+    "color",
+    "text-style",
+    "font-style"
+  ]
+},
+{
+  q: "9. In CSS, which property sets the space outside an element’s border?",
+  a: "a",
+  options: [
+    "margin",
+    "padding",
+    "border-spacing",
+    "gap"
+  ]
+},
+{
+  q: "10. Which CSS property is used to make text italic?",
+  a: "c",
+  options: [
+    "font-italic",
+    "text-slant",
+    "font-style: italic",
+    "text-italic"
+  ]
+},
+{
+  q: "11. In CSS, which property sets the width of an element?",
+  a: "d",
+  options: [
+    "length",
+    "size",
+    "max-width",
+    "width"
+  ]
+},
+{
+  q: "12. Which CSS property is used to add shadow to text?",
+  a: "a",
+  options: [
+    "text-shadow",
+    "font-shadow",
+    "shadow-text",
+    "letter-shadow"
+  ]
+},
+{
+  q: "13. Which CSS property is used to make a background image repeat?",
+  a: "c",
+  options: [
+    "background-repeat: off",
+    "repeat-image",
+    "background-repeat",
+    "bg-repeat"
+  ]
+},
+
+// 🔹 JavaScript Questions
+{
+  q: "14. In JavaScript, which function is used to parse a string into an integer?",
+  a: "a",
+  options: [
+    "parseInt()",
+    "int()",
+    "stringToInt()",
+    "Number.parse()"
+  ]
+},
+{
+  q: "15. Which JavaScript method displays data in an alert box?",
+  a: "b",
+  options: [
+    "prompt()",
+    "alert()",
+    "console.log()",
+    "msgBox()"
+  ]
+},
+{
+  q: "16. In JavaScript, which symbol is used for comments in a single line?",
+  a: "c",
+  options: [
+    "<!-- -->",
+    "#",
+    "//",
+    "/* */"
+  ]
+},
+{
+  q: "17. Which built-in method is used to join all elements of an array into a string?",
+  a: "d",
+  options: [
+    "concat()",
+    "merge()",
+    "combine()",
+    "join()"
+  ]
+},
+{
+  q: "18. Which keyword is used to define a constant variable in JavaScript?",
+  a: "b",
+  options: [
+    "let",
+    "const",
+    "constant",
+    "var"
+  ]
+},
+{
+  q: "19. In JavaScript, which method removes the last element of an array?",
+  a: "a",
+  options: [
+    "pop()",
+    "remove()",
+    "delete()",
+    "shift()"
+  ]
+},
+{
+  q: "20. Which operator is used to assign a value to a variable in JavaScript?",
+  a: "c",
+  options: [
+    "==",
+    "===",
+    "=",
+    ":="
+  ]
+},
+{
+  q: "21. Which function in JavaScript is used to ask for user input?",
+  a: "d",
+  options: [
+    "alert()",
+    "msg()",
+    "console.log()",
+    "prompt()"
+  ]
+},
+
+
+
+];
+
+
+
+    
+        let currentTFQuestion = 0;
+        let tfCorrectAnswers = 0;
+        let currentQuestion = 0;
+        let correctAnswers = 0;
+        let timeLeft = 3600;
+        let timerInterval;
+        let startTime;
+    
+        function startQuiz() {
+    // قراءة كلمة المرور واسم الكورس (اختياري)
+    let password = document.getElementById("password").value;
+    let course = document.getElementById("courseName")?.value.trim(); // اختياري
+    let quizTitle = document.getElementById("quizTitle"); 
+
+    // التحقق من كلمة المرور (اختياري)
+    if (password !== "1550") {
+        alert("❌ كلمة المرور غير صحيحة! الرجاء المحاولة مرة أخرى.");
+        return;
+    }
+
+    // تغيير العنوان بناءً على اسم الكورس
+    quizTitle.textContent = course || "Artificial Intelligence Systems Seminar";
+
+    // إخفاء شاشة البداية وبدء الاختبار
+    document.getElementById("startScreen").style.display = "none";
+    document.getElementById("quizContainer").style.display = "block";
+
+    // تسجيل وقت البداية
+    startTime = new Date();
+    startTimer();
+    loadTFQuestion();
+
+    // تشغيل وضع ملء الشاشة
+    let elem = document.documentElement;
+    if (elem.requestFullscreen) {
+        elem.requestFullscreen();
+    } else if (elem.mozRequestFullScreen) {
+        elem.mozRequestFullScreen();
+    } else if (elem.webkitRequestFullscreen) {
+        elem.webkitRequestFullscreen();
+    } else if (elem.msRequestFullscreen) {
+        elem.msRequestFullscreen();
+    }
+}
+
+
+
+    
+        function startTimer() {
+            timerInterval = setInterval(() => {
+                let minutes = Math.floor(timeLeft / 60);
+                let seconds = timeLeft % 60;
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    showResult();
+                }
+                timeLeft--;
+            }, 1000);
+        }
+    
+      function loadTFQuestion() {
+    let quizDiv = document.getElementById("quiz");
+    let passageDiv = document.getElementById("passage");
+
+    if (currentTFQuestion < trueFalseQuestions.length) {
+        let q = trueFalseQuestions[currentTFQuestion];
+
+        // عرض المقطع
+        passageDiv.innerHTML = `
+            <h3></h3>
+            <p style="font-size: 22px;">${q.passage}</p>
+        `;
+
+        // عرض السؤال والاختيارات
+        let questionHTML = `<p class='question'><strong>${currentTFQuestion + 1}- ${q.q}</strong></p>`;
+
+        q.options.forEach((option, index) => {
+    const letter = String.fromCharCode(97 + index); // "a", "b", ...
+    questionHTML += `
+        <label>
+            <input type='radio' name='answer' value='${letter}'>
+            ${option}
+        </label><br>
+    `;
+});
+
+        questionHTML += `<button class='btn' onclick='nextTFQuestion()'>Next</button>`;
+        quizDiv.innerHTML = questionHTML;
+    } else {
+        // الانتهاء من عرض كل الأسئلة
+        document.getElementById("passage").style.display = "none";
+        quizDiv.innerHTML = "<p>You've finished all reading questions.</p>";
+        loadQuestion(); // لو فيه مرحلة تانية
+    }
+}
+
+    
+  function nextTFQuestion() {
+  const selectedAnswer = document.querySelector("input[name='answer']:checked");
+  if (!selectedAnswer) {
+    alert("Please select an answer");
+    return;
+  }
+
+  const q = trueFalseQuestions[currentTFQuestion];
+  const selectedValue = selectedAnswer.value;
+
+  const isAnswerKeyALetter = q.a.length === 1 && ["a", "b", "c", "d"].includes(q.a.toLowerCase());
+
+  if (isAnswerKeyALetter) {
+    if (selectedValue === q.a.toLowerCase()) {
+      tfCorrectAnswers++; // ✅ صحح هنا بدل score
+    }
+  } else {
+    const selectedOptionIndex = selectedValue.charCodeAt(0) - 97;
+    const selectedOptionText = q.options[selectedOptionIndex];
+
+    if (selectedOptionText.trim().toLowerCase() === q.a.trim().toLowerCase()) {
+      tfCorrectAnswers++; // ✅ صحح هنا بدل score
+    }
+  }
+
+  currentTFQuestion++;
+  loadTFQuestion();
+}
+
+
+
+        function loadQuestion() {
+            let quizDiv = document.getElementById("quiz");
+            let q = questions[currentQuestion];
+            quizDiv.innerHTML = `<p class='question'>${q.q}</p>` +
+                q.options.map((option, index) => `<label><input type='radio' name='answer' value='${String.fromCharCode(97 + index)}'> ${option}</label>`).join('') +
+                `<button class='btn' onclick='nextQuestion()'>${currentQuestion === questions.length - 1 ? "Finish" : "Next"}</button>`;
+        }
+    
+        function nextQuestion() {
+            let selectedAnswer = document.querySelector("input[name='answer']:checked");
+            if (!selectedAnswer) return;
+            if (selectedAnswer.value === questions[currentQuestion].a) {
+                correctAnswers++;
+            }
+            if (currentQuestion < questions.length - 1) {
+                currentQuestion++;
+                loadQuestion();
+            } else {
+                showResult();
+            }
+        }
+    
+let serverUrl = ""; // سيتم تحديثه تلقائيًا عند تحميل الصفحة
+
+// دالة لجلب رابط السيرفر المخزن في GitHub
+function fetchServerUrl() {
+fetch("https://raw.githubusercontent.com/etiqotwf/liveServer1/main/serverUrl.json")
+        .then(response => response.json())
+        .then(data => {
+            if (data.serverUrl) {
+                serverUrl = data.serverUrl;
+                console.log("✅ رابط السيرفر المحدث من GitHub:", serverUrl);
+            } else {
+                console.error("❌ لم يتم العثور على رابط السيرفر في المستودع.");
+                retryFetchServerUrl();
+            }
+        })
+        .catch(error => {
+            console.error("❌ خطأ في جلب رابط السيرفر من GitHub:", error);
+            retryFetchServerUrl();
+        });
+}
+
+// دالة لإعادة المحاولة عند الفشل
+function retryFetchServerUrl() {
+    if (retryCount < MAX_RETRIES) {
+        retryCount++;
+        console.log(`🔄 إعادة المحاولة (${retryCount}/${MAX_RETRIES}) بعد 3 ثوانٍ...`);
+        setTimeout(fetchServerUrl, 3000);
+    } else {
+        console.error("⛔ تم الوصول إلى الحد الأقصى من المحاولات، تعذر جلب رابط السيرفر.");
+    }
+}
+
+// تحميل رابط السيرفر عند فتح الصفحة
+fetchServerUrl();
+
+function showResult() {
+    clearInterval(timerInterval);
+
+    let endTime = new Date();
+    let timeTaken = Math.floor((endTime - startTime) / 1000);
+    let minutesTaken = Math.floor(timeTaken / 60);
+    let secondsTaken = timeTaken % 60;
+
+    let name = document.getElementById("traineeName").value || "Unknown";
+    let phone = document.getElementById("traineePhone").value || "Unknown";
+    let date = new Date().toLocaleDateString("en-US");
+    let course = document.getElementById("courseName").value || "Unknown";
+
+    let totalQuestions = trueFalseQuestions.length + questions.length;
+    let totalCorrectAnswers = tfCorrectAnswers + correctAnswers;
+
+    let resultData = {
+        name: name,
+        phone: phone,
+        date: date,
+        course: course,
+        startTime: startTime.toLocaleString("en-GB", {
+            timeZone: "Africa/Cairo",
+            year: "numeric",
+            month: "long",
+            day: "numeric",
+            hour: "numeric",
+            minute: "numeric",
+            second: "numeric",
+            hour12: true
+        }),
+        timeTaken: `${minutesTaken} min ${secondsTaken} sec`,
+        score: `${totalCorrectAnswers} / ${totalQuestions}`
+    };
+
+    // إرسال البيانات إلى السيرفر إذا تم تحميل الرابط
+    if (!serverUrl) {
+        console.log("⏳ انتظار تحميل رابط السيرفر...");
+        fetchServerUrl().then(() => {
+            if (serverUrl) {
+                sendDataToServer(resultData);
+            } else {
+                console.error("❌ لم يتم تحميل رابط السيرفر بعد.");
+                alert("⚠️ تعذر إرسال البيانات! تأكد من اتصال الإنترنت وأعد المحاولة.");
+            }
+        });
+    } else {
+        sendDataToServer(resultData);
+    }
+
+    // إرسال البيانات إلى Google Sheets
+    sendDataToGoogleSheet(resultData);
+
+    // تحديث واجهة المستخدم
+    document.getElementById("resultCourse").innerText = course;
+    document.getElementById("resultName").innerText = name;
+    document.getElementById("resultPhone").innerText = phone;
+    document.getElementById("resultDate").innerText = date;
+    document.getElementById("resultStartTime").innerText = startTime.toLocaleTimeString();
+    document.getElementById("resultTime").innerText = `${minutesTaken} min ${secondsTaken} sec`;
+    document.getElementById("resultScore").innerText = `${totalCorrectAnswers} / ${totalQuestions}`;
+
+    document.getElementById("quizContainer").style.display = "none";
+    document.getElementById("resultScreen").style.display = "block";
+}
+
+// إرسال البيانات إلى السيرفر الأساسي
+function sendDataToServer(resultData) {
+    fetch(`${serverUrl}/submit`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify(resultData)
+    })
+    .then(response => response.json())
+    .then(data => console.log("✅ تم الإرسال إلى السيرفر بنجاح:", data))
+    .catch(error => console.error("❌ خطأ أثناء الإرسال إلى السيرفر:", error));
+}
+
+
+
+
+
+function sendDataToGoogleSheet(resultData) {
+    const formData = new URLSearchParams();
+    formData.append("course", resultData.course);
+    formData.append("name", resultData.name);
+    formData.append("phone", resultData.phone);
+    formData.append("date", resultData.date);
+    formData.append("startTime", resultData.startTime);
+    formData.append("timeTaken", resultData.timeTaken);
+    formData.append("score", resultData.score);
+    formData.append("course", resultData.course);
+
+
+    fetch("https://script.google.com/macros/s/AKfycbxEYf2XYk1MT_yp_R9cMrw7xaWifGrN8D17woiDRoMxE05T4xZFQxVihdhP22TcPBypkQ/exec", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/x-www-form-urlencoded",
+        },
+        body: formData.toString(),
+    })
+    .then(response => response.text())
+    .then(responseText => {
+        console.log("✅ تم الإرسال إلى Google Sheet:", responseText);
+    })
+    .catch(error => {
+        console.error("❌ خطأ في الإرسال إلى Google Sheet:", error);
+    });
+}
+
+
+
+
+    </script>
+    </body>
+</html>
