@@ -573,33 +573,51 @@ fs.watch(aiDecisionPath, async (eventType) => {
         const last = decisions[decisions.length - 1];
         const { ip, record, finalAction, reason } = last;
 
-        if (finalAction === 'block') {
+        if (finalAction === 'block' || finalAction === 'alert') {
+
+          const actionLabel = finalAction === 'block' ? 'BLOCK' : 'ALERT';
+
           // ✳️ Skip blocking localhost to avoid self-blocking during local testing
           if (isLocalhost(ip)) {
-            console.log(`🟢 Localhost detected (${ip}) — skipping block by AI decision (${reason})`);
-
-            // Log the decision but do NOT persist to blocked.json
-            fs.appendFileSync(
-              threatLogPath,
-              `${new Date().toISOString()},${ip},${record?.method || 'N/A'},${record?.threatType || 'N/A'},IGNORED-BLOCK (localhost)\n`
+            console.log(
+              `🟢 Localhost detected (${ip}) — skipping ${actionLabel.toLowerCase()} by AI decision (${reason})`
             );
 
-            sendToClients({ type: 'ai-decision', action: 'ignored-block-local', ip, reason });
+            fs.appendFileSync(
+              threatLogPath,
+              `${new Date().toISOString()},${ip},${record?.method || 'N/A'},${record?.threatType || 'N/A'},IGNORED-${actionLabel} (localhost)\n`
+            );
+
+            sendToClients({
+              type: 'ai-decision',
+              action: `ignored-${finalAction}-local`,
+              ip,
+              reason
+            });
+
             return;
           }
 
+          // 🚫 Persist block / alert
           blockedSet.add(ip);
-          persistBlocked(); // ✅ هي دي اللي بتنشئ blocked.json فعليًا
+          persistBlocked();
 
           fs.appendFileSync(
             threatLogPath,
-            `${new Date().toISOString()},${ip},${record?.method || 'N/A'},${record?.threatType || 'N/A'},BLOCKED by AI (${reason})\n`
+            `${new Date().toISOString()},${ip},${record?.method || 'N/A'},${record?.threatType || 'N/A'},${actionLabel}ED by AI (${reason})\n`
           );
 
-          console.log(`🚫 [AI Decision] Blocked IP ${ip} — ${reason}`);
-          sendToClients({ type: 'ai-decision', action: finalAction, ip, reason });
+          console.log(`🚨 [AI Decision] ${actionLabel}ED IP ${ip} — ${reason}`);
+
+          sendToClients({
+            type: 'ai-decision',
+            action: finalAction,
+            ip,
+            reason
+          });
         }
       }
+
     } catch (err) {
       console.error('⚠️ Error reading AI decision file:', err.message);
     }
@@ -607,7 +625,6 @@ fs.watch(aiDecisionPath, async (eventType) => {
 });
 
 console.log('👁️ Watching logs/decisions.json for AI decisions...');
-
 
 // Sync Model to Public (only if changed)
 function copyIfChanged(src, dest) {

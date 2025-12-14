@@ -23,5 +23,80 @@
     },
     "finalAction": "alert",
     "reason": "llm medium increased to alert"
+  },
+  {
+    "timestamp": "2025-12-14T01:19:36.828Z",
+    "ip": "156.203.181.216",
+    "record": {
+      "timestamp": "2025-12-14T01:18:26.486Z",
+      "ip": "156.203.181.216",
+      "method": "GET",
+      "threatType": "\"normal visit | /favicon.ico\",auto",
+      "raw": "2025-12-14T01:18:26.486Z,156.203.181.216,GET,\"normal visit | /favicon.ico\",auto"
+    },
+    "dqnAction": "alert",
+    "heuristic": {
+      "actionSuggested": "ignore",
+      "reason": "no heuristic match",
+      "severityHint": "low"
+    },
+    "llm": {
+      "type": "neutral",
+      "severity": "medium",
+      "score": 0.7994446754455566,
+      "summary": "Label=neutral score=0.80"
+    },
+    "finalAction": "alert",
+    "reason": "trusted dqn output"
+  },
+  {
+    "timestamp": "2025-12-14T01:20:22.761Z",
+    "ip": "156.203.181.216",
+    "record": {
+      "timestamp": "2025-12-14T01:20:20.772Z",
+      "ip": "156.203.181.216",
+      "method": "GET",
+      "threatType": "\"blocked (early)\",auto",
+      "raw": "2025-12-14T01:20:20.772Z,156.203.181.216,GET,\"blocked (early)\",auto"
+    },
+    "dqnAction": "alert",
+    "heuristic": {
+      "actionSuggested": "ignore",
+      "reason": "no heuristic match",
+      "severityHint": "low"
+    },
+    "llm": {
+      "type": "neutral",
+      "severity": "high",
+      "score": 0.8752712607383728,
+      "summary": "Label=neutral score=0.88"
+    },
+    "finalAction": "block",
+    "reason": "llm severity high"
+  },
+  {
+    "timestamp": "2025-12-14T01:21:50.161Z",
+    "ip": "156.203.181.216",
+    "record": {
+      "timestamp": "2025-12-14T01:21:25.739Z",
+      "ip": "156.203.181.216",
+      "method": "GET",
+      "threatType": "\"blocked (early)\",auto",
+      "raw": "2025-12-14T01:21:25.739Z,156.203.181.216,GET,\"blocked (early)\",auto"
+    },
+    "dqnAction": "alert",
+    "heuristic": {
+      "actionSuggested": "ignore",
+      "reason": "no heuristic match",
+      "severityHint": "low"
+    },
+    "llm": {
+      "type": "neutral",
+      "severity": "high",
+      "score": 0.8752712607383728,
+      "summary": "Label=neutral score=0.88"
+    },
+    "finalAction": "block",
+    "reason": "llm severity high"
   }
 ]
