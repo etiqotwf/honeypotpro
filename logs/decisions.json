@@ -1,102 +1,77 @@
 [
   {
-    "timestamp": "2025-12-13T17:33:14.944Z",
-    "ip": "156.203.128.242",
+    "timestamp": "2025-12-17T08:51:54.636Z",
+    "ip": "\"77.154.129.61\"",
     "record": {
-      "timestamp": "2025-12-13T17:32:06.571Z",
-      "ip": "156.203.128.242",
-      "method": "GET",
-      "threatType": "\"normal visit | /favicon.ico\",auto",
-      "raw": "2025-12-13T17:32:06.571Z,156.203.128.242,GET,\"normal visit | /favicon.ico\",auto"
+      "timestamp": "\"2025-12-17T08:51:13.697Z\"",
+      "ip": "\"77.154.129.61\"",
+      "method": "\"GET\"",
+      "threatType": "\"attack vector\",\"added\"",
+      "raw": "\"2025-12-17T08:51:13.697Z\",\"77.154.129.61\",\"GET\",\"attack vector\",\"added\""
     },
-    "dqnAction": "ignore",
+    "dqnAction": "block",
     "heuristic": {
-      "actionSuggested": "ignore",
-      "reason": "no heuristic match",
-      "severityHint": "low"
+      "actionSuggested": "block",
+      "reason": "malware/attack keyword",
+      "severityHint": "high"
     },
     "llm": {
       "type": "neutral",
       "severity": "medium",
-      "score": 0.7116736173629761,
-      "summary": "Label=neutral score=0.71"
+      "score": 0.6829096674919128,
+      "summary": "Label=neutral score=0.68"
     },
-    "finalAction": "alert",
-    "reason": "llm medium increased to alert"
+    "finalAction": "block",
+    "reason": "heuristic override (high confidence)"
   },
   {
-    "timestamp": "2025-12-14T01:19:36.828Z",
-    "ip": "156.203.181.216",
+    "timestamp": "2025-12-17T09:52:06.084Z",
+    "ip": "\"77.154.129.61\"",
     "record": {
-      "timestamp": "2025-12-14T01:18:26.486Z",
-      "ip": "156.203.181.216",
-      "method": "GET",
-      "threatType": "\"normal visit | /favicon.ico\",auto",
-      "raw": "2025-12-14T01:18:26.486Z,156.203.181.216,GET,\"normal visit | /favicon.ico\",auto"
+      "timestamp": "\"2025-12-17T08:51:13.697Z\"",
+      "ip": "\"77.154.129.61\"",
+      "method": "\"GET\"",
+      "threatType": "\"attack vector\",\"added\"",
+      "raw": "\"2025-12-17T08:51:13.697Z\",\"77.154.129.61\",\"GET\",\"attack vector\",\"added\""
     },
-    "dqnAction": "alert",
+    "dqnAction": "block",
     "heuristic": {
-      "actionSuggested": "ignore",
-      "reason": "no heuristic match",
-      "severityHint": "low"
+      "actionSuggested": "block",
+      "reason": "malware/attack keyword",
+      "severityHint": "high"
     },
     "llm": {
       "type": "neutral",
       "severity": "medium",
-      "score": 0.7994446754455566,
-      "summary": "Label=neutral score=0.80"
+      "score": 0.6829096674919128,
+      "summary": "Label=neutral score=0.68"
     },
-    "finalAction": "alert",
-    "reason": "trusted dqn output"
+    "finalAction": "block",
+    "reason": "heuristic override (high confidence)"
   },
   {
-    "timestamp": "2025-12-14T01:20:22.761Z",
-    "ip": "156.203.181.216",
+    "timestamp": "2025-12-17T10:52:03.933Z",
+    "ip": "\"77.154.129.61\"",
     "record": {
-      "timestamp": "2025-12-14T01:20:20.772Z",
-      "ip": "156.203.181.216",
-      "method": "GET",
-      "threatType": "\"blocked (early)\",auto",
-      "raw": "2025-12-14T01:20:20.772Z,156.203.181.216,GET,\"blocked (early)\",auto"
+      "timestamp": "\"2025-12-17T08:51:13.697Z\"",
+      "ip": "\"77.154.129.61\"",
+      "method": "\"GET\"",
+      "threatType": "\"attack vector\",\"added\"",
+      "raw": "\"2025-12-17T08:51:13.697Z\",\"77.154.129.61\",\"GET\",\"attack vector\",\"added\""
     },
-    "dqnAction": "alert",
+    "dqnAction": "block",
     "heuristic": {
-      "actionSuggested": "ignore",
-      "reason": "no heuristic match",
-      "severityHint": "low"
+      "actionSuggested": "block",
+      "reason": "malware/attack keyword",
+      "severityHint": "high"
     },
     "llm": {
       "type": "neutral",
-      "severity": "high",
-      "score": 0.8752712607383728,
-      "summary": "Label=neutral score=0.88"
+      "severity": "medium",
+      "score": 0.6829096674919128,
+      "summary": "Label=neutral score=0.68"
     },
     "finalAction": "block",
-    "reason": "llm severity high"
-  },
-  {
-    "timestamp": "2025-12-14T01:21:50.161Z",
-    "ip": "156.203.181.216",
-    "record": {
-      "timestamp": "2025-12-14T01:21:25.739Z",
-      "ip": "156.203.181.216",
-      "method": "GET",
-      "threatType": "\"blocked (early)\",auto",
-      "raw": "2025-12-14T01:21:25.739Z,156.203.181.216,GET,\"blocked (early)\",auto"
-    },
-    "dqnAction": "alert",
-    "heuristic": {
-      "actionSuggested": "ignore",
-      "reason": "no heuristic match",
-      "severityHint": "low"
-    },
-    "llm": {
-      "type": "neutral",
-      "severity": "high",
-      "score": 0.8752712607383728,
-      "summary": "Label=neutral score=0.88"
-    },
-    "finalAction": "block",
-    "reason": "llm severity high"
+    "reason": "heuristic override (high confidence)"
   }
 ]

@@ -1,11 +1,2 @@
 Timestamp,IP,Method,ThreatType,Action,Attempts
-2025-12-13T17:31:58.136Z,156.203.128.242,HEAD,"normal visit | /",auto
-2025-12-13T17:31:59.872Z,156.203.128.242,GET,"normal visit | /",auto
-2025-12-13T17:32:06.571Z,156.203.128.242,GET,"normal visit | /favicon.ico",auto
-2025-12-14T01:18:21.230Z,156.203.181.216,HEAD,"normal visit | /",auto
-2025-12-14T01:18:21.971Z,156.203.181.216,GET,"normal visit | /",auto
-2025-12-14T01:18:26.486Z,156.203.181.216,GET,"normal visit | /favicon.ico",auto
-2025-12-14T01:20:20.772Z,156.203.181.216,GET,"blocked (early)",auto
-2025-12-14T01:21:24.801Z,156.203.181.216,HEAD,"blocked (early)",auto
-2025-12-14T01:21:25.320Z,156.203.181.216,GET,"blocked (early)",auto
-2025-12-14T01:21:25.739Z,156.203.181.216,GET,"blocked (early)",auto
+"2025-12-17T08:51:13.697Z","77.154.129.61","GET","attack vector","added"

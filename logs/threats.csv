@@ -1,11 +1,11 @@
 Timestamp,IP,Method,ThreatType,Action
-2025-12-13T17:32:06.571Z,156.203.128.242,GET,"normal visit | /favicon.ico",auto,alert
-2025-12-14T01:18:26.486Z,156.203.181.216,GET,"normal visit | /favicon.ico",auto,alert
-2025-12-14T01:19:37.536Z,156.203.181.216,GET,"normal visit | /favicon.ico",auto,ALERTED by AI (trusted dqn output)
-2025-12-14T01:19:37.557Z,156.203.181.216,GET,"normal visit | /favicon.ico",auto,ALERTED by AI (trusted dqn output)
-2025-12-14T01:20:20.772Z,156.203.181.216,GET,"blocked (early)",auto,block
-2025-12-14T01:20:22.769Z,156.203.181.216,GET,"blocked (early)",auto,BLOCKED by AI (llm severity high)
-2025-12-14T01:20:22.773Z,156.203.181.216,GET,"blocked (early)",auto,BLOCKED by AI (llm severity high)
-2025-12-14T01:21:25.739Z,156.203.181.216,GET,"blocked (early)",auto,block
-2025-12-14T01:21:50.263Z,156.203.181.216,GET,"blocked (early)",auto,BLOCKED by AI (llm severity high)
-2025-12-14T01:21:50.316Z,156.203.181.216,GET,"blocked (early)",auto,BLOCKED by AI (llm severity high)
+"2025-12-17T08:51:13.697Z","77.154.129.61","GET","attack vector","added",block
+2025-12-17T08:51:54.675Z,"77.154.129.61","GET","attack vector","added",BLOCKED by AI (heuristic override (high confidence))
+2025-12-17T08:51:54.681Z,"77.154.129.61","GET","attack vector","added",BLOCKED by AI (heuristic override (high confidence))
+"2025-12-17T08:51:13.697Z","77.154.129.61","GET","attack vector","added",block
+2025-12-17T09:52:06.151Z,"77.154.129.61","GET","attack vector","added",BLOCKED by AI (heuristic override (high confidence))
+2025-12-17T09:52:06.283Z,"77.154.129.61","GET","attack vector","added",BLOCKED by AI (heuristic override (high confidence))
+2025-12-17T09:52:06.360Z,"77.154.129.61","GET","attack vector","added",BLOCKED by AI (heuristic override (high confidence))
+"2025-12-17T08:51:13.697Z","77.154.129.61","GET","attack vector","added",block
+2025-12-17T10:52:04.018Z,"77.154.129.61","GET","attack vector","added",BLOCKED by AI (heuristic override (high confidence))
+2025-12-17T10:52:04.071Z,"77.154.129.61","GET","attack vector","added",BLOCKED by AI (heuristic override (high confidence))
